@@ -1,0 +1,46 @@
+[
+  {
+    "book_id": "G014_BOOK_001",
+    "filename": "thirteen_physics_textbook.pdf",
+    "title": "REPLACE_WITH_REAL_TITLE_001",
+    "author": "REPLACE_WITH_REAL_AUTHOR_OR_EDITOR",
+    "edition": "REPLACE_WITH_EDITION_LINE_EG_2ND_PUBLISHER_LINE",
+    "publisher": "REPLACE_WITH_PUBLISHER",
+    "year": 2020,
+    "isbn": "REPLACE_WITH_ISBN_OR_URL",
+    "subject": "REPLACE_WITH_ASSIGNED_SUBJECT",
+    "source_type": "PDF text",
+    "permission_status": "Licensed for private text-processing use; extracted text "
+                          "not redistributed publicly",
+    "processing_status": "pending"
+  },
+  {
+    "book_id": "G014_BOOK_002",
+    "filename": "scanned_chemistry_lab_manual.pdf",
+    "title": "REPLACE_WITH_REAL_TITLE_002",
+    "author": "REPLACE_WITH_REAL_AUTHOR_OR_EDITOR",
+    "edition": "REPLACE_WITH_EDITION_LINE_EG_3RD",
+    "publisher": "REPLACE_WITH_PUBLISHER",
+    "year": 2017,
+    "isbn": "REPLACE_WITH_ISBN_OR_URL",
+    "subject": "REPLACE_WITH_ASSIGNED_SUBJECT",
+    "source_type": "scanned PDF",
+    "permission_status": "Library copy; OCR used and extracted text not redistributed "
+                          "publicly",
+    "processing_status": "needs_ocr"
+  },
+  {
+    "book_id": "G014_BOOK_003",
+    "filename": "public_domain_mechanics_notes.pdf",
+    "title": "REPLACE_WITH_REAL_TITLE_003",
+    "author": "REPLACE_WITH_REAL_AUTHOR_OR_EDITOR",
+    "edition": "Public-domain primary source",
+    "publisher": "Openly available",
+    "year": 1905,
+    "isbn": null,
+    "subject": "REPLACE_WITH_ASSIGNED_SUBJECT",
+    "source_type": "PDF text",
+    "permission_status": "Public domain; redistribution acceptable",
+    "processing_status": "pending"
+  }
+]
