@@ -1,0 +1,7 @@
+memory:
+  warn_gb: 6.0
+  hard_gb: 7.0
+  min_free_gb: 6.0         # below this, auto-downgrade context / max_new_tokens
+  monitoring_interval_s: 30
+  unload_generation_model: true
+  release_faiss_when_idle: true
