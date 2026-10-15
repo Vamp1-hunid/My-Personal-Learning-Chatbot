@@ -1,0 +1,32 @@
+embedding:
+  model_name: sentence-transformers/all-MiniLM-L6-v2
+  revision: main
+  pin_to_commit: true   # Replace 'revision' with the exact HF commit hash before final eval
+  device: cpu
+  stop_at_layer: 6
+  normalize: true
+
+generation:
+  # Primary: self-contained llama.cpp `llama-server` (separate process, HTTP).
+  # Start it with:  Start-Process tools\llama.cpp\llama-server.exe -ArgumentList
+  #                 "-m models\qwen2.5-0.5b-instruct-q4_k_m.gguf -c 1024 -t 2 --port 8081 --host 127.0.0.1"
+  engine: llama-server
+  server_url: http://127.0.0.1:8081/v1/chat/completions
+  tier0: {file: models/qwen2.5-0.5b-instruct-q4_k_m.gguf, ctx: 1024, max_new_tokens: 96}
+  tier1: {file: models/qwen2.5-1.5b-instruct-q4_k_m.gguf, ctx: 2048, max_new_tokens: 192}
+  temperature: 0
+  top_p: 0.1
+  stop_markers: ["\n\nQuestion:", "INSUFFICIENT EVIDENCE"]
+  hosted:
+    enabled: false
+    approval_reference: ""
+  unload:
+    via: "Stop-Process -Name llama-server"
+
+generation_ollama_alt:
+  engine: ollama
+  model_name: qwen2.5:0.5b-instruct
+  context_length: 1024
+  max_new_tokens: 96
+  temperature: 0
+  unload_between_calls: true
