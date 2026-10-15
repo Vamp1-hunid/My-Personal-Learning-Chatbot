@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "$id": "https://group-project.local/schema/passage.json",
+  "title": "Passage Record",
+  "type": "object",
+  "required": ["group_id", "subject", "book_id", "title", "page", "chunk_id", "text", "edition"],
+  "properties": {
+    "group_id": {"type": "string", "pattern": "^G[0-9]{3}$", "examples": ["G014"]},
+    "subject": {"type": "string"},
+    "book_id": {"type": "string", "pattern": "^G[0-9]{3}_BOOK_[0-9]{3}$"},
+    "title": {"type": "string"},
+    "author": {"type": "string"},
+    "edition": {"type": "string"},
+    "publisher": {"type": "string"},
+    "year": {"type": ["integer", "null"]},
+    "page": {"type": ["integer", "null"], "minimum": 1},
+    "chunk_id": {"type": "string",
+                 "pattern": "^G[0-9]{3}_BOOK_[0-9]{3}_P[0-9]+_C[0-9]{3}$"},
+    "text": {"type": "string", "minLength": 20},
+    "language": {"type": "string", "default": "en"},
+    "extraction_method": {"type": "string", "enum": ["pymupdf-text", "tesseract-ocr", "approved-exception"]},
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "needs_review": {"type": "boolean", "default": false}
+  },
+  "additionalProperties": false
+}
