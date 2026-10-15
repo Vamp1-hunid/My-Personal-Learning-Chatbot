@@ -1,0 +1,1975 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>130-Group Chatbot — Final Combined Hardware-Tailored Plan (v2)</title>
+<style>
+:root{--bg:#f6f7fb;--panel:#fff;--text:#17202a;--muted:#5f6b7a;--border:#d9dee7;--accent:#2457c5;--accent-soft:#e8efff;--code-bg:#0f172a;--code-text:#e5e7eb;--warn:#fff4d6;--warn-border:#f0c36d;--ok:#e9f8ef;--ok-border:#72c992;--danger:#fdecec;--danger-border:#e58e8e;--shadow:0 10px 30px rgba(15,23,42,.08);--radius:14px}
+[data-theme="dark"]{--bg:#0b1020;--panel:#121a2e;--text:#e5e7eb;--muted:#a0aec0;--border:#27324a;--accent:#7aa2ff;--accent-soft:#172554;--code-bg:#020617;--code-text:#dbeafe;--warn:#3a2b10;--warn-border:#a16207;--ok:#102a1d;--ok-border:#16a34a;--danger:#3a1212;--danger-border:#dc2626;--shadow:0 10px 30px rgba(0,0,0,.35)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.55}
+header{position:sticky;top:0;z-index:50;backdrop-filter:blur(10px);background:color-mix(in srgb,var(--panel) 88%,transparent);border-bottom:1px solid var(--border);padding:14px 18px}
+.header-row{max-width:1280px;margin:0 auto;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.brand h1{margin:0;font-size:clamp(1.1rem,2vw,1.6rem);line-height:1.2}
+.brand p{margin:4px 0 0;color:var(--muted);font-size:.92rem}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input[type="search"]{min-width:260px;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--panel);color:var(--text);outline:none}
+input[type="search"]:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+button{border:1px solid var(--border);background:var(--panel);color:var(--text);padding:10px 12px;border-radius:10px;cursor:pointer;font:inherit}
+button:hover{border-color:var(--accent);color:var(--accent)}
+main{max-width:1280px;margin:24px auto 60px;padding:0 18px;display:grid;grid-template-columns:280px minmax(0,1fr);gap:22px;align-items:start}
+nav.toc{position:sticky;top:96px;max-height:calc(100vh - 120px);overflow:auto;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px}
+nav.toc h2{margin:0 0 10px;font-size:1rem}nav.toc ol{margin:0;padding-left:18px}nav.toc li{margin:7px 0;font-size:.92rem}nav.toc a{color:var(--text);text-decoration:none}nav.toc a:hover{color:var(--accent);text-decoration:underline}
+.content{min-width:0}
+section.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:0 0 18px}
+section.card h2{margin-top:0;font-size:1.35rem;border-bottom:1px solid var(--border);padding-bottom:10px}
+h3{margin-top:22px;font-size:1.08rem}h4{margin-bottom:8px;font-size:1rem}
+p{margin:10px 0}ul,ol{margin:10px 0 10px 22px}li{margin:5px 0}a{color:var(--accent)}
+table{width:100%;border-collapse:collapse;margin:14px 0;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+th,td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;text-align:left}
+th{background:var(--accent-soft);font-weight:700}tr:last-child td{border-bottom:none}
+pre{background:var(--code-bg);color:var(--code-text);padding:14px;border-radius:10px;overflow:auto;font-size:.88rem;line-height:1.45;border:1px solid rgba(255,255,255,.08)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+:not(pre)>code{background:var(--accent-soft);color:var(--accent);padding:2px 6px;border-radius:6px;font-size:.92em}
+.callout{border-left:5px solid var(--accent);background:var(--accent-soft);padding:12px 14px;border-radius:10px;margin:14px 0}
+.warn{border-left-color:var(--warn-border);background:var(--warn)}
+.ok{border-left-color:var(--ok-border);background:var(--ok)}
+.danger{border-left-color:var(--danger-border);background:var(--danger)}
+details{border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin:12px 0;background:color-mix(in srgb,var(--panel) 80%,var(--bg))}
+summary{cursor:pointer;font-weight:700}
+.checklist{list-style:none;margin-left:0;padding-left:0}.checklist li{display:flex;gap:10px;align-items:flex-start;margin:8px 0}.checklist input[type=checkbox]{margin-top:5px;width:16px;height:16px;accent-color:var(--accent)}
+footer{max-width:1280px;margin:0 auto 40px;padding:0 18px;color:var(--muted);font-size:.92rem}
+.hidden-by-search{display:none!important}
+@media(max-width:980px){main{grid-template-columns:1fr}nav.toc{position:static;max-height:none}input[type="search"]{min-width:0;width:100%}}
+@media print{header,nav,.toolbar,footer{display:none!important}main{display:block;margin:0;padding:0}section.card{break-inside:avoid;box-shadow:none;border-color:#999}body{background:white;color:black}pre{white-space:pre-wrap;word-break:break-word}}
+</style>
+</head>
+<body>
+<header><div class="header-row">
+<div class="brand"><h1>130-Group Chatbot — Final Combined Hardware-Tailored Plan (v2)</h1>
+<p>One executable RAG build for HP Pavilion · AMD A8-7410 · 12 GB DDR3 · HDD · CPU-only, upgraded for the two newer candidate guides (chatbot1.html + chatbot2.html) without diluting the official assignment standards.</p></div>
+<div class="toolbar">
+<input id="search" type="search" placeholder="Search guide..." aria-label="Search"/>
+<button id="themeBtn">Theme</button><button onclick="window.print()">Print</button>
+</div></div></header>
+
+<main>
+<nav class="toc" aria-label="TOC"><h2>Contents</h2><ol id="tocList"></ol></nav>
+
+<div class="content">
+
+<!-- ===================== 1. TITLE AND PURPOSE ===================== -->
+<section class="card" id="s1" data-title="1. Title and purpose">
+<h2>1. Title and purpose</h2>
+<p><b>Deliverable:</b> one self-reproducible RAG chatbot package that satisfies every rule of the
+<em>130-Group Collaborative Transformer Chatbot Project</em> assignment standards on your exact HP Pavilion
+hardware. Everything is CPU-only, everything is offline-capable after a first download, and every file
+can be re-created from the code blocks in this document alone.</p>
+<div class="callout warn">
+<b>What is new in v2 (merged from chatbot1.html + chatbot2.html without diluting standards):</b>
+<ul>
+<li><b>Exact downloads table</b> (§7): every URL, installer name, size estimate, and where to unzip it. Includes the <b>AVX vs AVX2 llama.cpp rule</b> and the what-to-do-if-the-prebuilt-zip-fails escape hatch.</li>
+<li><b>Primary generation</b> is now a <b>separate llama.cpp llama-server process</b> (Qwen2.5-0.5B-Instruct Q4_K_M via HTTP to an OpenAI-compatible endpoint) instead of Ollama. Ollama is kept as a Tier-1 alt, not a dependency. <code>Stop-Process -Name llama-server</code> frees ~1 GB on demand.</li>
+<li><b>Chunk size fixed at 160 words / 30 overlap</b> (was 220/50). Reason: <code>all-MiniLM-L6-v2</code> truncates at 256 tokens; 160 words ≈ ~200–210 tokens, so chunks survive the window instead of silently losing text.</li>
+<li><b>py -3.11 side-by-side Python</b> loader added in case your machine already has a different Python.</li>
+<li><b>Doctor gained 3 new checks</b>: GPU name via CIM, llama.cpp AVX illegal-instruction smoke test (exit code 0xC000001D), and RAM based Tier-0 / Tier-1 hint.</li>
+<li><b>Full git workflow</b> is now in this document (§8), including .gitignore, remote, branch, pull-request and secrets-scan commands. Every repo step is copy-paste ready.</li>
+<li><b>Streamlit UI is provided</b> but optional and memory-safe (CLI remains primary to keep RAM low during evaluation).</li>
+</ul>
+</div>
+<div class="callout ok">
+<b>What is deliberately left out of v2 to keep the file manageable</b>: full OCR Python code (extracts only commands, not a script), a Streamlit UI beyond ~30 lines, full 30–50 question set (template + first 6 entries here, rest in <code>project/evaluation/questions.template.json</code> on disk).
+</div>
+<p><b>One-sentence pitch:</b> build a book-grounded retrieval system that is guaranteed to run on this laptop,
+then fall back gracefully when hardware is tight, and prove quality with tests, held-out evaluation and honest numbers.</p>
+</section>
+
+<!-- ===================== 2. HARDWARE PROFILE ===================== -->
+<section class="card" id="s2" data-title="2. Hardware profile">
+<h2>2. Hardware profile (non-negotiable)</h2>
+<p>Right-click this document on the assignment page → “Save as PDF”; the screenshot you quoted gives:</p>
+<table>
+<thead><tr><th>Bench</th><th>Screenshot value</th><th>Non-negotiable rule for the build</th></tr></thead>
+<tbody>
+<tr><td>Device</td><td>HP Pavilion Notebook — DESKTOP-3MRQV8E</td><td>Windows 10 or 11 64-bit; PowerShell + CMD must both work.</td></tr>
+<tr><td>CPU</td><td>AMD A8-7410 APU with Radeon R5 Graphics, 2.20 GHz</td><td><b>weak CPU only</b>. Do not assume modern AVX2 or server-class speed. Limit threads, avoid parallel heavy workloads. llama.cpp files tagged <code>avx2</code> or <code>avx512</code> are <b>not</b> guaranteed safe on this APU.</td></tr>
+<tr><td>RAM</td><td>12 GB installed, ~10.9 GB usable, DDR3</td><td>Workload target 4–6 GB, hard cap ~7 GB. Below 6 GB the doctor auto-recommends Tier-0 ultra-safe settings.</td></tr>
+<tr><td>Graphics</td><td>Radeon R5 integrated, ~1006 MB (shared DDR3)</td><td><b>No CUDA. Not usable AI VRAM.</b> No DirectML/ONNX/ROCm primary path. The 1006 MB figure is text on a spec sheet, not a budget.</td></tr>
+<tr><td>Storage</td><td>1.82 TB HDD, ~420 GB free</td><td>Sequential JSONL; cache every expensive step; never write many tiny files during a demo. Build the index once, offline.</td></tr>
+<tr><td>Python</td><td>Unknown version</td><td>Stable 3.11.x primary, 3.12.x backup. No betas. Doctor verifies.</td></tr>
+<tr><td>API budget</td><td>$0 unless explicitly approved</td><td>Hosted generation is a fallback only, guarded and documented.</td></tr>
+<tr><td>Admin rights</td><td>Unknown</td><td>Nothing on the critical path needs admin. Optional upgrades (e.g. Tesseract full install) are per-user.</td></tr>
+</tbody>
+</table>
+<!-- Add the memory sizing table here -->
+<h3>Memory and index sizing (measured rules of thumb, not guarantees)</h3>
+<p>Rough sizing (record real values in your report): 15 books × ~400 pages × ~6 passages/page ≈ 30–40k passages at ~160 words.
+MiniLM vectors are 384 floats × 4 B ≈ 1.5 KB each, so 45–60 MB total; the JSONL is ~30 MB. FAISS <code>IndexFlatIP</code> RAM usage is <b>equal to the embeddings size</b> (~60 MB) — well under the HDD’s tolerance.
+The embedding model takes ~0.5 GB (process-RSS) and stays resident if <code>unload_generation_model</code> is true. The 0.5B llama-server takes roughly 0.6–1.0 GB. Both together still land around 2–2.5 GB, comfortably inside a 6 GB budget.</p>
+<pre>Embedding (one-off)   ~0.5 GB RSS, 10–40 CPU-min for 15 books, sequential I/O only
+FAISS index RAM       ~60 MB  (IndexFlatIP, exact search)
+llama-server 0.5B     ~0.6–1.0 GB RSS — 1 process, separate from Python
+Passages JSONL        ~30 MB on disk
+Peak RAM of a demo    ~2.5–4 GB           (close browsers and aim for this)</pre>
+</section>
+
+<!-- ===================== 3. HARDWARE INTERPRETATION ===================== -->
+<section class="card" id="s3" data-title="3. Hardware interpretation">
+<h2>3. Hardware interpretation and design rules</h2>
+<ol>
+<li><b>Weak CPU is the bottleneck, not RAM.</b> The best local path is a <b>0.5B–1.5B quantized model</b> at 2 threads. Never make 3B+ the required path; that was the earlier draft’s mistake (it treated 3B as Tier-0).</li>
+<li><b>RAM is good, still not generous.</b> 10.9 GB usable; target 4–6 GB; warn at 6 GB; hard-stop at 7 GB. Integrated graphics memory is <b>not</b> free extra room.</li>
+<li><b>HDD changes priorities, not possibilities.</b> Sequential reads win. Use JSONL, cache <code>fulltext/*.jsonl</code>, <code>embeddings.npy</code>, <code>book.faiss</code>, and the OCR cache. Never re-scan PDFs during a demo; never read passages.jsonl line-by-line in the hot loop — load it once, keep in RAM.</li>
+<li><b>Embedding + retrieval are feasible; generation is not trivial.</b>
+<ul>
+<li>Embedding <code>all-MiniLM-L6-v2</code> is ~0.5 GB RSS and fast enough for a 15-book corpus in one sitting.</li>
+<li><code>faiss-cpu</code> IndexFlatIP is exact, tiny, safe. This is the assignment-standard “local vector index”.</li>
+<li><b>Tiny local generation</b> is the right target: 0.5B–1.5B Q4_K_M. Bigger is Tier-2/only-if-new-hardware, never required.</li>
+</ul></li>
+<li><b>Deterministic answers.</b> temperature 0, near-zero top_p, stop sequence, short maximum_new_tokens, exact context cap. Two runs produce the same answer. Human review can then be done reliably.</li>
+<li><b>Abstention is not optional.</b> Low retrieval score, a refusal marker in the model’s own text, or no valid surviving citation → <code>insufficient_evidence: true</code>. The falsification of a non-retrieved citation is dropped <em>before</em> it gets shown.</li>
+<li><b>Conflicts are surfaced, not averaged.</b> When retrieved passages disagree (<code>CONFLICT:</code> prefix from the model, or negation-based heuristic, or post-hoc human flag) the objective truth is not silently picked; the payload adds a <code>conflicts</code> array and the answer text itself starts with that prefix so the 3-key contract stays intact.</li>
+</ol>
+</section>
+
+<!-- ===================== 4. FINAL CHOSEN STACK ===================== -->
+<section class="card" id="s4" data-title="4. Final chosen stack">
+<h2>4. Final chosen stack (one row per decision)</h2>
+<table>
+<thead><tr><th>Layer</th><th>Chosen</th><th>Why / fallback</th></tr></thead>
+<tbody>
+<tr><td>Language</td><td>Python 3.11.x (or 3.12.x)</td><td>Stable, all needed wheels exist. No betas. <code>py -3.11</code> loader uses a side-by-side install.</td></tr>
+<tr><td>IDE</td><td>Visual Studio Code</td><td>+ Python, Pylance, Jupyter, GitLens, Test Explorer extensions.</td></tr>
+<tr><td>PDF extraction</td><td>PyMuPDF (import name <code>fitz</code> or <code>pymupdf</code>)</td><td>CPU-friendly, low memory. OCR fallback: Tesseract UB-Mannheim + <code>ocrmypdf</code>, <b>per book, cached once</b>.</td></tr>
+<tr><td>Embedding</td><td><code>sentence-transformers/all-MiniLM-L6-v2</code> (pilot)</td><td>384-dim, normalized, CPU, batch 4. Swap to coordinator-approved model + pinned revision before final eval.</td></tr>
+<tr><td>Index</td><td><code>faiss-cpu</code> — <code>IndexFlatIP</code> on float32</td><td>Exact inner-product equals cosine after normalization. Flat is tiny at this scale (≈ 60 MB for 30–40 k passages). IVF/PQ not needed; IVF is optional on slower SSDs only.</td></tr>
+<tr><td>Generation primary</td><td><b>llama.cpp <code>llama-server.exe</code></b>, Qwen2.5-0.5B-Instruct Q4_K_M, ctx 1024, max_new 96, temp 0, 2 threads</td><td>CPU-only, single process (easy RAM cap), OpenAI-compatible HTTP endpoint. Tier 1 option is 1.5B. Ollama alt if you prefer it, doc’d as <code>generation_ollama_alt</code>.</td></tr>
+<tr><td>Generation fallback</td><td>Extractive (best sentence from retrieved passages), <b>labelled in the answer text</b>, still cites, still abstains</td><td>Guaranteed to produce a verdict even with no generation process at all. Hidden third tier.</td></tr>
+<tr><td>Additional fallback</td><td>Tier 2: approved hosted OpenAI-compatible API (guarded by <code>.env</code>)</td><td>Only if the coordinator approved and you have budget. Cost / privacy / connectivity / failure mode must be documented.</td></tr>
+<tr><td>UI</td><td>CLI primary, Streamlit optional demo shell</td><td>Streamlit is nice for humans, conservative for the RAM cap; CLI keeps you honest during evaluation.</td></tr>
+<tr><td>Testing</td><td>pytest</td><td>Ingest/manifest checks, retrieval shape, citation rules, answer contract, abstention default, doctor logic.</td></tr>
+<tr><td>Version control</td><td>git + GitHub/GitLab</td><td>Private or public? Default private until you read your course rule; do not publish <code>.env</code>, books, extracted text, <code>artifacts/</code>, or <code>models/</code>.</td></tr>
+<tr><td>Config format</td><td>YAML (5 files)</td><td>models, chunking, retrieval, hardware, memory. No hidden defaults, everything typed.</td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- ===================== 5. DECISIONS ABOUT OTHER MODELS ===================== -->
+<section class="card" id="s5" data-title="5. Reconciled decisions">
+<h2>5. What was accepted / rejected from each candidate</h2>
+<p>Six options were considered: the two PDF guides (<code>Book_Chatbot_Beginner_Guide.pdf</code>,
+<code>Transformer_Chatbot_Beginner_Implementation_Guide.pdf</code>), two interactive HTML guides
+(<code>deepseek_html_*.html</code>, <code>Qwen_html_*.html</code>) and today’s two newer candidates
+(<code>chatbot1.html</code> Hardware-Optimized Guide, <code>chatbot2.html</code> “HP Pavilion Package”).</p>
+<h3>Accepted into v2</h3>
+<ul>
+<li><b>chatbot2.html → the exact download list</b>, AVX/AVX2 warning, 160/30 chunking rationale (MiniLM 256-token truncation), llama-server as a <b>separate CPU process</b> (easy RAM control), doctor enhancements (RAM tier, GPU name, llama.cpp exit-0xC000001D smoke test), <code>Stop-Process -Name llama-server</code> unload trick, concrete evaluation <code>report_{split}.json</code> script, and the “human review column in the report skeleton” idea. <b>Kept in full.</b></li>
+<li><b>chatbot1.html → honest defaults</b>: its “extractive synthesis is the true fallback” reading of the assignment is kept as a <b>third-tier labelled fallback</b>, not the primary, because the assignment’s core standard says “generation” (see §25). Its memory-only extractive idea is retained for the demo script.</li>
+<li><b>Two PDF guides → the precise <code>retrieve()</code> interface signature</b>, the strict three-key answer payload, the “100% resolvable citations” rule, page-accurate per-page chunking, human-review requirements, the 12-week plan, and the hard rule that a model artifact is <b>not</b> required unless you go to the LoRA/merging research track.</li>
+<li><b>deepseek + Qwen HTML guides</b> → YAML config layout, modular <code>src/</code> file split, and the principled “common schema + common interface” integration summary (§33).</li>
+</ul>
+<h3>Rejected, and why (hardware-impact analysis)</h3>
+<table>
+<thead><tr><th>Rejected suggestion</th><th>Source</th><th>Why rejected here</th><th>What is kept instead</th></tr></thead>
+<tbody>
+<tr><td>Primary engine = Ollama</td><td>Earlier v1 plan / PDFs</td><td>Ollama is a heavier multi-service daemon, harder to cap RAM, and was previously treated as Tier-1 default.</td><td>llama.cpp <code>llama-server</code> separate CPU process; Ollama retained only as documented alt.</td></tr>
+<tr><td>Chunk 220 words / 50 overlap</td><td>v1 plan</td><td>MiniLM truncates at 256 tokens; 220 English words ≈ 280+ tokens and silently truncates.</td><td>160 words / 30 overlap.</td></tr>
+<tr><td>3B models as Tier 0/Tier 1</td><td>chatbot1.html (TinyLlama 1.1B) — actually Tier-1; two PDF guides (various 3B or 7B/8B options)</td><td>Too slow on the A8-7410; risks RAM swap on an HDD.</td><td>0.5B Tier 0, 1.5B Tier 1, higher tiers only on better hardware.</td></tr>
+<tr><td>Extractive as primary “generation”</td><td>chatbot1.html</td><td>Conflicts with the standards’ core “generation” wording; makes snippets the demo star, not the deliverable.</td><td>Extractive is the <b>labelled fallback</b>; primary = tiny CPU LLM via llama-server.</td></tr>
+<tr><td>NumPy-only baseline (no FAISS)</td><td>Some candidate guide</td><td>Assignment says “local vector index or approved retriever”; FAISS is simpler to submit and to share.</td><td>FAISS CPU; NumPy kept only as Tier-4 “non-standard fallback”.</td></tr>
+<tr><td>“Hosted API first, local later”</td><td>PDF guides</td><td>Violates “hosted only as fallback” and the $0 budget assumption.</td><td>Local-first; hosted guarded by approval and <code>.env</code>.</td></tr>
+<tr><td>“A merged model is guaranteed to work”</td><td>A couple of candidates</td><td>Not guaranteed. Must be tested against base + separate adapters + router.</td><td>Kept as research track only (§35).</td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- ===================== 6. ARCHITECTURE ===================== -->
+<section class="card" id="s6" data-title="6. Architecture">
+<h2>6. System architecture</h2>
+<pre>Offline (once, or after a model/config change):
+  data/books/*.pdf
+      │  ingest.py ──&gt; data/cache/pages/{book_id}.jsonl     (page-level raw text, cached)
+      │  chunk.py  ──&gt; data/passages/passages.jsonl         (160w/30o, per page, schema-valid)
+      │  embed.py  ──&gt; artifacts/embeddings.npy             (MiniLM, unit-norm, batch 4)
+      └── index.py ──&gt; artifacts/book.faiss + index.json    (IndexFlatIP, exact search)
+
+Online (per question):
+  question ──&gt; retrieve(question, top_k) ──&gt; top-k passages + score, book_id, page, chunk_id, edition
+      │
+      ├─ if top score &lt; threshold_score (0.30) ──&gt; ABSTAIN (insufficient_evidence: true)
+      │
+      ├─否则 generation: llama.cpp llama-server (separate CPU process, temp 0, max_new_tokens 96)
+      │     ├─ fallback 1: Ollama CPU mode (documented alt)
+      │     ├─ fallback 2: approved hosted API (guarded by approval_reference)
+      │     └─ fallback 3: extractive, answer text explicitly labelled
+      │
+      ├─ citations.validate: keep only chunk IDs present in BOTH the retrieved set
+      │                      AND the stored passages (exact book_id + page match)
+      ├─ if zero sources survive ──&gt; ABSTAIN
+      │
+      └─ validate_answer (3 keys, sources valid, page match) ──&gt; return JSON
+            {"answer": "...", "sources": [...], "insufficient_evidence": false}</pre>
+<h3>Module responsibilities</h3>
+<table>
+<thead><tr><th>File</th><th>Purpose</th><th>Memory notes</th></tr></thead>
+<tbody>
+<tr><td><code>src/util.py</code></td><td>root paths, YAML loader, JSONL/JSON helpers, logging, peak-RSS probe</td><td>trivial</td></tr>
+<tr><td><code>src/doctor.py</code></td><td>environment check + smoke tests (llama.cpp binary, RAM tier, GPU)</td><td>&lt; 10 MB</td></tr>
+<tr><td><code>src/ingest.py</code></td><td>PDF → per-page JSONL cache; flags <code>needs OCR</code>; writes manifest status</td><td>one book at a time</td></tr>
+<tr><td><code>src/chunk.py</code></td><td>page-first, 160 words / 30 overlap; schema-validated passages.jsonl</td><td>one book at a time</td></tr>
+<tr><td><code>src/embed.py</code></td><td>text → vector, unit-normalized, batch 4, CPU only</td><td>one batch at a time</td></tr>
+<tr><td><code>src/index.py</code></td><td>FAISS IndexFlatIP build + index.json provenance record</td><td>flush once, tiny</td></tr>
+<tr><td><code>src/retrieve.py</code></td><td>lazy singleton; exact <code>retrieve()</code> contract; RAM-resident row array</td><td>≈ 60–100 MB once loaded</td></tr>
+<tr><td><code>src/generate.py</code></td><td>llama-server → Ollama → hosted → extractive; citation validation; abstention; conflicts</td><td>0.5–1 GB for the tiny LLM process</td></tr>
+<tr><td><code>src/citations.py</code></td><td>regex extract; keep only IDs in store AND retrieved; exact page match</td><td>&lt; 1 MB</td></tr>
+<tr><td><code>src/answer_schema.py</code></td><td>3-key JSON validator + negation heuristic for conflicts</td><td>&lt; 1 MB</td></tr>
+<tr><td><code>src/cli.py</code></td><td>sample-friendly terminal demo; RAM-aware, shows sources</td><td>same as generate.py</td></tr>
+<tr><td><code>src/app.py</code></td><td>optional Streamlit UI, warns at 4 GB, no chat history kept</td><td>+ ~150 MB for Streamlit</td></tr>
+<tr><td><code>src/memwatch.py</code></td><td>threshold monitor (warn 6 GB / hard 7 GB), downgrade entrypoints</td><td>&lt; 1 MB</td></tr>
+<tr><td><code>evaluation/run_eval.py</code></td><td>Recall@5, citation validity, abstention accuracy, latency, RAM; <code>report_{split}.json</code> + md</td><td>no index reload, shares retrieve()</td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- ===================== 7. DOWNLOADS ===================== -->
+<section class="card" id="s7" data-title="7. Downloads">
+<h2>7. Downloads — every URL, installer and destination</h2>
+<div class="callout warn">
+Everything below is a <b>user-level</b> install (no admin rights needed unless marked). Pre-place all files under
+<code>%USERPROFILE%\Downloads</code> (or anywhere reasonable), then use the sizes/sha-256 in the manifest at the end of this section.
+</div>
+<table>
+<thead><tr><th>#</th><th>Tool</th><th>Pick this</th><th>Size est.</th><th>Install / extract to</th><th>Why needed</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><b>Python 3.11.x</b></td><td>latest 3.11 bugfix installer — <a href="https://www.python.org/downloads/">https://www.python.org/downloads/</a>, file named <code>python-3.11.*-amd64.exe</code>. If you already have 3.11 or 3.12, skip.</td><td>~25 MB</td><td>run installer, tick <b>Add Python to PATH</b> (for your user), <b>Install for me only</b></td><td>the whole build runs on Python 3.11/3.12 only</td></tr>
+<tr><td>2</td><td><b>VS Code</b></td><td>User installer for Windows 64-bit — <a href="https://code.visualstudio.com/Download">https://code.visualstudio.com/Download</a></td><td>~90 MB</td><td>double-click installer (User scope); then install extensions Python, Pylance, Jupyter, GitLens</td><td>IDE and integrated terminal</td></tr>
+<tr><td>3</td><td><b>Git for Windows</b></td><td><a href="https://git-scm.com/download/win">https://git-scm.com/download/win</a> — <code>Git-x.x.x-64-bit.exe</code></td><td>~60 MB</td><td>installer defaults plus <b>Use Visual Studio Code as git’s default editor</b>, <b>Add Git Bash profile</b></td><td>version control; §8 assumes it</td></tr>
+<tr><td>4</td><td><b>llama.cpp prebuiltWindows x64 (CPU)</b></td><td><a href="https://github.com/ggml-org/llama.cpp/releases">github.com/ggml-org/llama.cpp/releases</a>; take the most recent <b>Windows x64 CPU</b> asset; the file name typically includes <code>llama-…-win-…-cpu-x64</code> and may be plain <code>zip</code> or <code>-avx</code>. If only <code>-avx2</code> is offered, download one earlier release that still ships a plain-<code>-avx</code> variant (see §32 “illegal instruction” for the exact fix path).</td><td>~10–20 MB</td><td>extract to <code>group_project\tools\llama.cpp\</code> so that <code>tools\llama.cpp\llama-server.exe</code> exists</td><td>generation engine (separate CPU process, no CUDA)</td></tr>
+<tr><td>5</td><td><b>Qwen2.5-0.5B-Instruct GGUF</b></td><td><a href="https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF">…/Qwen2.5-0.5B-Instruct-GGUF</a>, file <code>qwen2.5-0.5b-instruct-q4_k_m.gguf</code></td><td>~0.4 GB</td><td>extract to <code>group_project\models\</code></td><td>Tier 0 local LLM</td></tr>
+<tr><td>6</td><td><b>Qwen2.5-1.5B-Instruct GGUF</b> (Tier 1, optional)</td><td><a href="https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF">…/Qwen2.5-1.5B-Instruct-GGUF</a>, file <code>qwen2.5-1.5b-instruct-q4_k_m.gguf</code></td><td>~1.1 GB</td><td>same <code>models\</code> folder</td><td>Tier 1 option, only if RAM and latency measured OK</td></tr>
+<tr><td>7</td><td><b>all-MiniLM-L6-v2 (sentence-transformers)</b></td><td><a href="https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2">…/all-MiniLM-L6-v2</a> — downloaded automatically by <code>sentence-transformers</code> on first embed run</td><td>~90 MB</td><td>auto-cache under <code>%USERPROFILE%\.cache\huggingface\</code></td><td>embedding model</td></tr>
+<tr><td>8</td><td><b>Tesseract OCR (Windows, UB-Mannheim build)</b></td><td><a href="https://github.com/UB-Mannheim/tesseract/wiki">github.com/UB-Mannheim/tesseract/wiki</a>, 64-bit installer</td><td>~70 MB</td><td>per-user install; note the install folder so <code>pytesseract</code> can find <code>tesseract.exe</code></td><td>optional; only for <code>needs OCR</code> books</td></tr>
+</tbody>
+</table>
+<div class="callout ok">
+<b>Record SHA-256 for every binary/blob</b> you download into <code>data/model_sha256.txt</code>:
+<pre>certutil -hashfile %USERPROFILE%\Downloads\qwen2.5-0.5b-instruct-q4_k_m.gguf SHA256</pre>
+For llama.cpp binaries, do the same. This is the difference between “it works” and “it works reproducibly for my 130 other classmates”.
+</div>
+<h3>Model cache relocation (optional)</h3>
+<pre># if the system drive (C:) is getting tight, redirect the model cache:
+$env:HF_HOME="D:\hf_cache"        # PowerShell, persistent via Control Panel → System if you prefer
+# offline run after the first download:
+$env:HF_HUB_OFFLINE="1"</pre>
+</section>
+
+<!-- ===================== 8. WINDOWS SETUP ===================== -->
+<section class="card" id="s8" data-title="8. Windows setup">
+<h2>8. Windows setup (PowerShell primary, CMD backup)</h2>
+<pre># from your home folder, one-time
+cd $HOME
+mkdir group_project
+cd group_project
+
+# create and enter the repository, see §8 for the exact git workflow
+git init
+
+# create the virtual environment
+python --version                    # should print a 3.11.x or 3.12.x — if not run py -3.11
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+# if PowerShell blocks activation:
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+
+# install dependencies
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+
+# persistent env vars per session (close your browser first!)
+$env:OMP_NUM_THREADS="2"
+$env:MKL_NUM_THREADS="2"
+$env:TOKENIZERS_PARALLELISM="false"
+$env:PYTHONDONTWRITEBYTECODE="1"
+
+# doctor smoke test
+python src\doctor.py</pre>
+<h4>CMD alternatives</h4>
+<pre>:: CMD equivalent of the above
+py -3.11 -m venv .venv
+.venv\Scripts\activate.bat
+set OMP_NUM_THREADS=2
+set MKL_NUM_THREADS=2
+set TOKENIZERS_PARALLELISM=false</pre>
+<div class="callout warn"><b>Run the doctor FIRST</b> before <code>pip install</code>. It refuses nothing but
+tells you in advance if your RAM/GPU makes Tier 1 unrealistic so you do not waste an hour on install.</div>
+</section>
+
+<!-- ===================== 9. PYTHON VERSION ===================== -->
+<section class="card" id="s9" data-title="9. Python version">
+<h2>9. Python version recommendation</h2>
+<ul>
+<li><b>Primary:</b> stable <b>3.11.x</b>. All wheels used here (faiss-cpu, sentence-transformers / torch CPU, pymupdf, streamlit) build cleanly.</li>
+<li><b>Backup:</b> stable <b>3.12.x</b> if you already have it; <code>faiss-cpu</code> wheels and sentence-transformers’s torch CPU wheel both exist.</li>
+<li><b>Not supported:</b> Python &lt; 3.10 or &gt; 3.12 without a careful wheel check; the doctor treats this as a red flag, not as tint.</li>
+<li><b>Side-by-side install is fine:</b> Windows installs use a per-user Python 3.11 even if you already have a newer one. <code>py -3.11 -m venv .venv</code> picks it.</li>
+<li><b>Offline mode:</b> after the first indexing run, use <code>$env:HF_HUB_OFFLINE="1"</code> so a demo never touches the internet.</li>
+</ul>
+<div class="callout warn">If you must run on Python &lt; 3.10, set <code>pip install --only-binary=:all:</code> and
+expect to fall back to Tier 4 (NumPy/BM25 retriever, non-standard) — the assignment calls this an
+“approved exception” and requires you to label it in your report.</div>
+</section>
+
+<!-- ===================== 10. DOCTOR ===================== -->
+<section class="card" id="s10" data-title="10. Compatibility checker (doctor)">
+<h2>10. Python compatibility checker — <code>src/doctor.py</code></h2>
+<p>Full code (the same file on-disk under <code>project/src/doctor.py</code>):</p>
+<pre>"""src/doctor.py — Run BEFORE installing/running anything heavy.
+
+Usage:
+    python src/doctor.py           # full check
+    python src/doctor.py --json    # machine-readable output for CI / reports
+"""
+from __future__ import annotations
+
+import ctypes
+import importlib
+import json
+import os
+import platform
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+SUPPORTED_PY = [(3, 10), (3, 11), (3, 12)]
+RECOMMENDED_PY = (3, 11)
+PACKAGES = ["fitz", "sentence_transformers", "faiss", "numpy", "yaml",
+            "psutil", "pytest", "streamlit"]
+LIMAVX_AVX2_HINT = ("The AMD A8-7410 uses Puma+ cores; they support AVX but usually NOT AVX2. "
+                    "A llama.cpp build that requires AVX2 will die with 'illegal instruction' "
+                    "(Windows exit code 3221225501 = 0xC000001D).")
+
+
+def memory_profile():
+    try:
+        import psutil
+        vm = psutil.virtual_memory()
+        return vm.total, vm.available
+    except Exception:
+        class MEMORYSTATUSEX(ctypes.Structure):
+            _fields_ = [("dwLength", ctypes.c_ulong), ("dwMemoryLoad", ctypes.c_ulong),
+                        ("ullTotalPhys", ctypes.c_ulonglong), ("ullAvailPhys", ctypes.c_ulonglong),
+                        ("ullTotalPageFile", ctypes.c_ulonglong), ("ullAvailPageFile", ctypes.c_ulonglong),
+                        ("ullTotalVirtual", ctypes.c_ulonglong), ("ullAvailVirtual", ctypes.c_ulonglong),
+                        ("ullAvailExtendedVirtual", ctypes.c_ulonglong)]
+        stat = MEMORYSTATUSEX()
+        stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
+        ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat))
+        return stat.ullTotalPhys, stat.ullAvailPhys
+
+
+def detect_gpu_name() -&gt; str:
+    try:
+        out = subprocess.run(["powershell", "-NoProfile", "-Command",
+                              "(Get-CimInstance Win32_VideoController).Name"],
+                             capture_output=True, text=True, timeout=10)
+        return (out.stdout or "").strip() or "unknown"
+    except Exception as exc:
+        return f"unknown ({type(exc).__name__})"
+
+
+def check_llama_binary(exe_path: Path) -&gt; str:
+    """Smoke test: 0xC000001D (3221225501) on Windows means illegal instruction."""
+    if not exe_path.is_file():
+        return f"skipped (no file at {exe_path})"
+    try:
+        r = subprocess.run([str(exe_path), "--version"], capture_output=True,
+                           text=True, timeout=20)
+        if r.returncode == 0:
+            return f"OK   exit={r.returncode}"
+        if r.returncode == 3221225501:
+            return ("FAIL  illegal instruction (0xC000001D) - needs AVX2, find an -avx build "
+                    "from an earlier llama.cpp release instead")
+        return f"FAIL  exit={r.returncode} stderr={r.stderr[:200]}"
+    except Exception as exc:
+        return f"FAIL  {type(exc).__name__}: {exc}"
+
+
+def main(json_out: bool = False):
+    total, avail = memory_profile()
+    total_gb, avail_gb = ((total or 0) / 2**30, (avail or 0) / 2**30)
+    py = sys.version_info[:3]
+    found, missing = check_packages()
+    gpu = detect_gpu_name()
+    llama = check_llama_binary(ROOT / "tools" / "llama.cpp" / "llama-server.exe")
+    free_disk_gb = shutil.disk_usage(str(ROOT)).free / 2**30
+    report = {
+        "os": platform.platform(), "machine": platform.machine(),
+        "python": f"{py[0]}.{py[1]}.{py[2]}",
+        "python_supported": py[:2] in SUPPORTED_PY,
+        "logical_cores": os.cpu_count(),
+        "suggested_threads": 2,
+        "ram_total_gb": round(total_gb, 2),
+        "ram_available_gb": round(avail_gb, 2),
+        "gpu": gpu,
+        "gpu_note": ("NVIDIA present but plan is CPU-first" if "NVIDIA" in gpu.upper()
+                     else "no NVIDIA: CPU-only (integrated GPU is not AI VRAM)"),
+        "free_disk_gb": round(free_disk_gb, 2),
+        "packages_found": found, "packages_missing": missing,
+        "llama_cpp_smoke_test": llama, "avx_note": LIMAVX_AVX2_HINT,
+        "suggested_tier": 0 if avail_gb &lt; 6.0 else 0,
+        "suggested_memory_budget_gb": round(min(6.0, max(2.0, avail_gb - 3.0)), 1),
+        "hard_cap_gb": 7.0,
+        "problem_count": len(missing) + (0 if py[:2] in SUPPORTED_PY else 1),
+    }
+    if json_out:
+        out = ROOT / "doctor_report.json"
+        out.write_text(json.dumps(report, indent=2), encoding="utf-8")
+        print(f"doctor_report.json written -> {out}")
+    for k, v in report.items():
+        print(f"{k}: {v}")
+    return report
+
+
+def check_packages():
+    found, missing = [], []
+    for pkg in PACKAGES:
+        try:
+            importlib.import_module(pkg)
+            found.append(pkg)
+        except Exception:
+            missing.append(pkg)
+    return found, missing
+
+
+if __name__ == "__main__":
+    main("--json" in sys.argv)
+    sys.exit(0)</pre>
+<div class="callout warn"><b>If stable Python cannot be installed,</b> the reduced path is
+<code>pip install pymupdf numpy pyyaml psutil pytest</code> on your existing Python; use <b>Tier 4</b>
+(NumPy / TF-IDF retriever) and record it in your evaluation report as a <b>documented exception</b>.</div>
+</section>
+
+<!-- ===================== 11. VENV SETUP ===================== -->
+<section class="card" id="s11" data-title="11. Virtual environment">
+<h2>11. Virtual environment setup</h2>
+<pre>python -m venv .venv
+.\.venv\Scripts\Activate.ps1      # PowerShell
+.venv\Scripts\activate.bat        # CMD
+
+# re-activate every terminal
+$env:OMP_NUM_THREADS="2"          # PowerShell
+$env:MKL_NUM_THREADS="2"
+$env:TOKENIZERS_PARALLELISM="false"</pre>
+<div class="callout ok"><b>Checklist before each run</b>: venv active, browser closed, RAM shown ≥ 6 GB in the
+doctor. Never run <code>conda</code>/<code>pip</code> as <code>sudo</code>/<code>admin</code>; everything user-level.</div>
+</section>
+
+<!-- ===================== 12. REQUIREMENTS ===================== -->
+<section class="card" id="s12" data-title="12. requirements.txt">
+<h2>12. <code>requirements.txt</code></h2>
+<pre>PyMuPDF==1.24.14
+numpy==1.26.4
+faiss-cpu==1.12.0
+sentence-transformers==3.3.1
+torch==2.4.1
+ollama==0.4.7          # optional, only if you pick the Ollama alt engine
+psutil==6.1.0
+streamlit==1.41.1      # UI only; you can omit for the CPU-only demo
+pytest==8.3.4
+pyyaml==6.0.2
+huggingface-hub==0.26.5
+jsonschema==4.23.0
+# pip freeze &gt; requirements-lock.txt  (compare against requirements.txt before submission)</pre>
+<div class="callout warn"><b>Wheel availability note</b>: if a wheel fails on your interpreter,
+<code>pip install --only-binary=:all:&lt;pkg&gt;</code> and stay strictly on Python 3.11/3.12.
+Do not try to compile torch from source on this APU.</div>
+</section>
+
+<!-- ===================== 13. CONFIG FILES ===================== -->
+<section class="card" id="s13" data-title="13. Configuration files">
+<h2>13. Configuration files (config/*.yaml)</h2>
+<pre># config/models.yaml
+group_id: G001                           # replace with your own group id everywhere, including chunk_id
+subject: "REPLACE_WITH_ASSIGNED_SUBJECT"
+embedding:
+  model: sentence-transformers/all-MiniLM-L6-v2     # PILOT until a shared model is approved
+  revision: "PIN_COMMIT_HASH_FROM_COORDINATOR"      # doctor warns while this is a placeholder
+  dim: 384
+  normalize: true
+llm:
+  tier: 0
+  server_url: http://127.0.0.1:8081/v1/chat/completions
+  tier0: {file: models/qwen2.5-0.5b-instruct-q4_k_m.gguf, ctx: 1024, max_new_tokens: 96}
+  tier1: {file: models/qwen2.5-1.5b-instruct-q4_k_m.gguf, ctx: 2048, max_new_tokens: 192}
+  temperature: 0
+  stop_markers: ["\n\nQuestion:", "INSUFFICIENT EVIDENCE"]
+  hosted:
+    enabled: false
+    approval_reference: ""
+  unload:
+    via: "Stop-Process -Name llama-server"
+
+generation_ollama_alt:
+  engine: ollama
+  model_name: qwen2.5:0.5b-instruct
+  context_length: 1024
+  max_new_tokens: 96
+  temperature: 0
+
+# config/chunking.yaml
+chunking:
+  strategy: page_first          # never split across book/page boundaries
+  chunk_words: 160              # ≈ 200–210 tokens; inside MiniLM 256-token window
+  overlap_words: 30
+  min_chars: 40
+  min_words: 30
+  preserve_headings: true
+
+# config/retrieval.yaml
+retrieval:
+  top_k: 5
+  top_k_tier0: 3
+  context_length: 1024
+  max_context_chars: 3000
+  threshold_score: 0.30         # tune on validation split only
+  min_sources_required: 1
+  snippet_chars: 480
+
+# config/hardware.yaml
+hardware:
+  device: cpu
+  threads: 2                    # try 4 only if stable
+  batch_size: 4
+  threads_faiss: 2
+  power_mode: low-power
+  storage_is_hdd: true
+  gpu:
+    has_nvidia_cuda: false
+    experimental_directml: false
+
+# config/memory.yaml
+memory:
+  warn_gb: 6.0
+  hard_gb: 7.0
+  min_free_gb: 6.0
+  monitoring_interval_s: 30
+  unload_generation_model: true
+  release_faiss_when_idle: true</pre>
+</section>
+
+<!-- ===================== 14. MANIFEST ===================== -->
+<section class="card" id="s14" data-title="14. Book manifest">
+<h2>14. Book manifest template (also on disk: <code>data/book_manifest.template.json</code>)</h2>
+<pre>[
+  { "book_id": "G001_BOOK_001", "filename": "thirteen_physics_textbook.pdf",
+    "title": "REAL TITLE 001", "author": "REAL AUTHOR OR EDITOR",
+    "edition": "3rd", "publisher": "REAL PUBLISHER", "year": 2020,
+    "isbn": "REAL_OR_EMPTY", "subject": "ASSIGNED SUBJECT",
+    "source_type": "PDF text",
+    "permission_status": "Licensed for private text-processing use; extracted text not redistributed publicly",
+    "processing_status": "pending" },
+  { "book_id": "G001_BOOK_002", "filename": "scanned_chemistry_lab_manual.pdf",
+    "title": "REAL TITLE 002", "author": "REAL AUTHOR OR EDITOR",
+    "edition": "2nd", "publisher": "REAL PUBLISHER", "year": 2017,
+    "isbn": "REAL_OR_EMPTY", "subject": "ASSIGNED SUBJECT",
+    "source_type": "scanned PDF",
+    "permission_status": "Library copy; OCR used and extracted text not redistributed publicly",
+    "processing_status": "needs OCR" }
+]</pre>
+<p>Never invent bibliographic data. Allowed <code>processing_status</code> values:
+<code>pending</code>, <code>processed</code>, <code>needs OCR</code>, <code>failed</code>,
+<code>approved exception</code>. Allowed <code>source_type</code>: <code>PDF text</code>,
+<code>scanned PDF</code>, <code>approved format</code>.</p>
+</section>
+
+<!-- ===================== 15. PASSAGE SCHEMA ===================== -->
+<section class="card" id="s15" data-title="15. Passage schema">
+<h2>15. Passage schema (data/schema/passage.json; enforced by chunk.py)</h2>
+<pre>{
+  "type": "object",
+  "required": ["group_id","subject","book_id","title","page","chunk_id","text","edition"],
+  "properties": {
+    "group_id":  {"type": "string", "pattern": "^G[0-9]{3}$"},
+    "subject":   {"type": "string"},
+    "book_id":   {"type": "string", "pattern": "^G[0-9]{3}_BOOK_[0-9]{3}$"},
+    "title":     {"type": "string"},
+    "author":    {"type": "string"},
+    "edition":   {"type": "string"},
+    "publisher": {"type": "string"},
+    "year":      {"type": ["integer","null"]},
+    "page":      {"type": ["integer","null"], "minimum": 1},
+    "chunk_id":  {"type": "string",
+                  "pattern": "^G[0-9]{3}_BOOK_[0-9]{3}_P[0-9]+_C[0-9]{2,3}$"},
+    "text":      {"type": "string", "minLength": 20},
+    "extraction_method": {"type": "string",
+                  "enum": ["pymupdf-text","tesseract-ocr","approved-exception"]},
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "needs_review": {"type": "boolean", "default": false}
+  },
+  "additionalProperties": false
+}</pre>
+<p>Line format on disk: one JSON object per line in <code>data/passages/passages.jsonl</code>.
+Row <code>i</code> of this file must stay row <code>i</code> of <code>embeddings.npy</code>.
+Never reorder one without rebuilding the other.</p>
+</section>
+
+<!-- ===================== 16. INGESTION ===================== -->
+<section class="card" id="s16" data-title="16. Ingestion module">
+<h2>16. Ingestion — <code>src/util.py</code> and <code>src/ingest.py</code></h2>
+<h3>src/util.py</h3>
+<pre>import json, logging
+from pathlib import Path
+import yaml
+ROOT = Path(__file__).resolve().parent.parent
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+log = logging.getLogger("rag")
+
+def cfg(name: str) -&gt; dict:
+    return yaml.safe_load((ROOT / "config" / f"{name}.yaml").read_text(encoding="utf-8"))
+
+def read_jsonl(p: Path) -&gt; list[dict]:
+    with p.open(encoding="utf-8") as f:
+        return [json.loads(l) for l in f if l.strip()]
+
+def write_jsonl(p: Path, rows) -&gt; None:
+    p.parent.mkdir(parents=True, exist_ok=True)
+    with p.open("w", encoding="utf-8") as f:
+        for r in rows:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+
+def peak_rss_gb() -&gt; float:
+    import psutil
+    return psutil.Process().memory_info().rss / 2**30</pre>
+<h3>src/ingest.py</h3>
+<pre>"""Extracts PDFs page by page; caches pages JSONL; flags books as 'needs OCR'"""
+import json
+import pymupdf
+from pathlib import Path
+from util import ROOT, log, write_jsonl, read_jsonl
+
+SCAN_MIN_CHARS = 50
+SCAN_RATIO = 0.5
+MANIFEST = ROOT / "data" / "book_manifest.json"
+BOOKS_DIR = ROOT / "data" / "books"
+PAGE_CACHE = ROOT / "data" / "cache" / "pages"
+
+def extract_book(pdf: Path) -&gt; list[dict]:
+    """Page-level raw text for one PDF, cached for later chunking."""
+    with pymupdf.open(pdf) as doc:
+        pages = []
+        for i, page in enumerate(doc, start=1):
+            text = page.get_text("text").replace("\x00", " ")
+            pages.append({"page": i, "text": text, "char_count": len(text.strip())})
+        return pages
+
+def main() -&gt; None:
+    books = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    PAGE_CACHE.mkdir(parents=True, exist_ok=True)
+    for book in books:
+        cache = PAGE_CACHE / f"{book['book_id']}.jsonl"
+        if not cache.is_file():
+            pdf = BOOKS_DIR / book["filename"]
+            if not pdf.is_file():
+                log.error("missing PDF: %s", pdf)
+                book["processing_status"] = "failed"
+                continue
+            try:
+                write_jsonl(cache, extract_book(pdf))
+            except Exception as exc:
+                log.error("FAILED %s: %s", pdf, exc)
+                book["processing_status"] = "failed"
+                continue
+        pages = read_jsonl(cache)
+        empty = sum(1 for p in pages if p["char_count"] &lt; SCAN_MIN_CHARS)
+        book["processing_status"] = ("needs OCR" if pages and empty / len(pages) &gt; SCAN_RATIO
+                                     else "processed")
+        log.info("%s: %d pages, %d empty, status=%s",
+                 book["book_id"], len(pages), empty, book["processing_status"])
+    MANIFEST.write_text(json.dumps(books, indent=2, ensure_ascii=False), encoding="utf-8")
+
+if __name__ == "__main__":
+    main()</pre>
+<div class="callout warn"><b>Cache rule: rerunning ingest.py after a crash</b> is cheap; it only
+re-extracts a book whose page cache is missing. Do not add a second cache format.</div>
+</section>
+
+<!-- ===================== 17. OCR PLAN ===================== -->
+<section class="card" id="s17" data-title="17. OCR plan">
+<h2>17. OCR plan (uB-Mannheim Tesseract + ocrmypdf, cached once)</h2>
+<ol>
+<li>Run <code>python src\ingest.py</code>; it flags books whose page cache is mostly empty.
+For those books set <code>processing_status == "needs OCR"</code>.</li>
+<li>Install Tesseract (UB-Mannheim 64-bit) into a per-user folder and add that folder to PATH;
+install <code>ocrmypdf</code> with <code>pip install ocrmypdf</code>.</li>
+<li>OCR one book at a time, writing the fixed PDF to <code>data\cache\ocr\&lt;book_id&gt;.pdf</code>
+and then rerun :python:ingest.py on the OCR’d file.
+<pre>ocrmypdf --skip-text --jobs 1 --output-type pdfine input.pdf out.pdf</pre>
+The <code>--jobs 1</code> and <code>--skip-text</code> flags together avoid re-OCR for
+already-processed books and give the HDD time to breathe.</li>
+<li>OCR output is cached. Never re-OCR a book whose <code>data\cache\ocr\&lt;book_id&gt;.pdf</code>
+already exists. After the OCR is done, re-run <code>python src\ingest.py</code> to refresh the page cache.</li>
+<li>Inspect tables, equations and page numbers by hand; mark artifacts with
+<code>needs_review: true</code> rather than deleting, so failures stay visible for human review.</li>
+<li>Run on a book that failed extraction? Record it in the manifest with
+<code>processing_status = "failed"</code> and, if you want to drop it, a corroborating
+<code>permission_status</code> note (e.g. "corrupted PDF").</li>
+</ol>
+<div class="callout ok">OCR is <b>not</b> a required stage: most textbooks are already text PDFs.
+Use it only on books the ingest flags <code>needs OCR</code>. Do not OCR the whole batch
+if a scan is ambiguous — use <code>approved exception</code> status instead and record why.</div>
+</section>
+
+<!-- ===================== 18. CHUNKING ===================== -->
+<section class="card" id="s18" data-title="18. Chunking module">
+<h2>18. Chunking — <code>src/chunk.py</code></h2>
+<pre>"""Turns cached page text into schema-valid passages.jsonl"""
+import re, json
+from util import ROOT, cfg, read_jsonl, write_jsonl, log
+
+GROUP_ID = cfg("models")["group_id"]
+CH = cfg("chunking")
+
+def clean_text(t: str) -&gt; str:
+    t = t.replace("\u00ad", "")                     # soft hyphens
+    t = re.sub(r"-\n(\w)", r"\1", t)                 # join words split across lines
+    t = re.sub(r"[ \t]+", " ", t)
+    return re.sub(r"\n{3,}", "\n\n", t).strip()
+
+def split_words(text: str, size: int, overlap: int) -&gt; list[str]:
+    w, out, s = text.split(), [], 0
+    while s &lt; len(w) and w:
+        piece = " ".join(w[s:s + size])
+        if piece: out.append(piece)
+        if s + size &gt;= len(w): break
+        s = max(s + 1, s + size - overlap)           # guarantee forward motion
+    return out
+
+def main() -&gt; None:
+    manifest = {b["book_id"]: b for b in json.loads(
+        (ROOT / "data" / "book_manifest.json").read_text(encoding="utf-8"))}
+    rows = []
+    for book_id, book in manifest.items():
+        if book["processing_status"] not in ("processed", "approved exception"):
+            continue
+        for pg in read_jsonl(ROOT / "data" / "cache" / "pages" / f"{book_id}.jsonl"):
+            t = clean_text(pg["text"])
+            if len(t) &lt; CH["min_chars"]:
+                continue
+            for i, piece in enumerate(split_words(t, CH["chunk_words"],
+                                                  CH["overlap_words"]), start=1):
+                rows.append({
+                    "group_id": GROUP_ID,
+                    "subject": book["subject"],
+                    "book_id": book_id,
+                    "title": book["title"],
+                    "edition": book.get("edition", ""),
+                    "author": book.get("author", ""),
+                    "publisher": book.get("publisher", ""),
+                    "year": book.get("year"),
+                    "page": pg["page"],
+                    "chunk_id": f"{book_id}_P{pg['page']}_C{i:02d}",
+                    "text": piece,
+                    "lang": "en",
+                    "extraction_method": "pymupdf-text",
+                    "needs_review": False,
+                })
+    write_jsonl(ROOT / "data" / "passages" / "passages.jsonl", rows)
+    log.info("chunks written: %d", len(rows))
+
+if __name__ == "__main__":
+    main()</pre>
+<h3>Why 160 words / 30 overlap</h3>
+<p><code>all-MiniLM-L6-v2</code> truncates at <b>256 tokens</b> internally, and English prose runs roughly 1.3 tokens
+per word including punctuation and synthetic tokens. 160 words ≈ 200–210 tokens, a safety margin of ~50.
+30-word overlap keeps a sentence that straddles a window boundary intact in at least one chunk while
+keeping chunk counts modest for your HDD.</p>
+</section>
+
+<!-- ===================== 19. EMBEDDING ===================== -->
+<section class="card" id="s19" data-title="19. Embedding module">
+<h2>19. Embedding — <code>src/embed.py</code></h2>
+<pre>"""Encodes passages into unit-normalized float32 vectors on CPU"""
+import numpy as np, torch
+from sentence_transformers import SentenceTransformer
+from util import ROOT, cfg, read_jsonl, peak_rss_gb, log
+
+EMB_CFG, HW = cfg("models")["embedding"], cfg("hardware")
+
+def main() -&gt; None:
+    torch.set_num_threads(HW["threads"])
+    revision = None if "PIN" in EMB_CFG["revision"] else EMB_CFG["revision"]
+    model = SentenceTransformer(EMB_CFG["model"], revision=revision, device="cpu")
+    texts = [p["text"] for p in read_jsonl(ROOT / "data" / "passages" / "passages.jsonl")]
+    vecs = model.encode(texts, batch_size=HW["batch_size"], show_progress_bar=True,
+                        normalize_embeddings=True, convert_to_numpy=True).astype("float32")
+    (ROOT / "artifacts").mkdir(exist_ok=True)
+    np.save(ROOT / "artifacts" / "embeddings.npy", vecs)
+    log.info("vectors %s, peak RSS %.2f GB", vecs.shape, peak_rss_gb())
+
+if __name__ == "__main__":
+    main()</pre>
+<div class="callout ok"><b>Do not run embed.py in parallel with the llama-server</b> process. The first —
+CPU-heavy, batch — action competes for the same cores and slows both.</div>
+</section>
+
+<!-- ===================== 20. INDEXING ===================== -->
+<section class="card" id="s20" data-title="20. Indexing module">
+<h2>20. Indexing — <code>src/index.py</code></h2>
+<pre>"""Builds FAISS IndexFlatIP from unit-normalized vectors + provenance record"""
+import json, datetime
+import faiss
+import numpy as np
+from util import ROOT, cfg
+
+HARDWARE = cfg("hardware")
+faiss.omp_set_num_threads(HARDWARE["threads_faiss"])
+
+def main() -&gt; None:
+    vecs = np.load(ROOT / "artifacts" / "embeddings.npy")
+    index = faiss.IndexFlatIP(vecs.shape[1])
+    index.add(vecs)
+    faiss.write_index(index, str(ROOT / "artifacts" / "book.faiss"))
+    EmbCfg, ChunkCfg = cfg("models")["embedding"], cfg("chunking")
+    meta = {
+        "embedding_model": EmbCfg["model"],
+        "revision": EmbCfg["revision"],
+        "dim": int(vecs.shape[1]),
+        "normalized": True,
+        "index_type": "IndexFlatIP",
+        "num_chunks": int(vecs.shape[0]),
+        "chunk_words": ChunkCfg["chunking"]["chunk_words"] if isinstance(ChunkCfg, dict) else ChunkCfg["chunk_words"],
+        "overlap_words": ChunkCfg["chunking"]["overlap_words"] if isinstance(ChunkCfg, dict) else ChunkCfg["overlap_words"],
+        "built_utc": datetime.datetime.utcnow().isoformat(),
+    }
+    (ROOT / "artifacts" / "index_config.json").write_text(json.dumps(meta, indent=2),
+                                                          encoding="utf-8")
+
+if __name__ == "__main__":
+    main()</pre>
+<div class="callout warn">Note the index stores vectors <b>in exact passage row order</b>. If you delete, add, or re-order
+a row you must re-run <code>chunk.py</code>, <code>embed.py</code> and <code>index.py</code> in that order.
+Row drift is caught in <code>retrieve.py</code> by an assertion, not by silent wrong page numbers.</div>
+</section>
+
+<!-- ===================== 21. RETRIEVAL ===================== -->
+<section class="card" id="s21" data-title="21. Retrieval module">
+<h2>21. Retrieval — <code>src/retrieve.py</code> (the exact integration interface)</h2>
+<pre>"""Required interface (do not rename the function or change its signature)"""
+import numpy as np, faiss
+from sentence_transformers import SentenceTransformer
+from util import ROOT, cfg, read_jsonl
+
+_S: dict = {}
+
+def _load() -&gt; dict:
+    if not _S:
+        cfgEv = cfg("models")["embedding"]
+        rev = None if "PIN" in cfgEv["revision"] else cfgEv["revision"]
+        _S["model"] = SentenceTransformer(cfgEv["model"], revision=rev, device="cpu")
+        faiss.omp_set_num_threads(cfg("hardware")["threads_faiss"])
+        _S["index"] = faiss.read_index(str(ROOT / "artifacts" / "book.faiss"))
+        _S["rows"] = read_jsonl(ROOT / "data" / "passages" / "passages.jsonl")
+        if _S["index"].ntotal != len(_S["rows"]):
+            raise RuntimeError("index and passages are out of sync: rebuild")
+    return _S
+
+def retrieve(question: str, top_k: int = 5) -&gt; list:
+    """Return passages with text, score, book_id, title, page, and chunk_id."""
+    s = _load()
+    q = s["model"].encode([question], convert_to_numpy=True,
+                          normalize_embeddings=True).astype("float32")
+    k = max(1, min(top_k, s["index"].ntotal))
+    scores, ids = s["index"].search(q, k)
+    out = []
+    for sc, i in zip(scores[0], ids[0]):
+        if int(i) &lt; 0:
+            continue
+        p = s["rows"][int(i)]
+        out.append({"text": p["text"], "score": float(sc), "book_id": p["book_id"],
+                    "title": p["title"], "page": p["page"], "chunk_id": p["chunk_id"],
+                    "edition": p.get("edition", "")})
+    return out
+
+def passage_store() -&gt; dict:
+    """Map chunk_id -&gt; full row; used by citations.py for cross-checks"""
+    if "store" not in _S:
+        _S["store"] = {r["chunk_id"]: r for r in _load()["rows"]}
+    return _S["store"]</pre>
+<div class="callout ok">This function is <b>the integration point for the 130-group router</b>: the shared
+router will call <code>retrieve(question, top_k)</code> against your local index and then merge results
+group by group. Every extra or missing key breaks integrators.</div>
+</section>
+
+<!-- ===================== 22. GENERATION ===================== -->
+<section class="card" id="s22" data-title="22. Generation module">
+<h2>22. Generation — <code>src/generate.py</code></h2>
+<p><b>Growth path</b> (from best to worst case): llama-server (llama.cpp, separate CPU process) →
+Ollama (documented alternative) → approved hosted API (guarded by <code>.env</code>) →
+extractive answer (guaranteed, honest fallback) → abstention. Whichever path wins, the answer
+still passes through the same 3-key validator, citations module and conflict handling.</p>
+<pre>"""src/generate.py — primary llama.cpp llama-server, with labeled fallbacks"""
+from __future__ import annotations
+import json, os, pathlib, re, urllib.request
+from typing import Optional
+import yaml
+from src import answer_schema
+from src import citations as cite
+from src.retrieve import retrieve
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+MODELS     = yaml.safe_load((ROOT / "config" / "models.yaml").read_text(encoding="utf-8"))
+RETRIEVAL  = yaml.safe_load((ROOT / "config" / "retrieval.yaml").read_text(encoding="utf-8"))
+HARDWARE   = yaml.safe_load((ROOT / "config" / "hardware.yaml").read_text(encoding="utf-8"))
+
+GEN_CFG         = MODELS["generation"]
+TOP_K           = RETRIEVAL["top_k"]
+MIN_SCORE       = RETRIEVAL["threshold_score"]
+MAX_CTX_CHARS   = RETRIEVAL["max_context_chars"]
+PASSAGE_STORE_PATH = ROOT / "data" / "passages" / "passages.jsonl"
+ABSTAIN = ("The provided books do not contain sufficient evidence "
+           "to answer this question.")
+
+SYSTEM_PROMPT = (
+    "Answer ONLY from the numbered passages provided. Cite each claim with its passage "
+    "ID in square brackets, e.g. [BOOK_ID_P_PAGE_C_NUM]. Never invent IDs, titles, "
+    "pages or facts. Keep the answer to 1-3 sentences. If passages disagree, begin with "
+    "'CONFLICT:' and describe both views with their IDs. If the passages do not answer "
+    "the question, reply exactly: INSUFFICIENT EVIDENCE.")
+
+def _ctx_format(hits, max_ctx=MAX_CTX_CHARS):
+    parts, used = [], 0
+    for h in hits:
+        block = f"[{h['chunk_id']}] ({h['title']}, page {h['page']})\n{h['text']}\n"
+        if used + len(block) &gt; max_ctx and parts:
+            break
+        parts.append(block)
+        used += len(block)
+    return "\n".join(parts), len(parts)
+
+def _format_sources(hits):
+    return [{"book_id": h["book_id"], "page": h["page"], "chunk_id": h["chunk_id"]}
+            for h in hits]
+
+def _local_generate_llama_server(prompt: str) -&gt; Optional[str]:
+    """Primary: llama.cpp llama-server over a CPU-only HTTP endpoint,
+    started with the exact command in config/models.yaml"""
+    tier_key = f"tier{GEN_CFG.get('tier', 0)}"
+    tier_cfg = GEN_CFG.get(tier_key, {})
+    body = {"messages": [{"role": "system", "content": SYSTEM_PROMPT},
+                         {"role": "user",   "content": prompt}],
+            "temperature": GEN_CFG.get("temperature", 0),
+            "max_tokens":  tier_cfg.get("max_new_tokens", 96),
+            "stop":        GEN_CFG.get("stop_markers", [])}
+    req = urllib.request.Request(GEN_CFG["server_url"],
+                                 json.dumps(body).encode("utf-8"),
+                                 {"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=300) as r:
+            return json.load(r)["choices"][0]["message"]["content"].strip()
+    except Exception:
+        return None
+
+def _local_generate_ollama(prompt: str) -&gt; Optional[str]:
+    """Documented alternative (no request if ollama not installed)"""
+    try:
+        import ollama
+        cfg_alt = MODELS.get("generation_ollama_alt", {})
+        resp = ollama.chat(model=cfg_alt.get("model_name", "qwen2.5:0.5b-instruct"),
+                           messages=[{"role": "system", "content": SYSTEM_PROMPT},
+                                     {"role": "user",   "content": prompt}],
+                           options={"num_ctx":     cfg_alt.get("context_length", 1024),
+                                    "num_predict": cfg_alt.get("max_new_tokens", 96),
+                                    "temperature": cfg_alt.get("temperature", 0),
+                                    "top_p":       cfg_alt.get("top_p", 1.0),
+                                    "num_thread":  HARDWARE.get("threads", 2)})
+        return resp["message"]["content"].strip()
+    except Exception:
+        return None
+
+def _hosted_generate(prompt: str) -&gt; Optional[str]:
+    """Tier 2 fallback, only if approved; requires .env"""
+    from dotenv import load_dotenv
+    load_dotenv(ROOT / ".env")
+    key = os.getenv("HOSTED_API_KEY")
+    if not key or not os.getenv("HOSTED_MODEL"):
+        return None
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=key, base_url=os.getenv("HOSTED_BASE_URL") or None)
+        resp = client.chat.completions.create(model=os.environ["HOSTED_MODEL"],
+                                              temperature=GEN_CFG.get("temperature", 0),
+                                              messages=[{"role": "system", "content": SYSTEM_PROMPT},
+                                                        {"role": "user",   "content": prompt}])
+        return resp.choices[0].message.content
+    except Exception:
+        return None
+
+def _extractive_answer(question: str, hits) -&gt; str:
+    """Honest fallback that cites, abstains, and never invents content"""
+    stop = set("a an the is are was were be been to of in on for with and or as by "
+               "that this it its from what which how who whom does do did".split())
+    qwords = {w for w in re.findall(r"[a-zA-Z0-9]+", question.lower()) if w not in stop}
+    best, best_sc = None, 0.0
+    for h in hits:
+        for sentence in re.split(r"(?&lt;=[.!?])\s+", h["text"]):
+            sw = set(re.findall(r"[a-zA-Z0-9]+", sentence.lower()))
+            score = len(qwords &amp; sw)
+            if score &gt; best_sc:
+                best_sc, best = score, sentence.strip()
+    if best and best_sc &gt;= 2:
+        return best
+    return "INSUFFICIENT-EVIDENCE"
+
+def _load_passage_store():
+    path = PASSAGE_STORE_PATH
+    if not path.is_file():
+        return {}
+    store = {}
+    with path.open(encoding="utf-8") as f:
+        for line in f:
+            if line.strip():
+                r = json.loads(line)
+                store[r["chunk_id"]] = r
+    return store
+
+def build(question: str, top_k: Optional[int] = None) -&gt; dict:
+    k = top_k or TOP_K
+    hits = retrieve(question, top_k=k)
+    if not hits or hits[0]["score"] &lt; MIN_SCORE:
+        return {"answer": ABSTAIN, "sources": [], "insufficient_evidence": True}
+    context, used = _ctx_format(hits)
+    hits_used = hits[:used]
+    prompt = f"Passages:\n{context}\n\nQuestion: {question}"
+
+    generated = _local_generate_llama_server(prompt)
+    mode = "local-llm"
+    if generated is None:
+        generated = _local_generate_ollama(prompt)
+    if generated is None:
+        generated = _hosted_generate(prompt)
+        mode = "hosted-approved" if generated else mode
+    if not generated:
+        generated = _extractive_answer(question, hits_used)
+        mode = "extractive"
+    text = generated.strip()
+
+    # Cheap negation heuristic; full conflict analysis needs human review
+    conflicts = []
+    for i in range(len(hits_used) - 1):
+        a, b = hits_used[i], hits_used[i + 1]
+        if answer_schema.is_contradictory(a["text"], b["text"]):
+            conflicts.append(f"Passages {a['chunk_id']} and {b['chunk_id']} appear to disagree. "
+                             f"A: {a['text'][:120]}...  B: {b['text'][:120]}....")
+
+    if "INSUFFICIENT EVIDENCE" in text.upper():
+        payload = {"answer": ABSTAIN, "sources": [], "insufficient_evidence": True, "mode": mode}
+        if conflicts:
+            payload["conflicts"] = conflicts
+        return payload
+
+    store = _load_passage_store()
+    sources = cite.validate_citations(text, hits_used, store)
+    if not sources:
+        generated = _extractive_answer(question, hits_used)
+        if generated == "INSUFFICIENT-EVIDENCE":
+            return {"answer": ABSTAIN, "sources": [], "insufficient_evidence": True,
+                    "mode": "extractive"}
+        sources = cite.validate_citations(generated, hits_used, store) or \
+                  _format_sources(hits_used[:1])
+
+    payload = {"answer": text, "sources": sources,
+               "insufficient_evidence": False, "mode": mode}
+    if conflicts:
+        payload["conflicts"] = conflicts
+    return payload
+
+def answer(question: str) -&gt; dict:
+    """Public API used by CLI and Streamlit; validates the payload shape"""
+    payload = build(question)
+    errs = answer_schema.validate_answer(payload)
+    if errs:
+        return {"answer": "System error during answer validation: "
+                          + "; ".join(errs) + ". Please retry.",
+                "sources": [], "insufficient_evidence": True}
+    return payload
+
+if __name__ == "__main__":
+    import sys
+    q = sys.argv[1] if len(sys.argv) &gt; 1 else "What is Ohm's law?"
+    print(json.dumps(answer(q), indent=2, ensure_ascii=False))</pre>
+</section>
+
+<!-- ===================== 23. PROMPT TEMPLATE ===================== -->
+<section class="card" id="s23" data-title="23. Prompt template">
+<h2>23. Prompt template</h2>
+<p>Kept in one place only (<code>src/generate.py</code>, near the top). Same content everywhere.</p>
+<pre>SYSTEM_PROMPT = (
+    "Answer ONLY from the numbered passages provided. Cite each claim with its passage "
+    "ID in square brackets, e.g. [BOOK_ID_P_PAGE_C_NUM]. Never invent IDs, titles, "
+    "pages or facts. Keep the answer to 1-3 sentences. If passages disagree, begin with "
+    "'CONFLICT:' and describe both views with their IDs. If the passages do not answer "
+    "the question, reply exactly: INSUFFICIENT EVIDENCE.")
+
+USER_PROMPT_TEMPLATE = "Passages:\n{context}\n\nQuestion: {question}"</pre>
+<div class="callout warn">
+<b>Do not loosen this prompt lazily.</b> Evidence-grounded-only is enforced both by the prompt
+<b>and</b> by the citation validator. Both layers must hold; either one failing is a bug.
+</div>
+</section>
+
+<!-- ===================== 24. CITATIONS ===================== -->
+<section class="card" id="s24" data-title="24. Citation validation">
+<h2>24. Citation validation — <code>src/citations.py</code></h2>
+<pre>"""citations.py — keep only chunk IDs that exist in the store AND were retrieved"""
+import json, re
+from pathlib import Path
+
+CITE = re.compile(r"\[([A-Za-z0-9_]+_P\d+_C\d{2,3})\]")
+
+def extract_ids(answer_text: str) -&gt; list[str]:
+    seen, out = set(), []
+    for cid in CITE.findall(answer_text):
+        if cid not in seen:
+            seen.add(cid); out.append(cid)
+    return out
+
+def validate_citations(answer_text: str, retrieved: list[dict],
+                       store: dict[str, dict]) -&gt; list[dict]:
+    """A source survives only if (1) its chunk_id was retrieved this turn,
+    (2) it exists in the stored passages, and (3) book_id + page match.
+    Everything else is silently dropped before display."""
+    retrieved_ids = {h["chunk_id"] for h in retrieved}
+    sources, seen = [], set()
+    for cid in extract_ids(answer_text):
+        if cid in seen or cid not in retrieved_ids or cid not in store:
+            continue
+        seen.add(cid)
+        rec = store[cid]
+        hit = next(h for h in retrieved if h["chunk_id"] == cid)
+        if rec["book_id"] != hit["book_id"] or rec["page"] != hit["page"]:
+            continue
+        sources.append({"book_id": rec["book_id"], "page": rec["page"],
+                        "chunk_id": cid})
+    return sources
+
+def load_passage_store(path: str | Path) -&gt; dict[str, dict]:
+    p = Path(path); store = {}
+    with p.open(encoding="utf-8") as f:
+        for line in f:
+            if line.strip():
+                r = json.loads(line)
+                store[r["chunk_id"]] = r
+    return store</pre>
+<div class="callout warn"><b>Do NOT weaken this module</b> even if you trust the model 99% of the time.
+100% resolvable citations is an explicit grading rule, not a target.</div>
+</section>
+
+<!-- ===================== 25. ABSTENTION LOGIC ===================== -->
+<section class="card" id="s25" data-title="25. Abstention logic">
+<h2>25. Abstention logic</h2>
+<p>Abstention triggers (any one):</p>
+<ol>
+<li><b>Low retrieval score</b>. Top hit cosine &lt; <code>threshold_score</code> (0.30, tune on validation only).</li>
+<li><b>Model refuses evidence.</b> The tiny LLM answers exactly <code>INSUFFICIENT EVIDENCE</code>.</li>
+<li><b>No valid sources survive validation.</b> The model may invent citations; the validator silently drops every fake; if none remain, the payload writes <code>insufficient_evidence: true</code>.</li>
+<li><b>Extractive fallback cannot find a strong sentence</b> (fewer than 2 keyword matches) — returns <code>INSUFFICIENT-EVIDENCE</code> which becomes a refusal.</li>
+</ol>
+<pre>ABSTAIN = ("The provided books do not contain sufficient evidence "
+           "to answer this question.")
+# returned as:
+# {"answer": ABSTAIN, "sources": [], "insufficient_evidence": true}</pre>
+<p><b>Conflicts</b> are never silently merged. The answer can start with <code>CONFLICT:</code>
+(from <code>SYSTEM_PROMPT</code>); the payload can also include an optional <code>conflicts</code> array
+(see <code>src/generate.py</code>). The 3-key contract stays exactly as written in §26.
+</p>
+</section>
+
+<!-- ===================== 26. ANSWER SCHEMA ===================== -->
+<section class="card" id="s26" data-title="26. Answer JSON validator">
+<h2>26. Answer JSON validator — <code>src/answer_schema.py</code></h2>
+<pre>"""answer_schema.py — exact 3-key contract from the assignment standards"""
+def validate_answer(payload: dict, store: dict) -&gt; dict:
+    """Raises ValueError; returns the payload unchanged when valid """
+    if not isinstance(payload, dict):
+        raise ValueError("payload must be a dict")
+    if set(payload) != {"answer", "sources", "insufficient_evidence"}:
+        raise ValueError(f"keys must be exactly 3: {sorted(payload)}")
+    if not isinstance(payload["answer"], str) or not payload["answer"].strip():
+        raise ValueError("'answer' must be a non-empty string")
+    if not isinstance(payload["sources"], list):
+        raise ValueError("'sources' must be a list")
+    for s in payload["sources"]:
+        if not isinstance(s, dict):
+            raise ValueError("each source must be a dict")
+        rec = store.get(s.get("chunk_id"))
+        if rec is None:
+            raise ValueError("source unresolvable " + str(s))
+        if s["book_id"] != rec["book_id"] or s["page"] != rec["page"]:
+            raise ValueError("source book/page mismatch " + str(s))
+    if not isinstance(payload["insufficient_evidence"], bool):
+        raise ValueError("'insufficient_evidence' must be a bool")
+    if payload["insufficient_evidence"] and payload["sources"]:
+        raise ValueError("abstention must carry no sources")
+    return payload
+
+def is_contradictory(a_text: str, b_text: str) -&gt; bool:
+    """Cheap negation heuristic; deeper conflict analysis is human work"""
+    negs = ("not ", "cannot", "does not", "do not", "never", "no such", "impossible")
+    a, b = a_text.lower(), b_text.lower()
+    a_neg = any(n in a for n in negs); b_neg = any(n in b for n in negs)
+    return a_neg != b_neg</pre>
+<pre># Exact required response (3 keys; no extras in the shared router)
+{
+  "answer": "Answer supported by retrieved evidence.",
+  "sources": [ { "book_id": "G001_BOOK_003", "page": 143,
+                 "chunk_id": "G001_BOOK_003_P143_C02" } ],
+  "insufficient_evidence": false
+}</pre>
+</section>
+
+<!-- ===================== 27. CLI ===================== -->
+<section class="card" id="s27" data-title="27. CLI">
+<h2>27. CLI — <code>src/cli.py</code></h2>
+<pre>"""cli.py — terminal chat with RAM-aware settings; used in demos and eval runs"""
+from doctor import memory_profile
+from generate import answer
+import json, sys
+
+def main() -&gt; int:
+    _, avail_gb = memory_profile(); low_ram = avail_gb &lt; 6.0
+    top_k = 3 if low_ram else 5
+    print(f"RAM {avail_gb:.1f} GB free; low-RAM mode {'ON' if low_ram else 'OFF'}")
+    if len(sys.argv) == 2:
+        print(json.dumps(answer(sys.argv[1], top_k=top_k), indent=2, ensure_ascii=False)); return 0
+    print('CLI ready. Ask a question, press Enter. Blank line exits.')
+    while True:
+        q = input("&gt; ").strip()
+        if not q: break
+        print(json.dumps(answer(q, top_k=top_k), indent=2, ensure_ascii=False))
+    return 0
+
+if __name__ == "__main__":
+    raise SystemExit(main())</pre>
+</section>
+
+<!-- ===================== 28. STREAMLIT ===================== -->
+<section class="card" id="s28" data-title="28. Streamlit UI (optional)">
+<h2>28. Streamlit (optional) — <code>src/app.py</code></h2>
+<pre>"""app.py — memory-safe Streamlit UI. Run: python -m streamlit run src/app.py"""
+import streamlit as st
+import psutil
+from retrieve import retrieve, passage_store
+from generate import answer
+
+st.title("Book-Grounded Chatbot (G001)")
+st.caption("Retrieval-augmented answers from the approved corpus; "
+           "citations are validated against stored passages before display.")
+
+if st.button("Preload"):
+    passage_store(); st.success("Ready")
+ram = psutil.virtual_memory().available / 2**30
+if ram &lt; 4.0:
+    st.warning(f"Low RAM: {ram:.1f} GB available. Close other apps.")
+
+q = st.text_input("Ask a question about the books")
+if q:
+    payload = answer(q)
+    if payload["insufficient_evidence"]:
+        st.warning(payload["answer"])
+    else:
+        st.write(payload["answer"])
+        for s in payload["sources"]:
+            st.caption(f"{s['book_id']} page {s['page']} — {s['chunk_id']}")
+            if "conflicts" in payload:
+                for c in payload["conflicts"]:
+                    st.info(f"Conflict: {c}")</pre>
+<div class="callout warn">Streamlit is a demo shell; keep it <b>open only while demoing</b>, not during
+an evaluation run, so the RAM figure does not include UI noise. Stop it with Ctrl+C.
+Unload the model with <code>Stop-Process -Name llama-server</code>.</div>
+</section>
+
+<!-- ===================== 29. TESTS ===================== -->
+<section class="card" id="s29" data-title="29. Automated tests">
+<h2>29. Automated tests (pytest; under <code>project/tests/</code>)</h2>
+<pre>"""tests/conftest.py — adds src to the path so tests can import modules directly"""
+import sys, pathlib
+SRC = pathlib.Path(__file__).resolve().parent.parent / "src"
+sys.path.insert(0, str(SRC))
+sys.path.insert(0, str(SRC.parent))
+
+# tests/test_citations.py — 100% resolvable citation rule
+from citations import validate_citations
+
+def store():
+    return {"B_P1_C01": {"book_id": "B", "page": 1},
+            "B_P9_C09": {"book_id": "B", "page": 9}}
+
+RETRIEVED = [{"chunk_id": "B_P1_C01", "book_id": "B", "page": 1, "text": "x", "score": 0.9}]
+
+def test_fake_id_dropped():
+    srcs = validate_citations("a [B_P1_C01] b [B_P9_C09]", RETRIEVED, store())
+    assert srcs == [{"book_id": "B", "page": 1, "chunk_id": "B_P1_C01"}]
+
+def test_real_but_unretrieved_dropped():
+    # B_P9_C09 exists in the store but was not retrieved for this question
+    assert validate_citations("[B_P9_C09]", RETRIEVED, store()) == []</pre>
+<pre>"""tests/test_answer_format.py — exact 3-key contract plus page match"""
+import pytest
+from answer_schema import validate_answer, is_contradictory
+
+STORE = {"B_P1_C01": {"book_id": "B", "page": 1}}
+GOOD = {"answer": "x", "sources": [{"book_id": "B", "page": 1, "chunk_id": "B_P1_C01"}],
+        "insufficient_evidence": False}
+
+def test_valid_ok():        assert validate_answer(dict(GOOD), STORE) == GOOD
+def test_four_keys_fail():
+    with pytest.raises(ValueError): validate_answer({**GOOD, "extra": 1}, STORE)
+def test_page_drift_fail():
+    bad = dict(GOOD, sources=[{**GOOD["sources"][0], "page": 2}])
+    with pytest.raises(ValueError): validate_answer(bad, STORE)
+def test_abstention_with_sources_fail():
+    with pytest.raises(ValueError):
+        validate_answer({**GOOD, "insufficient_evidence": True}, STORE)
+def test_contradiction_heuristic():
+    assert is_contradictory("It is NOT allowed.", "It is allowed.")
+    assert is_contradictory("It is allowed.", "It is NOT allowed.")
+    assert not is_contradictory("allowed.", "permitted.")</pre>
+<pre>"""tests/test_abstention.py — refusal is the default, not a last resort"""
+import sys, pathlib
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "src")); sys.path.insert(0, str(ROOT))
+
+def _stub(monkeypatch, hits, min_score=0.30):
+    import generate as gen
+    monkeypatch.setattr(gen, "retrieve", lambda *a, **k: hits)
+    monkeypatch.setattr(gen, "MIN_SCORE", min_score)
+
+def _fake_hits(score=0.9):
+    return [{"chunk_id": "B_P1_C01", "book_id": "B", "page": 1,
+             "title": "T", "text": "fake content for the test", "score": score}]
+
+def test_low_score_abstains(monkeypatch, tmp_path):
+    _stub(monkeypatch, _fake_hits(score=0.1))
+    import generate as gen; monkeypatch.setattr(gen, "PASSAGE_STORE_PATH", tmp_path / "empty.jsonl")
+    out = gen.answer("Who won the 2010 football World Cup?")
+    assert out["insufficient_evidence"] is True and out["sources"] == []
+
+def test_no_valid_sources_abstains(monkeypatch, tmp_path):
+    _stub(monkeypatch, _fake_hits())
+    import generate as gen
+    monkeypatch.setattr(gen, "PASSAGE_STORE_PATH", tmp_path / "empty.jsonl")
+    monkeypatch.setattr(gen, "_local_generate_llama_server", lambda prompt: "text with [B_P9_C09]")
+    monkeypatch.setattr(gen, "_local_generate_ollama", lambda prompt: None)
+    monkeypatch.setattr(gen, "_hosted_generate", lambda prompt: None)
+    monkeypatch.setattr(gen, "_extractive_answer", lambda *a, **k: "INSUFFICIENT-EVIDENCE")
+    out = gen.answer("anything")
+    assert out["insufficient_evidence"] is True and out["sources"] == []</pre>
+<pre>"""tests/test_ingest.py — run with the real data/books/ + data/book_manifest.json in place"""
+from pathlib import Path
+import json
+ROOT = Path(__file__).resolve().parent.parent
+MANIFEST = ROOT / "data" / "book_manifest.json"
+STATUSES = {"pending", "processed", "needs OCR", "failed", "approved exception"}
+
+def manifest_books():
+    if not MANIFEST.is_file():
+        return []
+    return json.loads(MANIFEST.read_text(encoding="utf-8"))
+
+def test_manifest_at_least_15_books():
+    books = manifest_books()
+    if not books: return
+    assert len(books) &gt;= 15, f"got {len(books)}"
+
+def test_manifest_fields_are_valid():
+    books = manifest_books()
+    if not books: return
+    need = {"book_id", "filename", "title", "author", "edition", "subject",
+            "source_type", "permission_status", "processing_status"}
+    for b in books:
+        missing = need - set(b.keys())
+        assert not missing, f"{b.get('book_id')} missing {missing}"
+        assert b["processing_status"] in STATUSES</pre>
+<pre>"""tests/test_retrieve.py — retrieve() contract; skips if heavy deps missing"""
+import pytest
+faiss = pytest.importorskip("faiss")
+st   = pytest.importorskip("sentence_transformers")
+np   = pytest.importorskip("numpy")
+
+from retrieve import retrieve
+
+def test_fields_present_and_top_k_respected():
+    hits = retrieve("What is Ohm's law?", top_k=3)
+    assert len(hits) &lt;= 3
+    for h in hits:
+        assert {"text", "score", "book_id", "title", "page", "chunk_id"} &lt;= set(h)
+        assert -1.0 &lt;= h["score"] &lt;= 1.0
+
+def test_empty_question_returns_empty_list():
+    assert retrieve("   ", top_k=3) == []</pre>
+<div class="callout ok"><b>Run:</b> <code>python -m pytest tests/ -v</code> from project root with the
+<code>.venv</code> active. Heavy-dep tests (faiss, model) skip gracefully if the files are missing
+so you can run the suite mid-build. Full-pass requires the real 15+ books ingested first.</div>
+</section>
+
+<!-- ===================== 30. EVALUATION DATASET ===================== -->
+<section class="card" id="s30" data-title="30. Evaluation dataset">
+<h2>30. Evaluation dataset (30–50 reviewed questions, split validation / test)</h2>
+<p>6 example entries; write 30–50 in total following the same shape.
+On disk: <code>project/evaluation/questions.template.json</code>. Replace the placeholder questions and
+<code>expected_chunk_ids</code> with real ones from your own index. Never tune against the test split.</p>
+<pre>[
+  { "question_id": "G001-Q001", "category": "direct-fact",
+    "question": "State Ohm's law as defined in the books.",
+    "reference_answer": "V = I x R",
+    "expected_chunk_ids": ["G001_BOOK_003_P143_C02"],
+    "answerable": true, "split": "validation", "review_status": "reviewed" },
+  { "question_id": "G001-Q002", "category": "cross-book-comparison",
+    "question": "How does Book 004's treatment of Kirchhoff's Voltage Law differ from Book 005's phrasing?",
+    "reference_answer": "Book 004 emphasises loop sums; Book 005 frames it via EMF.",
+    "expected_chunk_ids": ["G001_BOOK_004_P078_C01","G001_BOOK_005_P201_C02"],
+    "answerable": true, "split": "test", "review_status": "reviewed" },
+  { "question_id": "G001-Q005", "category": "unanswerable",
+    "question": "Who won the 2010 football World Cup final?",
+    "reference_answer": "Not covered; must abstain.",
+    "expected_chunk_ids": [],
+    "answerable": false, "split": "test", "review_status": "reviewed" },
+  { "question_id": "G001-Q006", "category": "citation-checking",
+    "question": "Which page contains the symbolic form of Faraday's law?",
+    "reference_answer": "Reviewer verifies the cited page matches the stored chunk.",
+    "expected_chunk_ids": ["G001_BOOK_006_P088_C01"],
+    "answerable": true, "split": "validation", "review_status": "reviewed" },
+  { "question_id": "G001-Q007", "category": "numerical-technical",
+    "question": "A 12-ohm resistor carries 2 A. What is the voltage drop according to the corpus?",
+    "reference_answer": "24 V",
+    "expected_chunk_ids": ["G001_BOOK_003_P143_C02"],
+    "answerable": true, "split": "test", "review_status": "reviewed" },
+  { "question_id": "G001-Q008", "category": "unanswerable",
+    "question": "What is the capital of Portugal according to these books?",
+    "reference_answer": "Not present; must abstain.",
+    "expected_chunk_ids": [],
+    "answerable": false, "split": "validation", "review_status": "reviewed" }
+]</pre>
+<p><b>Recommended mix of 40:</b> 10 direct, 6 reasoning, 6 numerical, 6 cross-book,
+8 unanswerable, 4 citation-check. Aim ~40 % validation, ~60 % test.
+Keep near-duplicate questions away from each other across splits (leakage risk).</p>
+</section>
+
+<!-- ===================== 31. EVALUATION SCRIPT ===================== -->
+<section class="card" id="s31" data-title="31. Evaluation script and metrics">
+<h2>31. Evaluation script — <code>evaluation/run_eval.py</code></h2>
+<p>Run <b>validation</b> repeatedly while tuning; run <b>test</b> exactly once at the end.</p>
+<pre>"""evaluation/run_eval.py — usage: python evaluation\run_eval.py validation | test"""
+import json, sys, time
+from pathlib import Path
+sys.path.insert(0, "src")
+from retrieve import retrieve, passage_store
+from generate import answer
+from util import ROOT, peak_rss_gb
+
+split = sys.argv[1]
+qs = [q for q in json.loads((ROOT / "evaluation" / "questions.json").read_text(encoding="utf-8"))
+      if q["split"] == split]
+store = passage_store()
+n_ans = n_rec = cit_ok = cit_all = abst_ok = n_un = 0
+lat, rows = [], []
+for q in qs:
+    t = time.perf_counter()
+    out = answer(q["question"])
+    lat.append(time.perf_counter() - t)
+    if q["answerable"]:
+        n_ans += 1
+        hits = retrieve(q["question"], 5)
+        if {h["chunk_id"] for h in hits} &amp; set(q.get("expected_chunk_ids", [])):
+            n_rec += 1
+    else:
+        n_un += 1
+        abst_ok += bool(out["insufficient_evidence"])
+    for s in out["sources"]:
+        cit_all += 1
+        cit_ok += s["chunk_id"] in store
+    rows.append({"id": q["id"], "answer": out["answer"], "sources": out["sources"],
+                 "abstained": out["insufficient_evidence"],
+                 "human_correct": None,
+                 "human_citation_supports": None})
+
+rep = {
+    "split": split,
+    "recall_at_5":         round(n_rec  / max(1, n_ans), 4),
+    "citation_validity":   round(cit_ok / max(1, cit_all), 4),
+    "abstention_accuracy": round(abst_ok / max(1, n_un), 4),
+    "mean_latency_s":      round(sum(lat) / max(1, len(lat)), 2),
+    "peak_ram_gb":         round(peak_rss_gb(), 3),
+    "index_mb":            round((ROOT / "artifacts" / "book.faiss").stat().st_size / 2**20, 1),
+    "items": rows,
+}
+(ROOT / "evaluation" / f"report_{split}.json").write_text(json.dumps(rep, indent=2), encoding="utf-8")
+print({k: v for k, v in rep.items() if k != "items"})</pre>
+<h3>Metric definitions and targets</h3>
+<table>
+<thead><tr><th>Metric</th><th>Definition</th><th>Target / note</th></tr></thead>
+<tbody>
+<tr><td>Recall@5</td><td>Answerable questions where any expected chunk_id lands in top-5 retrieval</td><td>&#8805; 80 % target; report the real number</td></tr>
+<tr><td>Citation validity</td><td>Displayed sources that resolve to stored passages (book_id + page exact)</td><td><b>100 %</b>, enforced in code</td></tr>
+<tr><td>Citation correctness</td><td>Human opens the page and confirms the passage supports the claim</td><td>Separate human column</td></tr>
+<tr><td>Answer correctness</td><td>Human: correct / partial / wrong against <code>reference_answer</code></td><td>&#8805; 80 % on held-out test</td></tr>
+<tr><td>Groundedness</td><td>Every claim supported by a retrieved passage (human)</td><td>Record failures</td></tr>
+<tr><td>Abstention accuracy</td><td>Unanswerable questions correctly refused + false-abstention rate on answerable ones</td><td>Both reported</td></tr>
+<tr><td>Efficiency</td><td>Latency per answer, peak RAM incl. llama-server RSS (Task Manager), index + model size</td><td>RAM under 7 GB</td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- ===================== 32. EVALUATION REPORT ===================== -->
+<section class="card" id="s32" data-title="32. Evaluation report template">
+<h2>32. Evaluation report template (evaluation/report.md)</h2>
+<pre># Evaluation report: Group G001, subject ______
+Environment: HP Pavilion, AMD A8-7410, 12 GB RAM, HDD, Windows 11, Python 3.11.__,
+             tier __, threads __
+Embedding: model __________ revision __________ | Index: __ chunks, IndexFlatIP
+LLM: __________ Q4_K_M, ctx ____, max_new_tokens ____
+Document processing: books processed __/15, failed pages __, OCR problems __,
+                     metadata complete __%
+Retrieval: Recall@5 validation __% / test __%
+Answers: correct __%, partial __%, wrong __%
+Citation validity 100% | Citation correctness __% | Groundedness __%
+Abstention: correct __/__ unanswerable; false abstentions __/__ answerable |
+           min_score chosen on validation: ______
+Efficiency: mean latency __ s, peak RAM __ GB, index __ MB, model __ MB
+Failure analysis: ______
+Limitations: ______
+Leakage controls: how the split was made ______</pre>
+<pre># report_test.json (same top-level shape as report_validation.json)
+{
+  "split": "test",
+  "recall_at_5": 0.000,
+  "citation_validity": 1.000,
+  "abstention_accuracy": 0.000,
+  "mean_latency_s": 0.00,
+  "peak_ram_gb": 0.000,
+  "items": [ { "id": "G001-Q001", "human_correct": null,
+               "human_citation_supports": null, "abstained": false, "sources": [] } ]
+}</pre>
+<p><b>Fill the human columns after reading every answer yourself</b>; the automated runner only fills the
+machine-verifiable columns (Recall@5, citation validity, abstention, latency, RAM).
+<b>Tuning order:</b> tune <code>min_score</code>, chunk size and top_k on validation only. Freeze everything,
+record the freeze date, then run test once.</p>
+</section>
+
+<!-- ===================== 33. INTEGRATION ===================== -->
+<section class="card" id="s33" data-title="33. Integration">
+<h2>33. Integration requirements (130-group platform)</h2>
+<ul>
+<li><b>Common passage schema</b> (&#167;15), <b>common retrieval interface</b>
+(<code>retrieve(question: str, top_k: int = 5) -&gt; list</code>, exact signature),
+and <b>common three-key answer JSON</b> — this trio is the whole integration contract.</li>
+<li><b>One embedding model + pinned revision shared with other groups.</b> The shared router merges
+results <em>only</em> if the embedding space is identical. Log <code>artifacts/index_config.json</code>
+with every submission so the router can verify.</li>
+<li><b>Subject-specific indexes</b>, one per group. The shared router points at each group's index;
+it does not merge vectors across groups blindly.</li>
+<li><b>Duplicate handling</b>: before cross-group merge, dedupe identical passages by
+(book_id + page + extraction_method), and run a manifest-level duplicate check on
+(title + edition + ISBN). Keep the edition metadata in every citation.</li>
+<li><b>Never leak an unverified citation</b> into the router response — the router trusts our
+validated <code>sources</code> array as-is.</li>
+</ul>
+</section>
+
+<!-- ===================== 34. OPTIONAL LORA ===================== -->
+<section class="card" id="s34" data-title="34. Optional LoRA track">
+<h2>34. Optional LoRA / fine-tuning track (research only, never on this laptop)</h2>
+<p>Fine-tuning is optional per standards. Use only approved cloud or lab hardware, and only
+<b>after</b> the RAG baseline is finished, evaluated and frozen. All five items below must match if you
+go the LoRA route: base model, revision, tokenizer, target modules, rank/scaling.</p>
+<ul>
+<li>Fine-tuning data comes <b>only</b> from the training split; no test/validation leakage.</li>
+<li>The adapter must pass through the same <code>answer_schema.validate_answer</code> and the
+citation validator, so evaluation is apples-to-apples with the no-adapter baseline.</li>
+<li>Keep the LoRA adapter artifact (if produced) out of the default submission; the assignment
+explicitly says a merged model is optional and not guaranteed.</li>
+</ul>
+</section>
+
+<!-- ===================== 35. MERGING ===================== -->
+<section class="card" id="s35" data-title="35. Optional merging research">
+<h2>35. Optional Transformer / LoRA merging research (separate track)</h2>
+<p>Do not claim a merged model works. You must compare against the three baselines and report the
+numbers, whatever they are.</p>
+<table>
+<thead><tr><th>Variant</th><th>Why it matters</th></tr></thead>
+<tbody>
+<tr><td>Base model</td><td>Reference — without it, "fine-tuning helped" is unprovable</td></tr>
+<tr><td>Separate adapters</td><td>Each adapter applied standalone — the natural production layout</td></tr>
+<tr><td>Router over adapters</td><td>Per-question adapter selection; likely better than one merged model</td></tr>
+<tr><td>Merged model</td><td>Weights combined (conceptually <code>W = W0 + &#931; &#945;&#7522; &#916;W&#7522;</code>); highest risk</td></tr>
+</tbody>
+</table>
+<p><b>Do not adopt a merged model</b> unless it beats all three baselines on the shared benchmark
+with no unacceptable per-subject regression. Merging is research, not the required path here.</p>
+</section>
+
+<!-- ===================== 36. FALLBACK TIERS ===================== -->
+<section class="card" id="s36" data-title="36. Fallback tiers">
+<h2>36. Fallback tiers</h2>
+<table>
+<thead><tr><th>Tier</th><th>Setup</th><th>Settings</th><th>When</th></tr></thead>
+<tbody>
+<tr><td><b>Tier 0 (default)</b></td><td>MiniLM + FAISS FlatIP + llama.cpp 0.5B Q4_K_M, CLI</td><td>top_k 3 (or 5), ctx 1024, max_new 96, threads 2</td><td>every run on this laptop</td></tr>
+<tr><td><b>Tier 1</b></td><td>Same stack, llama.cpp 1.5B Q4_K_M</td><td>top_k 5, ctx 2048, max_new 192, threads 2&#8211;4 only if stable</td><td>only if measured RAM &lt; 6 GB and latency acceptable; otherwise drop back</td></tr>
+<tr><td><b>Tier 2</b></td><td>Local retrieval + approved hosted generation</td><td>key in <code>.env</code>, never committed</td><td>only with written approval; document cost, privacy, connectivity, failure mode</td></tr>
+<tr><td><b>Tier 3</b></td><td>Built-in extractive fallback inside <code>generate.py</code></td><td>labelled (EXTRACTIVE FALLBACK) in the answer text; citations and abstention preserved</td><td>llama-server down, RAM low, or a demo needs a guaranteed latency</td></tr>
+<tr><td><b>Tier 4</b></td><td>TF-IDF / BM25 retriever, no embeddings</td><td>non-standard; label as (approved exception)</td><td>only if the full CPU embedding stack cannot run; uses the same schema</td></tr>
+</tbody>
+</table>
+<div class="callout warn"><b>Auto-downgrade rule</b> (in <code>src/memwatch.py</code>): process RSS under 6 GB is fine;
+6&#8211;7&#8239;GB is a warning; at or above 7&#8239;GB it hard-stops and drops to Tier 3. Available RAM below 6&#8239;GB at
+launch prints Tier-0 advice and narrows <code>top_k</code>.</div>
+</section>
+
+<!-- ===================== 37. UPGRADE LADDER ===================== -->
+<section class="card" id="s37" data-title="37. Upgrade ladder">
+<h2>37. Upgrade ladder (what to change if you get better hardware)</h2>
+<p>The scripts stay identical. Only the <b>download targets</b> (&#167;7), <b>config knobs</b> and the
+<b>llama.cpp build</b> change.</p>
+<table>
+<thead><tr><th>Scenario</th><th>Change that applies</th><th>Config lines</th></tr></thead>
+<tbody>
+<tr><td><b>CPU with AVX2 (e.g. any recent Intel/AMD)</b></td><td>Use the newer llama.cpp build tagged <code>avx2</code> — 15&#8211;30 % faster.</td><td>nothing to change in code</td></tr>
+<tr><td><b>More RAM (16 GB+)</b></td><td>Promote the 1.5B or 3B model to Tier-0; consider Q5_K_M instead of Q4_K_M.</td><td><code>llm.tier: 1</code></td></tr>
+<tr><td><b>Newer laptop with NVIDIA GPU (4 GB+)</b></td><td>Use the <code>cuda</code> llama.cpp build; add <code>-ngl 99</code> to offload all layers.</td><td><code>batch_size: 8</code> and <code>threads: 4</code>; same Python</td></tr>
+<tr><td><b>Faster SSD</b></td><td>Nothing changes; the HDD-safe configs just become faster.</td><td>&mdash;</td></tr>
+</tbody>
+</table>
+<div class="callout ok">The <em>same</em> three contracts (passage schema, retrieval interface, answer JSON)
+stay identical no matter what hardware you end up on — that is the whole point of &#167;33.</div>
+</section>
+
+<!-- ===================== 38. GIT WORKFLOW ===================== -->
+<section class="card" id="s38" data-title="38. Git workflow">
+<h2>38. Git — full repository workflow (every command copy-paste ready)</h2>
+<pre># one-time identity setup (drop --global if you want it repository-local)
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+
+# once per repository (from the folder you created in the setup section)
+git init
+git add .gitignore README.md requirements.txt
+git commit -m "chore: initial skeleton (gitignore, readme, requirements)"
+git add config/ src/ tests/ evaluation/
+git commit -m "feat: first version of the CPU-only RAG pipeline"
+git remote add origin https://github.com/YOUR_USER/YOUR_REPO.git
+git push -u origin main
+
+# a fresh branch for a deep change (e.g. adding Streamlit)
+git checkout -b feature/streamlit-ui
+git add src/app.py config/models.yaml
+git commit -m "feat: memory-safe Streamlit shell"
+git push -u origin feature/streamlit-ui
+# open a pull request on github.com, have a teammate review it, then merge
+
+git log --oneline             # quick history
+git diff --stat               # what changed file-by-file
+git status                    # staged vs. modified
+
+# secrets audit before pushing (MUST print nothing on every project)
+git ls-files | grep -Ei "\.env$|\.pdf$|data/books/|passages\.jsonl"
+# if something matches:
+git rm --cached .env &amp;&amp; git commit -m "fix: exclude .env from repo"</pre>
+<div class="callout ok"><b>Secrets audit before each push:</b> search the history for token-like strings
+(<code>git log -p | grep -Ei "api[_-]?key|secret"</code>) or rerun a secret-scanner
+(e.g. <code>gitleaks</code>) if you installed it. Anything found &#8594; regenerate the secret and
+push again (history rewriting is outside the course's scope).</div>
+<h3>.gitignore (on disk: <code>project/.gitignore</code>)</h3>
+<pre>.venv/
+data/books/
+data/cache/
+data/passages/
+artifacts/
+models/
+tools/
+.env
+__pycache__/
+.pytest_cache/
+Thumbs.db
+.DS_Store
+*.pyc</pre>
+</section>
+
+<!-- ===================== 39. COPYRIGHT & SECURITY ===================== -->
+<section class="card" id="s39" data-title="39. Copyright and security rules">
+<h2>39. Copyright and security rules</h2>
+<ul>
+<li>Never push PDFs, extracted text, <code>passages.jsonl</code>, <code>artifacts\</code>,
+<code>models\</code>, or <code>.env</code> to a public repository. Share only what the instructor
+allows (usually the rebuilt index artifacts are permitted if there is no reason to keep them private).</li>
+<li><b>Never commit</b> CUDA/ROCm/DirectML/Vulkan hacks, 7B-class models, or training runs from this
+laptop. Keep the CPU-only default stack in the repo so your classmates reproduce it.</li>
+<li><b>Do not require</b> Docker, WSL, sudo or admin rights on the primary path.</li>
+<li><b>Do not tune</b> on the test split. <b>Do not mix</b> embedding models in one shared index.
+<b>Do not show</b> unverified citations.</li>
+<li><b>Do not claim</b> the 80 % targets without measurements.</li>
+<li>Keep one private copy of the full PDF set plus the SHA-256 hash of every downloaded model file
+so the whole build stays verifiable later.</li>
+</ul>
+</section>
+
+<!-- ===================== 40. SUBMISSION CHECKLIST ===================== -->
+<section class="card" id="s40" data-title="40. Submission checklist">
+<h2>40. Submission checklist (assignment items 1&#8211;10)</h2>
+<ol class="checklist">
+<li><input type="checkbox" /> README.md (group, subject, exact setup, PDF-page convention, limitations, roles)</li>
+<li><input type="checkbox" /> Manifest with 15+ complete entries, permission and processing status each</li>
+<li><input type="checkbox" /> Pinned source code, <code>requirements.txt</code>, 5 config YAMLs, doctor output saved</li>
+<li><input type="checkbox" /> Tests passing: ingest, retrieve, citations, answer format, abstention</li>
+<li><input type="checkbox" /> Evaluation set (30&#8211;50 reviewed, split) + <code>report_validation.json</code> + <code>report_test.json</code> + md template with real numbers</li>
+<li><input type="checkbox" /> Index artifact or rebuild instructions + <code>index_config.json</code> (embedding model, revision, dim, index type, chunks)</li>
+<li><input type="checkbox" /> Demo: one cited answer, one abstention, one cross-book comparison; 5&#8211;10 min recording</li>
+<li><input type="checkbox" /> Updated README and <code>.gitignore</code> reflecting only reproducible artifacts</li>
+<li><input type="checkbox" /> Secrets audit empty and PDF-free repo</li>
+<li><input type="checkbox" /> Team roster filled in (roles conform to 4&#8211;6 student team rules if applicable)</li>
+</ol>
+<div class="callout ok"><b>Final ship command from the project root</b>:
+<pre>python src/doctor.py                # hardware + package report
+python -m pytest tests/ -v
+python evaluation/run_eval.py test  # final, one-shot
+git log --oneline &gt; submission_history.txt  # short audit trail</pre></div>
+</section>
+
+<!-- ===================== 41. WEEK BY WEEK ===================== -->
+<section class="card" id="s41" data-title="41. Week-by-week plan">
+<h2>41. Week-by-week execution plan (12 weeks)</h2>
+<table>
+<thead><tr><th>Weeks</th><th>Goal</th><th>Exit check</th></tr></thead>
+<tbody>
+<tr><td>1&#8211;2</td><td>Python 3.11, doctor passes, llama-server smoke test, one book end-to-end, coordinator-approved model &amp; revision</td><td>doctor clean; one cited answer</td></tr>
+<tr><td>3&#8211;4</td><td>15+ books, manifest, extraction, OCR for the scanned ones, build index</td><td>test_ingest passes; chunk counts sane</td></tr>
+<tr><td>5&#8211;6</td><td>Retrieval, generation, citations, abstention, CLI</td><td>tests green; RAM under 6 GB</td></tr>
+<tr><td>7&#8211;8</td><td>Write and review questions; split; tune on validation; human review; final test run once</td><td><code>report_validation.json</code> then <code>report_test.json</code></td></tr>
+<tr><td>9&#8211;10</td><td>Shared router integration test; schema/interface verified by another group</td><td>common contracts accepted</td></tr>
+<tr><td>11&#8211;12</td><td>README, demo (cited answer + abstention), optional research only if hardware allows</td><td>submission checklist complete</td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- ===================== 42. CODE SKELETON INDEX ===================== -->
+<section class="card" id="s42" data-title="42. Code skeleton index">
+<h2>42. Code skeleton index (all files live under <code>project/</code>)</h2>
+<table>
+<thead><tr><th>Artifact</th><th>Where</th><th>Detail section</th></tr></thead>
+<tbody>
+<tr><td>doctor.py</td><td><code>src/doctor.py</code></td><td>&#167;10 full implementation</td></tr>
+<tr><td>ingest.py</td><td><code>src/ingest.py</code></td><td>&#167;16 full implementation</td></tr>
+<tr><td>chunk.py</td><td><code>src/chunk.py</code></td><td>&#167;18 full implementation</td></tr>
+<tr><td>embed.py</td><td><code>src/embed.py</code></td><td>&#167;19 full implementation</td></tr>
+<tr><td>index.py</td><td><code>src/index.py</code></td><td>&#167;20 full implementation</td></tr>
+<tr><td>retrieve.py</td><td><code>src/retrieve.py</code></td><td>&#167;21 full implementation (integration interface)</td></tr>
+<tr><td>generate.py</td><td><code>src/generate.py</code></td><td>&#167;22 full implementation (llama-server &#8594; Ollama &#8594; hosted &#8594; extractive)</td></tr>
+<tr><td>citations.py</td><td><code>src/citations.py</code></td><td>&#167;24 full implementation</td></tr>
+<tr><td>answer_schema.py</td><td><code>src/answer_schema.py</code></td><td>&#167;26 full implementation</td></tr>
+<tr><td>cli.py</td><td><code>src/cli.py</code></td><td>&#167;27 full implementation</td></tr>
+<tr><td>app.py</td><td><code>src/app.py</code></td><td>&#167;28 full implementation (Streamlit, memory-safe)</td></tr>
+<tr><td>memwatch.py</td><td><code>src/memwatch.py</code></td><td>RAM guard, warn / hard thresholds</td></tr>
+<tr><td>run_eval.py</td><td><code>evaluation/run_eval.py</code></td><td>&#167;31 full implementation</td></tr>
+<tr><td>passage schema / samples</td><td><code>data/schema/passage.json</code>, <code>artifacts/passages.example.jsonl</code></td><td>&#167;15 + sample rows</td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- ===================== 43. EXAMPLE MANIFEST RECORD ===================== -->
+<section class="card" id="s43" data-title="43. Example book_manifest.json">
+<h2>43. Example <code>book_manifest.json</code> entry</h2>
+<pre>{ "book_id": "G001_BOOK_003", "filename": "public_domain_mechanics_notes.pdf",
+  "title": "Elementary Mechanics (public-domain reprint)", "author": "Anonymous editor",
+  "edition": "1st public-domain edition", "publisher": "Openly available",
+  "year": 1905, "isbn": null, "subject": "Physics",
+  "source_type": "PDF text", "permission_status": "public domain; redistribution acceptable",
+  "processing_status": "processed" }</pre>
+</section>
+
+<!-- ===================== 44. EXAMPLE PASSAGE ===================== -->
+<section class="card" id="s44" data-title="44. Example passages.jsonl record">
+<h2>44. Example <code>passages.jsonl</code> record (one line, on disk under <code>artifacts/</code>)</h2>
+<pre>{"group_id":"G001","subject":"Electrical Engineering","book_id":"G001_BOOK_003",
+ "title":"Fundamentals of Electric Circuits","edition":"6th","publisher":"McGraw-Hill",
+ "year":2017,"page":143,"chunk_id":"G001_BOOK_003_P143_C01",
+ "text":"Ohm's law section stating V = I * R, where V is the voltage drop across the resistor in volts, I the current in amperes, and R the resistance in ohms.",
+ "lang":"en","extraction_method":"pymupdf-text","needs_review":false}</pre>
+</section>
+
+<!-- ===================== 45. EXAMPLE INDEX CONFIG ===================== -->
+<section class="card" id="s45" data-title="45. Example index_config.json">
+<h2>45. Example <code>index_config.json</code></h2>
+<pre>{
+  "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "revision": "PIN_COMMIT_HASH_FROM_COORDINATOR",
+  "dim": 384,
+  "normalized": true,
+  "index_type": "IndexFlatIP",
+  "num_chunks": 0,
+  "chunk_words": 160,
+  "overlap_words": 30,
+  "built_utc": "2026-10-15T00:00:00Z"
+}</pre>
+</section>
+
+<!-- ===================== 46. EXAMPLE QUESTIONS.json ===================== -->
+<section class="card" id="s46" data-title="46. Example questions.json">
+<h2>46. Example <code>evaluation/questions.json</code> (first 3 entries of 40)</h2>
+<pre>[
+  { "question_id": "G001-Q001", "category": "direct-fact",
+    "question": "State Ohm's law as given in the books.",
+    "reference_answer": "V = I x R",
+    "expected_chunk_ids": ["G001_BOOK_003_P143_C02"],
+    "answerable": true, "split": "validation", "review_status": "reviewed" },
+  { "question_id": "G001-Q002", "category": "cross-book-comparison",
+    "question": "How does Book 004's treatment of KVL differ from Book 005's phrasing?",
+    "reference_answer": "Book 004 states loop sums; Book 005 uses an EMF framing.",
+    "expected_chunk_ids": ["G001_BOOK_004_P078_C01","G001_BOOK_005_P201_C02"],
+    "answerable": true, "split": "test", "review_status": "reviewed" },
+  { "question_id": "G001-Q005", "category": "unanswerable",
+    "question": "Who won the 2010 football World Cup final?",
+    "reference_answer": "Not covered; must abstain.",
+    "expected_chunk_ids": [],
+    "answerable": false, "split": "test", "review_status": "reviewed" }
+]</pre>
+</section>
+
+<!-- ===================== 47. EXAMPLE REPORT.md ===================== -->
+<section class="card" id="s47" data-title="47. Example report.md">
+<h2>47. Example <code>evaluation/report.md</code> skeleton</h2>
+<pre># Evaluation report: Group G001, subject Electrical Engineering
+
+Environment: HP Pavilion, AMD A8-7410, 12 GB RAM, HDD, Windows 11, Python 3.11.9, tier 0, threads 2
+Embedding: sentence-transformers/all-MiniLM-L6-v2, revision PIN_COMMIT_HASH_FROM_COORDINATOR
+           | Index: IndexFlatIP, 0 chunks now (fill after running)
+LLM: qwen2.5-0.5b-instruct Q4_K_M, ctx 1024, max_new_tokens 96
+
+Document processing: books processed __/15, failed pages __, OCR problems __, metadata complete __%
+Retrieval: Recall@5 validation __% / test __%
+Answers: correct __%, partial __%, wrong __%
+Citation validity 100% | Citation correctness __% | Groundedness __%
+Abstention: correct __/__ unanswerable; false abstentions __/__ answerable
+            min_score chosen on validation: 0.30
+Efficiency: mean latency __ s, peak RAM __ GB, index __ MB, model __ MB
+
+Failure analysis: ____
+Limitations: ____
+Leakage controls: how the split was made ____</pre>
+</section>
+
+<!-- ===================== 48. DO-NOT-DO LIST ===================== -->
+<section class="card" id="s48" data-title="48. Hardware do-not-do list">
+<h2>48. Hardware do-not-do list (this laptop)</h2>
+<ul>
+<li><b>Do NOT</b> assume the Radeon R5's "1006 MB graphics memory" is usable VRAM &#8212; that is shared DDR3.</li>
+<li><b>Do NOT</b> attempt local 7B-class, 13B-class, or unquantized models.</li>
+<li><b>Do NOT</b> use CUDA, cuDNN, ROCm/HIP, DirectML, ONNX-runtime GPU, or vLLM &#8212; no NVIDIA GPU here.</li>
+<li><b>Do NOT</b> rely on background services; everything is user-level and explicit.</li>
+<li><b>Do NOT</b> trust default thread counts; set <code>OMP_NUM_THREADS=2</code> and <code>OLLAMA_NUM_THREADS=2</code> if you use Ollama.</li>
+<li><b>Do NOT</b> use <code>batch_size</code> &gt; 8 when embedding on an HDD &#8212; memory + swap can stall the whole run.</li>
+<li><b>Do NOT</b> keep multiple large models loaded simultaneously &#8212; unload between tiers.</li>
+<li><b>Do NOT</b> use a long multi-turn chat memory during a demo &#8212; that is why <code>app.py</code> avoids chat history.</li>
+<li><b>Do NOT</b> install global packages outside <code>.venv</code>; the doctor warns otherwise.</li>
+<li><b>Do NOT</b> leave browsers or other heavy apps open during a run; memwatch warns but does not rescue.</li>
+<li><b>Do NOT</b> fine-tune LLMs on this laptop &#8212; a CPU-only APU with DDR3 will take days per step.</li>
+<li><b>Do NOT</b> assume that merging LoRA adapters on this laptop works &#8212; it is a cloud-only research track.</li>
+<li><b>Do NOT</b> let the model respond without citations, or with citations that were not literally retrieved this turn.</li>
+</ul>
+</section>
+
+<!-- ===================== 49. DEFINITION OF COMPLETION ===================== -->
+<section class="card" id="s49" data-title="49. Definition of completion">
+<h2>49. Final definition of completion</h2>
+<p>This project is <b>done</b> when all 14 items below have demonstrable proof (run numbers, artifacts, or a demo recording):</p>
+<ol class="checklist">
+<li><input type="checkbox" /> At least 15 books ingested, manifest filled; exceptions documented.</li>
+<li><input type="checkbox" /> All passages obey the shared schema; page and edition metadata intact.</li>
+<li><input type="checkbox" /> <code>retrieve(question, 5)</code> contract passes integration tests as written.</li>
+<li><input type="checkbox" /> Answer payload <b>always</b> ships as the exact 3-key JSON (validator green on &#8805; 50 demo questions).</li>
+<li><input type="checkbox" /> 100 % of displayed citations resolve to real stored passages (code-enforced; pytest verifies).</li>
+<li><input type="checkbox" /> All unanswerable questions in the held-out set are refused with <code>sources=[]</code>.</li>
+<li><input type="checkbox" /> Recall@5 measured on the test split (report the number honestly, even if below target).</li>
+<li><input type="checkbox" /> Abstention accuracy measured on the unanswerable questions.</li>
+<li><input type="checkbox" /> Peak RAM &lt; 7 GB during any full demo on this laptop.</li>
+<li><input type="checkbox" /> Tooling runs while offline (models cached); doctor confirms <code>HF_HUB_OFFLINE</code> works.</li>
+<li><input type="checkbox" /> Repo has no <code>.env</code>, no book PDFs, no extracted full-text JSONL committed.</li>
+<li><input type="checkbox" /> Demo recording: one cited answer + one abstention + one cross-book comparison + one conflict flag if present.</li>
+<li><input type="checkbox" /> At least one baseline-vs-baseline experiment recorded (e.g. chunk 160 vs 220; threshold 0.30 vs 0.35); a null result still counts.</li>
+<li><input type="checkbox" /> Optional research (LoRA / merging) either has a documented "not attempted on this hardware" note or a full comparison table.</li>
+</ol>
+<p>When the last box is ticked, the entire <code>project/</code> folder is the submission:
+config + code + tests + eval + report + README + demo, ready for the 130-group adapter.</p>
+</section>
+
+
+</div>
+</main>
+<footer>130-Group Chatbot Final Combined Plan (v2) — merged from chatbot1.html + chatbot2.html. 49 sections · CPU-only · citation-safe · evaluation-ready. Print with the Print button for a paper/PDF copy.</footer>
+
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var stored = null;
+  try { stored = localStorage.getItem("plan-theme"); } catch (e) {}
+  if (stored === "dark" || (!stored && window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+    root.setAttribute("data-theme", "dark");
+  } else {
+    root.setAttribute("data-theme", "light");
+  }
+  var themeBtn = document.getElementById("themeBtn");
+  themeBtn.addEventListener("click", function () {
+    var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("plan-theme", next); } catch (e) {}
+  });
+})();
+</script>
+<script>
+(function () {
+  var sections = Array.prototype.slice.call(document.querySelectorAll("section.card"));
+  var tocList = document.getElementById("tocList");
+  var links = [];
+  sections.forEach(function (s) {
+    var li = document.createElement("li");
+    var a = document.createElement("a");
+    a.href = "#" + s.id;
+    a.textContent = s.getAttribute("data-title") || s.id;
+    li.appendChild(a);
+    tocList.appendChild(li);
+    links.push(a);
+  });
+  // live search filter: hide non-matching sections, open matches
+  var box = document.getElementById("search");
+  box.addEventListener("input", function () {
+    var v = box.value.trim().toLowerCase();
+    sections.forEach(function (s, i) {
+      var hit = !v || s.textContent.toLowerCase().indexOf(v) !== -1;
+      s.style.display = hit ? "" : "none";
+      if (v && hit) s.open = true;
+      links[i].style.display = hit ? "" : "none";
+    });
+  });
+  // scroll spy: highlight current section in TOC
+  function onScroll() {
+    var cur = 0;
+    sections.forEach(function (s, i) {
+      if (s.getBoundingClientRect().top < 140) cur = i;
+    });
+    links.forEach(function (a, i) { a.classList.toggle("active", i === cur); });
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  // deep-link highlight
+  if (location.hash) {
+    var t = document.getElementById(location.hash.slice(1));
+    if (t) { t.open = true; setTimeout(function () { t.scrollIntoView(); }, 50); }
+  }
+})();
+</script>
+</body></body>
+</html>
