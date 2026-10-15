@@ -1,0 +1,10 @@
+hardware:
+  device: cpu
+  threads: 2
+  batch_size: 4
+  threads_faiss: 2          # set faiss.omp_set_num_threads at import
+  power_mode: low-power     # AMD A8-7410 is a low-power mobile APU
+  storage_is_hdd: true      # prefer sequential JSONL; avoid many small random reads
+  gpu:
+    has_nvidia_cuda: false  # integrated Radeon R5 must not be counted as AI VRAM
+    experimental_directml: false  # do NOT use as primary path
