@@ -1,0 +1,16 @@
+chunking:
+  strategy: page_first          # never split across book/page boundaries
+  # NOTE: all-MiniLM-L6-v2 truncates at 256 tokens; 160 words ~ ~200-210 tokens,
+  # so 160/30 keeps every chunk fully inside the model's context window.
+  chunk_words: 160
+  overlap_words: 30
+  min_chars: 40
+  min_words: 30
+  preserve_headings: true       # keep heading text attached to the section
+  keep_equations: true          # extract lines even if equation glyphs are garbled
+  keep_tables_as_text: true     # naive extraction; flagged for manual review
+  section_heading_prefixes:
+    - "Chapter"
+    - "Section"
+    - "Article"
+    - "Appendix"
