@@ -1,0 +1,23 @@
+# Never commit source book PDFs or extracted text (copyright)
+data/books/
+*.pdf
+artifacts/fulltext/
+
+# Never commit secrets
+.env
+
+# Heavy or generated artifacts that exceed normal repo budgets
+artifacts/
+*.gguf
+models/
+index/
+
+# Python noise
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# OS noise
+Thumbs.db
+.DS_Store
