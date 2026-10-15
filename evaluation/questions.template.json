@@ -1,0 +1,152 @@
+[
+  {
+    "question_id": "G014-Q001",
+    "category": "direct-fact",
+    "question": "State Ohm's law as defined in the books.",
+    "reference_answer": "V = I x R (voltage equals current times resistance)",
+    "expected_chunk_ids": ["G014_BOOK_003_P143_C02"],
+    "answerable": true,
+    "split": "validation",
+    "review_status": "reviewed"
+  },
+  {
+    "question_id": "G014-Q002",
+    "category": "reasoning",
+    "question": "Using the definitions in these books, explain why a voltage source would drive net current through a resistor in series with an inductor. Use only book evidence.",
+    "reference_answer": "Series components share the same current; by Ohm's law the resistor drop is proportional to current; by the inductor relation the voltage across L depends on dI/dt.",
+    "expected_chunk_ids": ["G014_BOOK_005_P212_C01", "G014_BOOK_003_P631_C03"],
+    "answerable": true,
+    "split": "test",
+    "review_status": "reviewed"
+  },
+  {
+    "question_id": "G014-Q003",
+    "category": "numerical-technical",
+    "question": "A resistor of 12 ohm carries 2 A. What is the voltage drop according to the book's formula?",
+    "reference_answer": "24 V",
+    "expected_chunk_ids": ["G014_BOOK_003_P143_C02"],
+    "answerable": true,
+    "split": "test",
+    "review_status": "reviewed"
+  },
+  {
+    "question_id": "G014-Q004",
+    "category": "cross-book-comparison",
+    "question": "How does Book 004's treatment of Kirchhoff's Voltage Law differ from Book 005's phrasing?",
+    "reference_answer": "Book 004 emphasises the loop sum of voltage drops; Book 005 describes it in terms of electromagnetic induction.",
+    "expected_chunk_ids": ["G014_BOOK_004_P078_C01", "G014_BOOK_005_P201_C02"],
+    "answerable": true,
+    "split": "test",
+    "review_status": "reviewed"
+  },
+  {
+    "question_id": "G014-Q005",
+    "category": "unanswerable",
+    "question": "Who won the 2010 football World Cup final?",
+    "reference_answer": "Not covered by these books; the chatbot must abstain.",
+    "expected_chunk_ids": [],
+    "answerable": false,
+    "split": "test",
+    "review_status": "reviewed"
+  },
+  {
+    "question_id": "G014-Q006",
+    "category": "citation-checking",
+    "question": "Which page contains the symbolic form of Faraday's law of induction in this corpus, and does the model cite it correctly?",
+    "reference_answer": "Reviewer verifies cited page matches the stored chunk for the answer text.",
+    "expected_chunk_ids": ["G014_BOOK_006_P088_C01"],
+    "answerable": true,
+    "split": "validation",
+    "review_status": "reviewed"
+  },
+  {
+    "question_id": "G014-Q007",
+    "category": "direct-fact",
+    "question": "What does the assigned corpus say about the temperature dependence of resistance in metals?",
+    "reference_answer": "Resistance of metals increases with temperature (Book 003 chapter 2).",
+    "expected_chunk_ids": ["G014_BOOK_003_P160_C01"],
+    "answerable": true,
+    "split": "test",
+    "review_status": "reviewed"
+  },
+  {
+    "question_id": "G014-Q008",
+    "category": "unanswerable",
+    "question": "What is the capital of Portugal according to these books?",
+    "reference_answer": "Not present in the electrical engineering books; must abstain.",
+    "expected_chunk_ids": [],
+    "answerable": false,
+    "split": "validation",
+    "review_status": "reviewed"
+  },
+  {
+    "question_id": "G014-Q009",
+    "category": "reasoning",
+    "question": "From the corpus, explain how a transformer achieves step-up of AC voltage.",
+    "reference_answer": "By Faraday's law the secondary voltage ratio equals the turns ratio times the primary (Book 006 chapter 5).",
+    "expected_chunk_ids": ["G014_BOOK_006_P195_C03"],
+    "answerable": true,
+    "split": "validation",
+    "review_status": "reviewed"
+  },
+  {
+    "question_id": "G014-Q010",
+    "category": "numerical-technical",
+    "question": "Using values given in the corpus, compute the power dissipated in a 5-ohm resistor passing 0.5 A.",
+    "reference_answer": "1.25 W",
+    "expected_chunk_ids": ["G014_BOOK_003_P147_C01"],
+    "answerable": true,
+    "split": "validation",
+    "review_status": "reviewed"
+  },
+  {
+    "question_id": "G014-Q011",
+    "category": "cross-book-comparison",
+    "question": "Do Book 002 and Book 003 agree on the definition of capacitance, and does the model report it accurately?",
+    "reference_answer": "Both define C = Q/V; model should reflect this consistently.",
+    "expected_chunk_ids": ["G014_BOOK_002_P118_C02", "G014_BOOK_003_P240_C01"],
+    "answerable": true,
+    "split": "test",
+    "review_status": "reviewed"
+  },
+  {
+    "question_id": "G014-Q012",
+    "category": "unanswerable",
+    "question": "What is the current fastest CPU manufactured by the vendor in Chapter 7 of the assigned corpus?",
+    "reference_answer": "Not present; must abstain.",
+    "expected_chunk_ids": [],
+    "answerable": false,
+    "split": "test",
+    "review_status": "reviewed"
+  },
+  {
+    "question_id": "G014-Q013",
+    "category": "direct-fact",
+    "question": "Define Kirchhoff's Current Law as in these books.",
+    "reference_answer": "Sum of currents entering a node equals sum of currents leaving.",
+    "expected_chunk_ids": ["G014_BOOK_004_P062_C02"],
+    "answerable": true,
+    "split": "validation",
+    "review_status": "reviewed"
+  },
+  {
+    "question_id": "G014-Q014",
+    "category": "citation-checking",
+    "question": "Cite the page in this corpus where the ideal transformer model is stated; verify citation.",
+    "reference_answer": "Book 006, page 198 chunk 2.",
+    "expected_chunk_ids": ["G014_BOOK_006_P198_C02"],
+    "answerable": true,
+    "split": "test",
+    "review_status": "reviewed"
+  },
+  {
+    "question_id": "G014-Q015",
+    "category": "reasoning",
+    "question": "Why do these books say inductors oppose rapid change of current?",
+    "reference_answer": "Because induced EMF depends on dI/dt (Book 006 chapter 4).",
+    "expected_chunk_ids": ["G014_BOOK_006_P180_C01"],
+    "answerable": true,
+    "split": "test",
+    "review_status": "reviewed"
+  }
+]
