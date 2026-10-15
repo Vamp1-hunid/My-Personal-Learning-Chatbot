@@ -1,10 +1,10 @@
 # HANDOFF — book_rag_chatbot (local repo, desktop copy)
 
 Repo state: **36+ commits, single-file flow-control history, clean working tree.**
-Identity: repo-local `Mulenga Mwamba (Codebuff) <mulenga@local.placeholder>`
+Identity: repo-local `Mulenga Mwamba <mulenga.mwamba.report@gmail.com>`
 → replace before any push: `git config user.email "your-real@email"`
 
-## What is verified in this copy (by Codebuff, no hardware needed)
+## What is verified in this copy (pre-push validation, no hardware needed)
 - All **23 Python files** AST-parse clean (src + tests + evaluation).
 - `evaluation/questions.json`: 40 questions, 19 validation / 21 test, category mix
   10 direct / 6 reasoning / 6 numerical / 6 cross-book / 8 unanswerable / 4 citation-check.
