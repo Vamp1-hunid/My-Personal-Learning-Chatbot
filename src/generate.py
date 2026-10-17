@@ -118,13 +118,18 @@ def _local_generate_ollama(prompt: str) -> Optional[str]:
 
 # --------------------------- hosted generation -------------------- #
 def _hosted_generate(prompt: str) -> Optional[str]:
-    """Approved hosted OPENAI-compatible fallback (Tier 2). Requires .env."""
-    from dotenv import load_dotenv
-    load_dotenv(ROOT / ".env")
-    key = os.getenv("HOSTED_API_KEY")
-    if not key or not os.getenv("HOSTED_MODEL"):
-        return None
+    """Approved hosted OPENAI-compatible fallback (Tier 2). Requires .env.
+
+    This tier is optional and disabled by default, so a missing dotenv/openai
+    install must return None (fall through to the extractive answer) rather
+    than raise and break the whole answer path.
+    """
     try:
+        from dotenv import load_dotenv
+        load_dotenv(ROOT / ".env")
+        key = os.getenv("HOSTED_API_KEY")
+        if not key or not os.getenv("HOSTED_MODEL"):
+            return None
         from openai import OpenAI
         client = OpenAI(api_key=key,
                         base_url=os.getenv("HOSTED_BASE_URL") or None)
@@ -241,9 +246,10 @@ def build(question: str, top_k: Optional[int] = None) -> dict:
     return payload
 
 
-def answer(question: str) -> dict:
+def answer(question: str, top_k: Optional[int] = None) -> dict:
     """Public API used by CLI and Streamlit; validates the payload shape."""
-    payload = build(question)
+
+    payload = build(question, top_k=top_k)
     errs = answer_schema.validate_answer(payload)
     if errs:
         # Last-resort honest fallback — never show an invalid payload.

@@ -1,4 +1,4 @@
-# Book-Grounded RAG Chatbot — Group G001
+# Book-Grounded RAG Chatbot — Group G014
 
 A Retrieval-Augmented Generation (RAG) chatbot grounded in **15+ assigned books**:
 retrieves passages (FAISS, CPU), generates short answers with a tiny local Q4-quantized

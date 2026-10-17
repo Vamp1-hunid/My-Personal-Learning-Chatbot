@@ -35,7 +35,7 @@ def main() -> int:
         print("empty question")
         return 1
 
-    payload = answer(question)
+    payload = answer(question, top_k=top_k)
     if show_json:
         print(json.dumps(payload, indent=2, ensure_ascii=False))
     else:

@@ -14,7 +14,12 @@ import psutil
 import yaml
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-CFG = yaml.safe_load((ROOT / "config" / "memory.yaml").read_text(encoding="utf-8"))
+
+# memory.yaml holds one top-level "memory" section; unwrap it so the keys
+# (warn_gb, hard_gb, ...) are addressable directly. Without this the .get()
+# calls below silently return None and fall back to hard-coded defaults.
+_CFG_RAW = yaml.safe_load((ROOT / "config" / "memory.yaml").read_text(encoding="utf-8"))
+CFG = _CFG_RAW.get("memory", _CFG_RAW)
 
 _warn = CFG.get("warn_gb", 6.0) * (1 << 30)
 _hard = CFG.get("hard_gb", 7.0) * (1 << 30)

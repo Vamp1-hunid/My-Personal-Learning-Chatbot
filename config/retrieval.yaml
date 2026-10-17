@@ -1,8 +1,8 @@
-retrieval:
-  top_k: 5
-  top_k_tier0: 3        # reduce during low-memory / ultra-safe run
-  context_length: 1024
-  max_context_chars: 3000
-  threshold_score: 0.35 # calibrate on validation split; do NOT tune on test
-  min_sources_required: 1
-  snippet_chars: 480
+# Flat keys: src/generate.py reads RETRIEVAL["top_k"] / ["threshold_score"] / ["max_context_chars"].
+top_k: 5
+top_k_tier0: 3        # reduce during low-memory / ultra-safe run
+context_length: 1024
+max_context_chars: 3000
+threshold_score: 0.35 # calibrate on validation split; do NOT tune on test
+min_sources_required: 1
+snippet_chars: 480

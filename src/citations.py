@@ -39,21 +39,25 @@ def validate_citations(answer_text: str,
     retrieved_by_id = {h["chunk_id"]: h for h in retrieved}
     sources: list[dict] = []
     for cid in extract_citations(answer_text):
-        rec = retrieved_by_id.get(cid) or passage_store.get(cid)
-        # Book/page drift check: both must agree with the stored passage.
-        if isinstance(rec, dict):
-            store = passage_store.get(cid, {})
-            if store:
-                book_match = rec.get("book_id", store.get("book_id")) == store.get("book_id")
-                page_match = rec.get("page", store.get("page")) == store.get("page")
-                if not (book_match and page_match):
-                    continue
-            sources.append({
-                "book_id": rec["book_id"],
-                "page": rec["page"],
-                "chunk_id": cid,
-                "title": rec.get("title", store.get("title", "")),
-            })
+        # Rule 2: the id must have been retrieved for THIS question. Falling back
+        # to passage_store here would let an invented-but-real id through, which
+        # is exactly the hallucinated citation this module exists to stop.
+        rec = retrieved_by_id.get(cid)
+        if not isinstance(rec, dict):
+            continue
+        # Rule 3: book/page must agree with the stored passage.
+        store = passage_store.get(cid, {})
+        if store:
+            book_match = rec.get("book_id", store.get("book_id")) == store.get("book_id")
+            page_match = rec.get("page", store.get("page")) == store.get("page")
+            if not (book_match and page_match):
+                continue
+        sources.append({
+            "book_id": rec["book_id"],
+            "page": rec["page"],
+            "chunk_id": cid,
+            "title": rec.get("title", store.get("title", "")),
+        })
     return sources
 
 

@@ -1,7 +1,7 @@
 {
   "meta": {
-    "group_id": "G001",
-    "subject": "FILL_WITH_ASSIGNED_SUBJECT",
+    "group_id": "G014",
+    "subject": "Data Science",
     "total": 40,
     "splits": {
       "validation": 19,
@@ -11,12 +11,12 @@
   },
   "questions": [
     {
-      "question_id": "G001-Q001",
+      "question_id": "G014-Q001",
       "category": "direct-fact",
       "question": "State Ohm's law exactly as definitionally worded in the books.",
       "reference_answer": "V = I * R (exact phrasing from stored passage).",
       "expected_chunk_ids": [
-        "FILL_G001_BOOK_###_P###_C##"
+        "FILL_G014_BOOK_###_P###_C##"
       ],
       "answerable": true,
       "split": "validation",
@@ -24,7 +24,7 @@
       "reviewer_note": "Retarget expected_chunk_ids to the real Ohm's-law passage after ingest."
     },
     {
-      "question_id": "G001-Q002",
+      "question_id": "G014-Q002",
       "category": "reasoning",
       "question": "Explain why energy is conserved according to the books' derivation.",
       "reference_answer": "FILL_AFTER_READING",
@@ -35,7 +35,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q003",
+      "question_id": "G014-Q003",
       "category": "numerical",
       "question": "Compute the value the books' worked example gives for a 12-ohm resistor at 2 A.",
       "reference_answer": "FILL_AFTER_READING",
@@ -46,7 +46,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q004",
+      "question_id": "G014-Q004",
       "category": "cross-book",
       "question": "How do the definitions of EMF differ between two of the books?",
       "reference_answer": "FILL_AFTER_READING",
@@ -57,7 +57,7 @@
       "reviewer_note": "Requires hits from two distinct book_ids."
     },
     {
-      "question_id": "G001-Q005",
+      "question_id": "G014-Q005",
       "category": "unanswerable",
       "question": "Who won the 2010 football World Cup?",
       "reference_answer": "Must abstain; topic outside corpus.",
@@ -68,7 +68,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q006",
+      "question_id": "G014-Q006",
       "category": "citation-check",
       "question": "Quote the exact sentence the books use to define Kirchhoff's voltage law.",
       "reference_answer": "FILL_AFTER_READING",
@@ -79,7 +79,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q007",
+      "question_id": "G014-Q007",
       "category": "direct-fact",
       "question": "State the definition of entropy exactly as given in the books.",
       "reference_answer": "FILL_AFTER_READING",
@@ -90,7 +90,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q008",
+      "question_id": "G014-Q008",
       "category": "direct-fact",
       "question": "State the definition of Kirchhoff's current law exactly as given in the books.",
       "reference_answer": "FILL_AFTER_READING",
@@ -101,7 +101,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q009",
+      "question_id": "G014-Q009",
       "category": "direct-fact",
       "question": "State the definition of the photoelectric effect exactly as given in the books.",
       "reference_answer": "FILL_AFTER_READING",
@@ -112,7 +112,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q010",
+      "question_id": "G014-Q010",
       "category": "direct-fact",
       "question": "State the definition of angular momentum exactly as given in the books.",
       "reference_answer": "FILL_AFTER_READING",
@@ -123,7 +123,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q011",
+      "question_id": "G014-Q011",
       "category": "direct-fact",
       "question": "State the definition of Hooke's law exactly as given in the books.",
       "reference_answer": "FILL_AFTER_READING",
@@ -134,7 +134,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q012",
+      "question_id": "G014-Q012",
       "category": "direct-fact",
       "question": "State the definition of the ideal gas law exactly as given in the books.",
       "reference_answer": "FILL_AFTER_READING",
@@ -145,7 +145,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q013",
+      "question_id": "G014-Q013",
       "category": "direct-fact",
       "question": "State the definition of the derivative definition used in the books exactly as given in the books.",
       "reference_answer": "FILL_AFTER_READING",
@@ -156,7 +156,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q014",
+      "question_id": "G014-Q014",
       "category": "direct-fact",
       "question": "State the definition of Charles's law exactly as given in the books.",
       "reference_answer": "FILL_AFTER_READING",
@@ -167,7 +167,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q015",
+      "question_id": "G014-Q015",
       "category": "direct-fact",
       "question": "State the definition of the books' definition of power in AC circuits exactly as given in the books.",
       "reference_answer": "FILL_AFTER_READING",
@@ -178,7 +178,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q016",
+      "question_id": "G014-Q016",
       "category": "reasoning",
       "question": "Explain, per the books, why terminal velocity follows from FILL.",
       "reference_answer": "FILL_AFTER_READING",
@@ -189,7 +189,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q017",
+      "question_id": "G014-Q017",
       "category": "reasoning",
       "question": "Explain, per the books, why the photoelectric effect follows from FILL.",
       "reference_answer": "FILL_AFTER_READING",
@@ -200,7 +200,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q018",
+      "question_id": "G014-Q018",
       "category": "reasoning",
       "question": "Explain, per the books, why Lenz's law opposition follows from FILL.",
       "reference_answer": "FILL_AFTER_READING",
@@ -211,7 +211,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q019",
+      "question_id": "G014-Q019",
       "category": "reasoning",
       "question": "Explain, per the books, why thermal expansion follows from FILL.",
       "reference_answer": "FILL_AFTER_READING",
@@ -222,7 +222,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q020",
+      "question_id": "G014-Q020",
       "category": "reasoning",
       "question": "Explain, per the books, why levers and torque balance follows from FILL.",
       "reference_answer": "FILL_AFTER_READING",
@@ -233,7 +233,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q021",
+      "question_id": "G014-Q021",
       "category": "numerical",
       "question": "Using the books' worked example, compute FILL for the given FILL.",
       "reference_answer": "FILL_AFTER_READING",
@@ -244,7 +244,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q022",
+      "question_id": "G014-Q022",
       "category": "numerical",
       "question": "Using the books' worked example, compute FILL for the given FILL.",
       "reference_answer": "FILL_AFTER_READING",
@@ -255,7 +255,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q023",
+      "question_id": "G014-Q023",
       "category": "numerical",
       "question": "Using the books' worked example, compute FILL for the given FILL.",
       "reference_answer": "FILL_AFTER_READING",
@@ -266,7 +266,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q024",
+      "question_id": "G014-Q024",
       "category": "numerical",
       "question": "Using the books' worked example, compute FILL for the given FILL.",
       "reference_answer": "FILL_AFTER_READING",
@@ -277,7 +277,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q025",
+      "question_id": "G014-Q025",
       "category": "numerical",
       "question": "Using the books' worked example, compute FILL for the given FILL.",
       "reference_answer": "FILL_AFTER_READING",
@@ -288,7 +288,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q026",
+      "question_id": "G014-Q026",
       "category": "cross-book",
       "question": "Compare how the books present the Second Law of Thermodynamics; note any wording differences.",
       "reference_answer": "FILL_AFTER_READING",
@@ -299,7 +299,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q027",
+      "question_id": "G014-Q027",
       "category": "cross-book",
       "question": "Compare how the books present momentum conservation; note any wording differences.",
       "reference_answer": "FILL_AFTER_READING",
@@ -310,7 +310,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q028",
+      "question_id": "G014-Q028",
       "category": "cross-book",
       "question": "Compare how the books present electric field around a point charge; note any wording differences.",
       "reference_answer": "FILL_AFTER_READING",
@@ -321,7 +321,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q029",
+      "question_id": "G014-Q029",
       "category": "cross-book",
       "question": "Compare how the books present calorimetry; note any wording differences.",
       "reference_answer": "FILL_AFTER_READING",
@@ -332,7 +332,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q030",
+      "question_id": "G014-Q030",
       "category": "cross-book",
       "question": "Compare how the books present the meaning of potential difference; note any wording differences.",
       "reference_answer": "FILL_AFTER_READING",
@@ -343,7 +343,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q031",
+      "question_id": "G014-Q031",
       "category": "unanswerable",
       "question": "OUT-OF-CORPUS question #1: the capital of a country not in the corpus (must be refused).",
       "reference_answer": "MUST ABSTAIN; outside corpus.",
@@ -354,7 +354,7 @@
       "reviewer_note": "Keep out-of-corpus answers unrelated to assigned books."
     },
     {
-      "question_id": "G001-Q032",
+      "question_id": "G014-Q032",
       "category": "unanswerable",
       "question": "OUT-OF-CORPUS question #2: a 2026 stock price (must be refused).",
       "reference_answer": "MUST ABSTAIN; outside corpus.",
@@ -365,7 +365,7 @@
       "reviewer_note": "Keep out-of-corpus answers unrelated to assigned books."
     },
     {
-      "question_id": "G001-Q033",
+      "question_id": "G014-Q033",
       "category": "unanswerable",
       "question": "OUT-OF-CORPUS question #3: a pop-culture figure (must be refused).",
       "reference_answer": "MUST ABSTAIN; outside corpus.",
@@ -376,7 +376,7 @@
       "reviewer_note": "Keep out-of-corpus answers unrelated to assigned books."
     },
     {
-      "question_id": "G001-Q034",
+      "question_id": "G014-Q034",
       "category": "unanswerable",
       "question": "OUT-OF-CORPUS question #4: a sports record (must be refused).",
       "reference_answer": "MUST ABSTAIN; outside corpus.",
@@ -387,7 +387,7 @@
       "reviewer_note": "Keep out-of-corpus answers unrelated to assigned books."
     },
     {
-      "question_id": "G001-Q035",
+      "question_id": "G014-Q035",
       "category": "unanswerable",
       "question": "OUT-OF-CORPUS question #5: a recent news event (must be refused).",
       "reference_answer": "MUST ABSTAIN; outside corpus.",
@@ -398,7 +398,7 @@
       "reviewer_note": "Keep out-of-corpus answers unrelated to assigned books."
     },
     {
-      "question_id": "G001-Q036",
+      "question_id": "G014-Q036",
       "category": "unanswerable",
       "question": "OUT-OF-CORPUS question #6: an unsupported historical date (must be refused).",
       "reference_answer": "MUST ABSTAIN; outside corpus.",
@@ -409,7 +409,7 @@
       "reviewer_note": "Keep out-of-corpus answers unrelated to assigned books."
     },
     {
-      "question_id": "G001-Q037",
+      "question_id": "G014-Q037",
       "category": "unanswerable",
       "question": "OUT-OF-CORPUS question #7: a recipe (must be refused).",
       "reference_answer": "MUST ABSTAIN; outside corpus.",
@@ -420,7 +420,7 @@
       "reviewer_note": "Keep out-of-corpus answers unrelated to assigned books."
     },
     {
-      "question_id": "G001-Q038",
+      "question_id": "G014-Q038",
       "category": "citation-check",
       "question": "Quote verbatim the sentence in the books defining the work-energy theorem.",
       "reference_answer": "FILL_AFTER_READING",
@@ -431,7 +431,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q039",
+      "question_id": "G014-Q039",
       "category": "citation-check",
       "question": "Quote verbatim the sentence in the books defining Boyle's law.",
       "reference_answer": "FILL_AFTER_READING",
@@ -442,7 +442,7 @@
       "reviewer_note": ""
     },
     {
-      "question_id": "G001-Q040",
+      "question_id": "G014-Q040",
       "category": "citation-check",
       "question": "Quote verbatim the sentence in the books defining the continuity equation.",
       "reference_answer": "FILL_AFTER_READING",

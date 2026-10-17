@@ -60,7 +60,8 @@ def _retrieval_config() -> dict:
     import yaml
     from pathlib import Path
     root = Path(__file__).resolve().parent.parent
-    return yaml.safe_load((root / "config" / "retrieval.yaml").read_text(encoding="utf-8"))["retrieval"]
+    # retrieval.yaml holds flat keys (top_k, threshold_score, snippet_chars).
+    return yaml.safe_load((root / "config" / "retrieval.yaml").read_text(encoding="utf-8"))
 
 
 RETR = _retrieval_config()

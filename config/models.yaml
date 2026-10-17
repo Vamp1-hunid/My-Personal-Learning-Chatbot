@@ -1,7 +1,8 @@
 embedding:
   model_name: sentence-transformers/all-MiniLM-L6-v2
-  revision: main
-  pin_to_commit: true   # Replace 'revision' with the exact HF commit hash before final eval
+  # Pinned to the exact HF commit (all-MiniLM-L6-v2), verified in the local cache.
+  revision: 1110a243fdf4706b3f48f1d95db1a4f5529b4d41
+  pin_to_commit: true
   device: cpu
   stop_at_layer: 6
   normalize: true

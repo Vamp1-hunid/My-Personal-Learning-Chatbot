@@ -1,4 +1,4 @@
-# Evaluation report: Group G001, subject ____
+# Evaluation report: Group G014, subject Data Science
 
 Environment: HP Pavilion, AMD A8-7410, 12 GB RAM, HDD, Windows __, Python 3.11.__, tier __, threads __
 Embedding: model ____ revision ____ | Index: IndexFlatIP, ____ chunks

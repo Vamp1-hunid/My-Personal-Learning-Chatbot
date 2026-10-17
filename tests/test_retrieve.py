@@ -5,6 +5,8 @@ says CPU-only box without them installed yet), but when present validates the
 assignment's integration contract:
     retrieve(question, top_k) -> [{text, score, book_id, title, page, chunk_id}]
 """
+from pathlib import Path
+
 import pytest
 
 faiss = pytest.importorskip("faiss")
@@ -12,6 +14,14 @@ st = pytest.importorskip("sentence_transformers")
 np = pytest.importorskip("numpy")
 
 from src.retrieve import Retriever  # noqa: E402
+
+ROOT = Path(__file__).resolve().parent.parent
+
+# Skips cleanly on a fresh clone: artifacts/index.faiss is gitignored (it is a
+# build product), so it only exists after embed.py + index.py have run.
+if not (ROOT / "artifacts" / "index.faiss").is_file():
+    pytest.skip("artifacts/index.faiss missing; run embed.py + index.py first",
+                allow_module_level=True)
 
 
 def test_fields_present_and_top_k_respected():

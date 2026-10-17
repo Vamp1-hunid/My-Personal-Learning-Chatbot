@@ -1,5 +1,4 @@
 # Never commit source book PDFs or extracted text (copyright)
-data/books/
 *.pdf
 artifacts/fulltext/
 
