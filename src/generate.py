@@ -13,6 +13,12 @@ Strict rules enforced here:
 2. Every citation is re-validated against stored passages (citations.py).
 3. If no valid source remains, insufficient_evidence=True and sources=[].
 4. Optional conflict detection surfaces contradictory retrieved passages.
+
+Generation order (adjusted for this laptop — ollama runs here, llama-server does not):
+  1) Ollama alt (qwen2.5:0.5b-instruct) — primary for this environment.
+  2) llama-server — only if someone deploys the binary on port 8081.
+  3) approved hosted OpenAI-compatible endpoint — only with course approval + .env.
+  4) deterministic extractive answer from retrieved passages — guaranteed fallback.
 """
 from __future__ import annotations
 
@@ -22,16 +28,33 @@ import pathlib
 import re
 from typing import Optional
 
-import yaml
+# YAML loading: prefer PyYAML when it is available; fall back to the
+# lightweight bundled reader (src/yaml_reader.py) on machines where it cannot
+# be installed (e.g. build/test VMs without a compiler for the C extension).
+try:
+    import yaml as _yaml
+    _yaml_load = _yaml.safe_load
+except Exception:  # pragma: no cover — path exercised on Yahya's laptop as of 2026-10-17
+    from src.yaml_reader import load_yaml as _yaml_load
 
 from src import answer_schema
 from src import citations as cite
 from src.retrieve import retrieve
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-MODELS = yaml.safe_load((ROOT / "config" / "models.yaml").read_text(encoding="utf-8"))
-RETRIEVAL = yaml.safe_load((ROOT / "config" / "retrieval.yaml").read_text(encoding="utf-8"))
-HARDWARE = yaml.safe_load((ROOT / "config" / "hardware.yaml").read_text(encoding="utf-8"))
+_MODELS_PATH = ROOT / "config" / "models.yaml"
+_RETRIEVAL_PATH = ROOT / "config" / "retrieval.yaml"
+_HARDWARE_PATH = ROOT / "config" / "hardware.yaml"
+
+
+def _load(path: pathlib.Path) -> dict:
+    return _yaml_load(path.read_text(encoding="utf-8"))
+
+
+MODELS = _load(_MODELS_PATH)
+RETRIEVAL = _load(_RETRIEVAL_PATH)
+HARDWARE = _load(_HARDWARE_PATH)
+
 
 GEN_CFG = MODELS["generation"]
 TOP_K = RETRIEVAL["top_k"]
@@ -90,7 +113,7 @@ def _local_generate_llama_server(prompt: str) -> Optional[str]:
                                  json.dumps(body).encode("utf-8"),
                                  {"Content-Type": "application/json"})
     try:
-        with urllib.request.urlopen(req, timeout=300) as r:
+        with urllib.request.urlopen(req, timeout=5) as r:
             return json.load(r)["choices"][0]["message"]["content"].strip()
     except Exception:
         return None
@@ -198,18 +221,21 @@ def build(question: str, top_k: Optional[int] = None) -> dict:
     hits_used = hits[:used]
     prompt = f"Passages:\n{context}\n\nQuestion: {question}"
 
-    # 1) llama-server (llama.cpp) -> 2) Ollama alt -> 3) approved hosted -> 4) extractive.
-    generated = _local_generate_llama_server(prompt)
-    mode = "local-llm"
+    # 1) Ollama alt (fastest for this laptop + already configured) ->
+    # 2) llama-server (llama.cpp, does not exist on this machine) ->
+    # 3) approved hosted endpoint -> 4) deterministic extractive fallback.
+    generated = _local_generate_ollama(prompt)
+    mode = 'local-llm'
     if generated is None:
-        generated = _local_generate_ollama(prompt)
+        generated = _local_generate_llama_server(prompt)
     if generated is None:
         generated = _hosted_generate(prompt)
-        mode = "hosted-approved" if generated else mode
+        mode = 'hosted-approved' if generated else mode
     if not generated:
         generated = _extractive_answer(question, hits_used)
-        mode = "extractive"
+        mode = 'extractive'
     text = generated.strip()
+
 
     # Conflict detection (cheap heuristic): flag if two passage claims disagree.
     conflicts = []

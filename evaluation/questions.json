@@ -7,26 +7,26 @@
       "validation": 19,
       "test": 21
     },
-    "note": "SPLIT BEFORE TUNING. mark review_status 'reviewed' only after a teammate reads the target page and fills reference_answer + expected_chunk_ids."
+    "note": "Questions target the 15-book data science corpus (ISL, ESL, PRML, Think Bayes, RL, etc.). SPLIT BEFORE TUNING. mark review_status 'reviewed' only after a teammate reads the target page and fills reference_answer + expected_chunk_ids."
   },
   "questions": [
     {
       "question_id": "G014-Q001",
       "category": "direct-fact",
-      "question": "State Ohm's law exactly as definitionally worded in the books.",
-      "reference_answer": "V = I * R (exact phrasing from stored passage).",
+      "question": "State the bias-variance decomposition of expected test error exactly as defined in the books.",
+      "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [
         "FILL_G014_BOOK_###_P###_C##"
       ],
       "answerable": true,
       "split": "validation",
-      "review_status": "reviewed",
-      "reviewer_note": "Retarget expected_chunk_ids to the real Ohm's-law passage after ingest."
+      "review_status": "draft",
+      "reviewer_note": ""
     },
     {
       "question_id": "G014-Q002",
       "category": "reasoning",
-      "question": "Explain why energy is conserved according to the books' derivation.",
+      "question": "Explain, per the books, why increasing model complexity reduces bias but increases variance.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
@@ -36,19 +36,19 @@
     },
     {
       "question_id": "G014-Q003",
-      "category": "numerical",
-      "question": "Compute the value the books' worked example gives for a 12-ohm resistor at 2 A.",
+      "category": "direct-fact",
+      "question": "State the definition of the Bayes classifier exactly as given in the books.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
-      "split": "test",
+      "split": "validation",
       "review_status": "draft",
       "reviewer_note": ""
     },
     {
       "question_id": "G014-Q004",
       "category": "cross-book",
-      "question": "How do the definitions of EMF differ between two of the books?",
+      "question": "How do the books define the training-error rate versus the test-error rate differently, if at all? Note any wording differences.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
@@ -70,7 +70,7 @@
     {
       "question_id": "G014-Q006",
       "category": "citation-check",
-      "question": "Quote the exact sentence the books use to define Kirchhoff's voltage law.",
+      "question": "Quote the exact sentence the books use to define k-nearest neighbors classification.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
@@ -81,7 +81,7 @@
     {
       "question_id": "G014-Q007",
       "category": "direct-fact",
-      "question": "State the definition of entropy exactly as given in the books.",
+      "question": "State the definition of the curse of dimensionality exactly as given in the books.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
@@ -92,7 +92,7 @@
     {
       "question_id": "G014-Q008",
       "category": "direct-fact",
-      "question": "State the definition of Kirchhoff's current law exactly as given in the books.",
+      "question": "State the definition of conditional probability exactly as given in the books.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
@@ -103,7 +103,7 @@
     {
       "question_id": "G014-Q009",
       "category": "direct-fact",
-      "question": "State the definition of the photoelectric effect exactly as given in the books.",
+      "question": "State the definition of Bayes' theorem exactly as given in the books.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
@@ -114,7 +114,7 @@
     {
       "question_id": "G014-Q010",
       "category": "direct-fact",
-      "question": "State the definition of angular momentum exactly as given in the books.",
+      "question": "State the definition of the likelihood function exactly as given in the books.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
@@ -125,7 +125,7 @@
     {
       "question_id": "G014-Q011",
       "category": "direct-fact",
-      "question": "State the definition of Hooke's law exactly as given in the books.",
+      "question": "State the definition of prior probability exactly as given in the books.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
@@ -136,7 +136,7 @@
     {
       "question_id": "G014-Q012",
       "category": "direct-fact",
-      "question": "State the definition of the ideal gas law exactly as given in the books.",
+      "question": "State the definition of posterior probability exactly as given in the books.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
@@ -147,7 +147,7 @@
     {
       "question_id": "G014-Q013",
       "category": "direct-fact",
-      "question": "State the definition of the derivative definition used in the books exactly as given in the books.",
+      "question": "State the definition of linear regression as a model exactly as given in the books.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
@@ -158,7 +158,7 @@
     {
       "question_id": "G014-Q014",
       "category": "direct-fact",
-      "question": "State the definition of Charles's law exactly as given in the books.",
+      "question": "State the definition of logistic regression exactly as given in the books.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
@@ -169,7 +169,7 @@
     {
       "question_id": "G014-Q015",
       "category": "direct-fact",
-      "question": "State the definition of the books' definition of power in AC circuits exactly as given in the books.",
+      "question": "State the definition of the regularization penalty (L1 or L2) exactly as given in the books.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
@@ -180,7 +180,7 @@
     {
       "question_id": "G014-Q016",
       "category": "reasoning",
-      "question": "Explain, per the books, why terminal velocity follows from FILL.",
+      "question": "Explain, per the books, why cross-validation reduces overfitting when selecting models.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
@@ -191,51 +191,51 @@
     {
       "question_id": "G014-Q017",
       "category": "reasoning",
-      "question": "Explain, per the books, why the photoelectric effect follows from FILL.",
+      "question": "Explain, per the books, why the Markov property simplifies the transition model in reinforcement learning.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
       "split": "validation",
       "review_status": "draft",
-      "reviewer_note": ""
+      "reviewer_note": "Relevant to Sutton & Barto (RL book)."
     },
     {
       "question_id": "G014-Q018",
       "category": "reasoning",
-      "question": "Explain, per the books, why Lenz's law opposition follows from FILL.",
+      "question": "Explain, per the books, why the value function is defined recursively in terms of itself (Bellman equation).",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
       "split": "test",
       "review_status": "draft",
-      "reviewer_note": ""
+      "reviewer_note": "Relevant to Sutton & Barto (RL book)."
     },
     {
       "question_id": "G014-Q019",
       "category": "reasoning",
-      "question": "Explain, per the books, why thermal expansion follows from FILL.",
+      "question": "Explain, per the books, why Monte Carlo methods do not require a model of the environment.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
       "split": "validation",
       "review_status": "draft",
-      "reviewer_note": ""
+      "reviewer_note": "Relevant to Sutton & Barto (RL book)."
     },
     {
       "question_id": "G014-Q020",
       "category": "reasoning",
-      "question": "Explain, per the books, why levers and torque balance follows from FILL.",
+      "question": "Explain, per the books, why temporal-difference learning combines features of Monte Carlo and dynamic programming.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
       "split": "test",
       "review_status": "draft",
-      "reviewer_note": ""
+      "reviewer_note": "Relevant to Sutton & Barto (RL book)."
     },
     {
       "question_id": "G014-Q021",
       "category": "numerical",
-      "question": "Using the books' worked example, compute FILL for the given FILL.",
+      "question": "Using the books' notation, write the least-squares solution beta_hat = (X'X)^{-1} X'y and state what each term means.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
@@ -246,7 +246,7 @@
     {
       "question_id": "G014-Q022",
       "category": "numerical",
-      "question": "Using the books' worked example, compute FILL for the given FILL.",
+      "question": "Using the books' worked example, write the Bayes classifier decision rule for a two-class problem with given priors and likelihoods.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
@@ -257,18 +257,18 @@
     {
       "question_id": "G014-Q023",
       "category": "numerical",
-      "question": "Using the books' worked example, compute FILL for the given FILL.",
+      "question": "Using the books' notation, write the posterior mean update for a Beta-Binomial conjugate pair with prior Beta(alpha, beta) and n successes in N trials.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
       "split": "validation",
       "review_status": "draft",
-      "reviewer_note": ""
+      "reviewer_note": "Relevant to Think Bayes (Downey)."
     },
     {
       "question_id": "G014-Q024",
       "category": "numerical",
-      "question": "Using the books' worked example, compute FILL for the given FILL.",
+      "question": "Using the books' notation, write the gradient of the squared-error loss in linear regression and state the update direction for a single step.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
@@ -279,18 +279,18 @@
     {
       "question_id": "G014-Q025",
       "category": "numerical",
-      "question": "Using the books' worked example, compute FILL for the given FILL.",
+      "question": "Using the books' notation, write the expected return G_t = sum of discounted rewards and state the role of gamma.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
       "split": "validation",
       "review_status": "draft",
-      "reviewer_note": ""
+      "reviewer_note": "Relevant to Sutton & Barto (RL book)."
     },
     {
       "question_id": "G014-Q026",
       "category": "cross-book",
-      "question": "Compare how the books present the Second Law of Thermodynamics; note any wording differences.",
+      "question": "Compare how the books present the bias-variance tradeoff; note any wording or decomposition differences.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
@@ -301,7 +301,7 @@
     {
       "question_id": "G014-Q027",
       "category": "cross-book",
-      "question": "Compare how the books present momentum conservation; note any wording differences.",
+      "question": "Compare how the books describe overfitting versus underfitting; note any differences in examples or terminology.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
@@ -312,7 +312,7 @@
     {
       "question_id": "G014-Q028",
       "category": "cross-book",
-      "question": "Compare how the books present electric field around a point charge; note any wording differences.",
+      "question": "Compare how the books define the train/validation/test split; note any differences in recommended proportions or purpose.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
@@ -323,18 +323,7 @@
     {
       "question_id": "G014-Q029",
       "category": "cross-book",
-      "question": "Compare how the books present calorimetry; note any wording differences.",
-      "reference_answer": "FILL_AFTER_READING",
-      "expected_chunk_ids": [],
-      "answerable": true,
-      "split": "validation",
-      "review_status": "draft",
-      "reviewer_note": ""
-    },
-    {
-      "question_id": "G014-Q030",
-      "category": "cross-book",
-      "question": "Compare how the books present the meaning of potential difference; note any wording differences.",
+      "question": "Compare how the books present Bayesian versus frequentist interpretation of probability; note any wording differences.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
@@ -343,9 +332,20 @@
       "reviewer_note": ""
     },
     {
+      "question_id": "G014-Q030",
+      "category": "cross-book",
+      "question": "Compare how the books define the Markov decision process (MDP) tuple; note any differences in the elements listed.",
+      "reference_answer": "FILL_AFTER_READING",
+      "expected_chunk_ids": [],
+      "answerable": true,
+      "split": "validation",
+      "review_status": "draft",
+      "reviewer_note": "Relevant to Sutton & Barto (RL book) and possibly PRML."
+    },
+    {
       "question_id": "G014-Q031",
       "category": "unanswerable",
-      "question": "OUT-OF-CORPUS question #1: the capital of a country not in the corpus (must be refused).",
+      "question": "What is the capital of France?",
       "reference_answer": "MUST ABSTAIN; outside corpus.",
       "expected_chunk_ids": [],
       "answerable": false,
@@ -356,7 +356,7 @@
     {
       "question_id": "G014-Q032",
       "category": "unanswerable",
-      "question": "OUT-OF-CORPUS question #2: a 2026 stock price (must be refused).",
+      "question": "What is the latest stock price of Apple as of today?",
       "reference_answer": "MUST ABSTAIN; outside corpus.",
       "expected_chunk_ids": [],
       "answerable": false,
@@ -367,7 +367,7 @@
     {
       "question_id": "G014-Q033",
       "category": "unanswerable",
-      "question": "OUT-OF-CORPUS question #3: a pop-culture figure (must be refused).",
+      "question": "Who is the current president of the United States?",
       "reference_answer": "MUST ABSTAIN; outside corpus.",
       "expected_chunk_ids": [],
       "answerable": false,
@@ -378,7 +378,7 @@
     {
       "question_id": "G014-Q034",
       "category": "unanswerable",
-      "question": "OUT-OF-CORPUS question #4: a sports record (must be refused).",
+      "question": "What is the best recipe for chocolate cake?",
       "reference_answer": "MUST ABSTAIN; outside corpus.",
       "expected_chunk_ids": [],
       "answerable": false,
@@ -389,7 +389,7 @@
     {
       "question_id": "G014-Q035",
       "category": "unanswerable",
-      "question": "OUT-OF-CORPUS question #5: a recent news event (must be refused).",
+      "question": "What is the weather forecast for tomorrow in New York?",
       "reference_answer": "MUST ABSTAIN; outside corpus.",
       "expected_chunk_ids": [],
       "answerable": false,
@@ -400,7 +400,7 @@
     {
       "question_id": "G014-Q036",
       "category": "unanswerable",
-      "question": "OUT-OF-CORPUS question #6: an unsupported historical date (must be refused).",
+      "question": "Who won the 2024 Olympic gold medal in 100m sprint?",
       "reference_answer": "MUST ABSTAIN; outside corpus.",
       "expected_chunk_ids": [],
       "answerable": false,
@@ -411,7 +411,7 @@
     {
       "question_id": "G014-Q037",
       "category": "unanswerable",
-      "question": "OUT-OF-CORPUS question #7: a recipe (must be refused).",
+      "question": "What is the meaning of life according to philosophy?",
       "reference_answer": "MUST ABSTAIN; outside corpus.",
       "expected_chunk_ids": [],
       "answerable": false,
@@ -422,7 +422,7 @@
     {
       "question_id": "G014-Q038",
       "category": "citation-check",
-      "question": "Quote verbatim the sentence in the books defining the work-energy theorem.",
+      "question": "Quote verbatim the sentence in the books defining the Central Limit Theorem.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
@@ -433,7 +433,7 @@
     {
       "question_id": "G014-Q039",
       "category": "citation-check",
-      "question": "Quote verbatim the sentence in the books defining Boyle's law.",
+      "question": "Quote verbatim the sentence in the books defining the null hypothesis.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
@@ -444,7 +444,7 @@
     {
       "question_id": "G014-Q040",
       "category": "citation-check",
-      "question": "Quote verbatim the sentence in the books defining the continuity equation.",
+      "question": "Quote verbatim the sentence in the books defining the p-value.",
       "reference_answer": "FILL_AFTER_READING",
       "expected_chunk_ids": [],
       "answerable": true,
