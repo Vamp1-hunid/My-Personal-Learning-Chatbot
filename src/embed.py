@@ -97,11 +97,14 @@ def run_shard(shard: int | None, shards: int) -> None:
     lo, hi = (0, len(rows)) if shard is None else shard_bounds(len(rows), shard, shards)
     texts = [r["text"] for r in rows[lo:hi]]
 
-    model = SentenceTransformer(
-        emb_cfg["model_name"],
-        revision=emb_cfg["revision"],
-        device="cpu",
-    )
+    kwargs = {"device": "cpu"}
+    rev = emb_cfg.get("revision")
+    # Only pin a real 40-char commit hash; placeholder/absent revisions would
+    # make the model download fail outright.
+    if isinstance(rev, str) and len(rev) == 40 and \
+            all(c in "0123456789abcdef" for c in rev.lower()):
+        kwargs["revision"] = rev
+    model = SentenceTransformer(emb_cfg["model_name"], **kwargs)
     dim = model.get_sentence_embedding_dimension()
 
     out_path = partial_path(shard)

@@ -189,7 +189,13 @@ def _extractive_answer(question: str, hits) -> str:
 
 
 def _load_passage_store():
-    path = PASSAGE_STORE_PATH
+    # Honour an explicit override (used by tests); otherwise use the same
+    # corpus the retriever is currently serving from.
+    if PASSAGE_STORE_PATH.is_file():
+        path = PASSAGE_STORE_PATH
+    else:
+        from src.retrieve import _active_paths
+        _, path = _active_paths()
     if not path.is_file():
         return {}
     store = {}
