@@ -65,11 +65,13 @@ ABSTAIN = ("The provided books do not contain sufficient evidence "
            "to answer this question.")
 
 SYSTEM_PROMPT = (
-    "Answer ONLY from the numbered passages provided. Cite each claim with its passage "
-    "ID in square brackets, e.g. [BOOK_ID_P_PAGE_C_NUM]. Never invent IDs, titles, "
-    "pages or facts. Keep the answer to 1-3 sentences. If passages disagree, begin with "
-    "'CONFLICT:' and describe both views with their IDs. If the passages do not answer "
-    "the question, reply exactly: INSUFFICIENT EVIDENCE."
+    "Answer ONLY from the numbered passages provided. Cite each claim by copying the "
+    "passage ID from the start of the passage block into square brackets, for instance "
+    "if a passage block starts with [G014_BOOK_003_P143_C01] you cite that exact ID. "
+    "Never invent IDs, titles, pages or facts, and never output a placeholder. "
+    "Keep the answer to 1-3 sentences. If passages disagree, begin with 'CONFLICT:' "
+    "and describe both views with their IDs. If the passages do not answer the "
+    "question, reply exactly: INSUFFICIENT EVIDENCE."
 )
 
 
@@ -86,7 +88,8 @@ def _ctx_format(hits, max_ctx=MAX_CTX_CHARS):
 
 
 def _format_sources(hits):
-    return [{"book_id": h["book_id"], "page": h["page"], "chunk_id": h["chunk_id"]}
+    return [{"book_id": h["book_id"], "page": h["page"], "chunk_id": h["chunk_id"],
+             "title": h.get("title", "")}
             for h in hits]
 
 
@@ -188,8 +191,24 @@ def _extractive_answer(question: str, hits) -> str:
     return "INSUFFICIENT-EVIDENCE"
 
 
+def _content_words(s: str) -> set:
+    """Lowercase word tokens of length >= 4 without digits.
+
+    Drops stopwords, numeric fragments and ID pieces (g014, p143, c002) so a
+    passage that merely echoes an ID can never count as vocabulary overlap.
+    """
+    return {w for w in re.findall(r"[a-z0-9]+", s.lower())
+            if len(w) >= 4 and not any(c.isdigit() for c in w)}
+
+
 def _load_passage_store():
-    path = PASSAGE_STORE_PATH
+    # Honour an explicit override (used by tests); otherwise use the same
+    # corpus the retriever is currently serving from.
+    if PASSAGE_STORE_PATH.is_file():
+        path = PASSAGE_STORE_PATH
+    else:
+        from src.retrieve import _active_paths
+        _, path = _active_paths()
     if not path.is_file():
         return {}
     store = {}
@@ -257,13 +276,36 @@ def build(question: str, top_k: Optional[int] = None) -> dict:
     store = _load_passage_store()
     sources = cite.validate_citations(text, hits_used, store)
     if not sources:
-        # Model gave no valid citation: use extractive fallback grounded in hits.
-        generated = _extractive_answer(question, hits_used)
-        if generated == "INSUFFICIENT-EVIDENCE":
+        # The small local model often omits [chunk_id] citations entirely, or
+        # emits placeholder-style ones, even when its answer faithfully
+        # paraphrases the passages. Salvage such answers by grounding them
+        # ourselves. A failed/fake model ID can never become a source: we only
+        # ever attach passages that were actually retrieved for this question.
+        #
+        # Salvage A: keep the model's answer if it clearly paraphrases one of
+        # the retrieved passages (substantial content-word overlap).
+        if hits_used:
+            words = _content_words(text)
+            best = max(hits_used,
+                       key=lambda h: len(words & _content_words(h["text"])))
+            if len(words & _content_words(best["text"])) >= 3:
+                sources = _format_sources([best])
+        # Salvage B: quote a deterministic extractive sentence from a retrieved
+        # passage instead (fully grounded by construction).
+        if not sources:
+            generated = _extractive_answer(question, hits_used)
+            if generated != "INSUFFICIENT-EVIDENCE":
+                sources = cite.validate_citations(generated, hits_used, store)
+                if not sources:  # verbatim sentence — locate the passage it came from
+                    for h in hits_used:
+                        if generated in h["text"]:
+                            sources = _format_sources([h])
+                            text = generated
+                            break
+        if not sources:
+            # No grounding found — do not present an unanchored answer.
             return {"answer": ABSTAIN, "sources": [],
                     "insufficient_evidence": True, "mode": "extractive"}
-        sources = cite.validate_citations(generated, hits_used, store) or \
-                  _format_sources(hits_used[:1])
 
     payload = {"answer": text, "sources": sources,
                "insufficient_evidence": False, "mode": mode}

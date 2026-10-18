@@ -26,18 +26,52 @@ EMB_CFG = MODELS["embedding"]
 IDX = ROOT / "artifacts" / "index.faiss"
 PASSAGES = ROOT / "artifacts" / "passages.jsonl"
 
+# Example corpus used when the real book index has not been built yet (fresh
+# clone, no PDFs). Keeps the chatbot runnable end-to-end out of the box.
+EXAMPLE_PASSAGES = ROOT / "data" / "examples" / "passages.example.jsonl"
+
+
+def _active_paths() -> tuple[Path, Path]:
+    """Return (index, passages) paths to use: real artifacts if built,
+    otherwise the bundled example corpus."""
+    if IDX.is_file() and PASSAGES.is_file():
+        return IDX, PASSAGES
+    if EXAMPLE_PASSAGES.is_file():
+        return None, EXAMPLE_PASSAGES  # index built on the fly at load time
+    return IDX, PASSAGES
+
 
 class Retriever:
     def __init__(self) -> None:
         from sentence_transformers import SentenceTransformer
-        self.model = SentenceTransformer(EMB_CFG["model_name"],
-                                         revision=EMB_CFG["revision"],
-                                         device="cpu")
-        self.index = faiss.read_index(str(IDX))
+        kwargs = {"device": "cpu"}
+        rev = EMB_CFG.get("revision")
+        # Only pin the revision when it is a real commit hash; placeholder or
+        # absent values would make the download fail outright.
+        if isinstance(rev, str) and len(rev) == 40 and \
+                all(c in "0123456789abcdef" for c in rev.lower()):
+            kwargs["revision"] = rev
+        self.model = SentenceTransformer(EMB_CFG["model_name"], **kwargs)
+
+        idx_path, passages_path = _active_paths()
         self.passages = [json.loads(line) for line in
-                         PASSAGES.read_text(encoding="utf-8").splitlines() if line.strip()]
-        assert len(self.passages) == self.index.ntotal, \
-            "passages.jsonl and index.faiss row counts differ; rebuild embed+index."
+                         passages_path.read_text(encoding="utf-8").splitlines()
+                         if line.strip()]
+        if not self.passages:
+            raise SystemExit(f"no passages found in {passages_path}; "
+                             "run ingest.py + chunk.py first.")
+        if idx_path is None:
+            # Example corpus (real book index not built yet): encode the
+            # example passages and hold a small in-memory index.
+            vecs = self.model.encode([p["text"] for p in self.passages],
+                                     convert_to_numpy=True,
+                                     normalize_embeddings=True).astype("float32")
+            self.index = faiss.IndexFlatIP(vecs.shape[1])
+            self.index.add(vecs)
+        else:
+            self.index = faiss.read_index(str(idx_path))
+            assert len(self.passages) == self.index.ntotal, \
+                "passages.jsonl and index.faiss row counts differ; rebuild embed+index."
 
     def retrieve(self, question: str, top_k: int = 5) -> list:
         """Return passages with text, score, book_id, title, page, and chunk_id."""

@@ -11,22 +11,29 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 import time
 from pathlib import Path
 
 import psutil
 
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:  # allow `python evaluation/run_eval.py` from repo root
+    sys.path.insert(0, str(ROOT))
+
 from src.generate import answer
 from src.retrieve import retrieve
 
-ROOT = Path(__file__).resolve().parent.parent
 QUESTIONS = ROOT / "evaluation" / "questions.json"
-PASSAGES = ROOT / "artifacts" / "passages.jsonl"
 
 
 def load_passage_ids():
+    # Use the same corpus the retriever serves from (real artifacts if built,
+    # otherwise the bundled example passages).
+    from src.retrieve import _active_paths
+    _, passages_path = _active_paths()
     ids = set()
-    with PASSAGES.open(encoding="utf-8") as f:
+    with passages_path.open(encoding="utf-8") as f:
         for line in f:
             if line.strip():
                 ids.add(json.loads(line)["chunk_id"])
@@ -34,9 +41,12 @@ def load_passage_ids():
 
 
 def run(split: str) -> dict:
-    questions = json.loads(QUESTIONS.read_text(encoding="utf-8"))
+    data = json.loads(QUESTIONS.read_text(encoding="utf-8"))
+    # questions.json is {"meta": {...}, "questions": [...]}; tolerate a bare list too.
+    questions = data["questions"] if isinstance(data, dict) else data
     subset = [q for q in questions
-              if q.get("split") == split and q.get("review_status") == "reviewed"]
+              if isinstance(q, dict)
+              and q.get("split") == split and q.get("review_status") == "reviewed"]
     if not subset:
         raise SystemExit(f"No reviewed questions with split == '{split}'.")
 
@@ -125,6 +135,10 @@ def run(split: str) -> dict:
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
+    # Accept both "--split validation" and the positional form documented in
+    # README ("run_eval.py validation") so either invocation works.
+    ap.add_argument("split_positional", nargs="?", choices=["validation", "test"],
+                    default=None)
     ap.add_argument("--split", choices=["validation", "test"], default="validation")
     args = ap.parse_args()
-    run(args.split)
+    run(args.split_positional or args.split)

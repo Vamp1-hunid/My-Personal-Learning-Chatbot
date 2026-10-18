@@ -3,6 +3,12 @@ top_k: 5
 top_k_tier0: 3        # reduce during low-memory / ultra-safe run
 context_length: 1024
 max_context_chars: 3000
-threshold_score: 0.35 # calibrate on validation split; do NOT tune on test
+# 0.35 was too permissive: out-of-scope questions (Olympic results, Apple
+# stock price) scored 0.368-0.487 on topically-adjacent passages and the bot
+# generated confident garbage instead of abstaining. Observed separation on
+# this corpus: in-book questions 0.63-0.68, out-of-book <= 0.49, so 0.55 sits
+# in the gap with ~20% headroom on both sides. Re-calibrate on the validation
+# split once its questions are reviewed; do NOT tune on test.
+threshold_score: 0.55
 min_sources_required: 1
 snippet_chars: 480

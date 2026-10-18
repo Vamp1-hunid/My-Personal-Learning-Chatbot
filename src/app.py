@@ -46,6 +46,12 @@ MAX_TURNS = 8            # bounded session history (memory cap on the demo)
 Q_CHARS = 500            # max question chars stored
 A_CHARS = 4000           # max answer text chars stored
 
+# Bounded demo log must exist before any handler or render touches it; a
+# fresh session previously crashed at `if not st.session_state.log` with
+# "st.session_state has no attribute 'log'".
+if "log" not in st.session_state:
+    st.session_state.log = []
+
 st.title("Book-Grounded Chatbot — Demo")
 st.caption(
     "Answers come ONLY from the ingested books. Every citation is validated "
