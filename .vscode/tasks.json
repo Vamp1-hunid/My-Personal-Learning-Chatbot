@@ -1,0 +1,23 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run chatbot (web GUI)",
+      "type": "shell",
+      "command": "c:/Users/Mulenga Mwamba/AppData/Local/Programs/Python/Python311/python.exe",
+      "args": ["-m", "streamlit", "run", "src/app.py"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run tests",
+      "type": "shell",
+      "command": "c:/Users/Mulenga Mwamba/AppData/Local/Programs/Python/Python311/python.exe",
+      "args": ["-m", "pytest", "-q"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": []
+    }
+  ]
+}

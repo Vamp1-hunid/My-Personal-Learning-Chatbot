@@ -1,0 +1,7 @@
+{
+  "python.defaultInterpreterPath": "C:\\Users\\Mulenga Mwamba\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+  "python.terminal.activateEnvironment": false,
+  "files.exclude": {
+    "**/__pycache__": true
+  }
+}
