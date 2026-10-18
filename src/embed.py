@@ -104,7 +104,13 @@ def run_shard(shard: int | None, shards: int) -> None:
     if isinstance(rev, str) and len(rev) == 40 and \
             all(c in "0123456789abcdef" for c in rev.lower()):
         kwargs["revision"] = rev
-    model = SentenceTransformer(emb_cfg["model_name"], **kwargs)
+    try:
+        model = SentenceTransformer(emb_cfg["model_name"], **kwargs)
+    except Exception as exc:
+        # Offline-first (TASK 2): one plain line, never a hang/traceback wall.
+        raise SystemExit("Embedding model not found in the local cache "
+                         "(models/hf_cache) and we are offline. Run "
+                         "SETUP_ONCE.bat once while online.") from exc
     dim = model.get_sentence_embedding_dimension()
 
     out_path = partial_path(shard)

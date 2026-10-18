@@ -32,7 +32,22 @@ What the page shows per question:
 """
 from __future__ import annotations
 
+import os
 import time
+from pathlib import Path
+
+# ---- OFFLINE-FIRST DEFAULTS (TASK 2) -------------------------------------
+# Set BEFORE streamlit/sentence_transformers are imported so that even a user
+# who launches `streamlit run src/app.py` by hand can never make a network
+# call at runtime. setdefault() respects values injected by the launcher.
+_ROOT = Path(__file__).resolve().parent.parent
+os.environ.setdefault("HF_HOME", str(_ROOT / "models" / "hf_cache"))
+os.environ.setdefault("HF_HUB_OFFLINE", "1")
+os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+os.environ.setdefault("OMP_NUM_THREADS", "2")
+os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
+os.environ.setdefault("STREAMLIT_BROWSER_GATHER_USAGE_STATS", "false")
 
 import streamlit as st
 
@@ -47,6 +62,18 @@ Q_CHARS = 500            # max question chars stored
 A_CHARS = 4000           # max answer text chars stored
 
 st.title("Book-Grounded Chatbot — Demo")
+
+# ---------------- DEMO-MODE banner (TASK 1h) ----------------
+CHATBOT_MODE = os.environ.get("CHATBOT_MODE", "").strip().lower()
+if CHATBOT_MODE == "extractive":
+    st.warning(
+        "**DEMO MODE** — retrieval and citations are live, but the generative "
+        "model is not running. Answers are **extracted passages, not "
+        "model-written**.", icon="⚠️")
+else:
+    st.caption("Generation model status: see the *Mode* metric under each answer "
+               "(local-llm = model-written, extractive = passage excerpt).")
+
 st.caption(
     "Answers come ONLY from the ingested books. Every citation is validated "
     "against the stored passages before display; questions the corpus cannot "
@@ -112,8 +139,20 @@ with st.sidebar:
         try:
             retrieve("preload", top_k=1)
             st.success(f"Loaded in {time.perf_counter() - t0:.0f} s. Ready.")
+        except SystemExit as exc:      # plain one-line messages, never a traceback
+            st.error(str(exc))
         except Exception as exc:
             st.error(f"Preload failed: {exc}")
+    if st.button("Re-check index status", use_container_width=True):
+        try:
+            import src.retrieve as _rt
+            _rt._manifest_checked = False   # force a fresh verification
+            _rt._verify_build_manifest()
+            st.success("Index status: OK.")
+        except SystemExit as exc:
+            st.error(str(exc))
+        except Exception as exc:
+            st.error(str(exc))
     st.caption("Preload before a demo/question session so the first question "
                "does not stall on HDD reads.")
 
@@ -151,7 +190,12 @@ if question:
                           "embed → index first, then reload this page. "
                           f"({exc})")
     except Exception as exc:
-        entry["error"] = f"Unexpected failure: {exc}"
+        name = type(exc).__name__
+        if "OutOfSync" in name or "out of sync" in str(exc).lower():
+            entry["error"] = (f"{exc} — click the sidebar button 'Re-check index "
+                              "status' for details.")
+        else:
+            entry["error"] = f"Unexpected failure: {exc}"
     st.session_state.log = (st.session_state.log + [entry])[-MAX_TURNS:]
 
 
@@ -194,6 +238,9 @@ for entry in st.session_state.log:
                   else ("OK" if top_score >= THRESHOLD else "below threshold"))
         m2.caption(f"threshold {THRESHOLD:.2f}")
         m3.metric("Mode", str(p.get("mode", "—")))
+        if p.get("mode") == "extractive_timeout":
+            st.warning("The generation model did not answer within 60 seconds, so "
+                       "this reply is an **extracted passage**, not model-written.")
 
         with st.expander("Retrieved passages (top-k, before validation)",
                          expanded=False):
