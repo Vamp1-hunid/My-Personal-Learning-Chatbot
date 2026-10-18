@@ -14,6 +14,8 @@ returns the top-k passages with full metadata + cosine score.
 from __future__ import annotations
 
 import json
+import sys
+import warnings
 from pathlib import Path
 
 import faiss
@@ -21,10 +23,44 @@ import numpy as np
 import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 MODELS = yaml.safe_load((ROOT / "config" / "models.yaml").read_text(encoding="utf-8"))
 EMB_CFG = MODELS["embedding"]
 IDX = ROOT / "artifacts" / "index.faiss"
 PASSAGES = ROOT / "artifacts" / "passages.jsonl"
+
+
+class IndexOutOfSyncError(RuntimeError):
+    """Raised when artifacts/BUILD_MANIFEST.json does not match the files on disk.
+
+    A stale index silently returns WRONG passages for a question, which produces
+    plausible-but-wrong citations — the worst possible failure for a graded,
+    citation-grounded chatbot. We refuse to serve rather than guess.
+    """
+
+
+def _verify_build_manifest() -> None:
+    """TASK 3 staleness guard, run once per process on real-artifact load.
+
+    ok       -> continue silently
+    absent   -> warn once (older build), continue
+    mismatch -> raise IndexOutOfSyncError with a clear rebuild instruction
+    """
+    global _manifest_checked
+    if _manifest_checked:
+        return
+    from launcher.runtime_probe import verify_build_manifest
+    status, msg = verify_build_manifest(ROOT / "artifacts")
+    _manifest_checked = True
+    if status == "mismatch":
+        raise IndexOutOfSyncError(msg)
+    if status == "absent":
+        warnings.warn(msg, RuntimeWarning)
+
+
+_manifest_checked = False
 
 # Example corpus used when the real book index has not been built yet (fresh
 # clone, no PDFs). Keeps the chatbot runnable end-to-end out of the box.
@@ -51,9 +87,17 @@ class Retriever:
         if isinstance(rev, str) and len(rev) == 40 and \
                 all(c in "0123456789abcdef" for c in rev.lower()):
             kwargs["revision"] = rev
-        self.model = SentenceTransformer(EMB_CFG["model_name"], **kwargs)
+        try:
+            self.model = SentenceTransformer(EMB_CFG["model_name"], **kwargs)
+        except Exception as exc:
+            # Offline-first (TASK 2): one plain line, never a hang/traceback wall.
+            raise SystemExit(
+                "Embedding model not found in the local cache (models/hf_cache) "
+                "and we are offline. Run SETUP_ONCE.bat once while online.") from exc
 
         idx_path, passages_path = _active_paths()
+        if idx_path is not None:
+            _verify_build_manifest()   # TASK 3: refuse to serve a stale index
         self.passages = [json.loads(line) for line in
                          passages_path.read_text(encoding="utf-8").splitlines()
                          if line.strip()]

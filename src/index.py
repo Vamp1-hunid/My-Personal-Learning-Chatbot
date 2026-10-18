@@ -8,6 +8,7 @@ embedding model, revision, dimension, index type, chunk count.
 from __future__ import annotations
 
 import json
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -16,6 +17,10 @@ import numpy as np
 import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from launcher.runtime_probe import write_build_manifest  # stdlib-only helper
 HARDWARE = yaml.safe_load((ROOT / "config" / "hardware.yaml").read_text(encoding="utf-8"))
 MODELS = yaml.safe_load((ROOT / "config" / "models.yaml").read_text(encoding="utf-8"))
 EMB = ROOT / "artifacts" / "embeddings.npy"
@@ -55,6 +60,13 @@ def main() -> None:
         "stored_passages": "artifacts/passages.jsonl  (row i == vector i; NEVER reorder one without the other)",
     }
     META.write_text(json.dumps(meta, indent=2), encoding="utf-8")
+
+    # TASK 3 staleness guard: sha256 manifest of the three build products.
+    # src/retrieve.py verifies it on every load — a silently stale index would
+    # produce plausible-but-wrong citations, the worst failure for this project.
+    mf = write_build_manifest(IDX.parent, MODELS["embedding"],
+                              num_chunks=int(vecs.shape[0]), group_id="G014")
+    print(f"build manifest written -> {mf}")
     print(f"faiss index built: {IDX}  rows={int(vecs.shape[0])} dim={dim}")
 
 

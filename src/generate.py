@@ -91,6 +91,33 @@ def _format_sources(hits):
 
 
 # --------------------------- local generation -------------------- #
+GEN_TIMEOUT_S = 60.0   # TASK 2: hard cap on the whole generation call
+
+
+def _post_chat_completion(url: str, body: dict, timeout_s: float) -> Optional[str]:
+    """Single blocking HTTP POST with a HARD wall-clock deadline.
+
+    Runs in a worker thread so a hung socket can never block the caller past
+    `timeout_s` (the main thread returns and degrades to extractive instead).
+    The abandoned daemon thread dies with the process; it only ever talks to
+    127.0.0.1, so there is no leaked external connection.
+    """
+    import urllib.request
+    from concurrent.futures import ThreadPoolExecutor
+
+    def _do() -> str:
+        req = urllib.request.Request(url, json.dumps(body).encode("utf-8"),
+                                     {"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=timeout_s) as r:
+            return json.load(r)["choices"][0]["message"]["content"].strip()
+
+    try:
+        with ThreadPoolExecutor(max_workers=1) as ex:
+            return ex.submit(_do).result(timeout=timeout_s)
+    except Exception:
+        return None
+
+
 def _local_generate_llama_server(prompt: str) -> Optional[str]:
     """Call the small llama.cpp llama-server (OpenAI-compatible endpoint).
 
@@ -98,8 +125,8 @@ def _local_generate_llama_server(prompt: str) -> Optional[str]:
         Start-Process tools\\llama.cpp\\llama-server.exe -ArgumentList
             "-m models\\qwen2.5-0.5b-instruct-q4_k_m.gguf -c 1024 -t 2 --port 8081 --host 127.0.0.1"
     Stop it with: Stop-Process -Name llama-server
+    (The launcher START_CHATBOT.bat does this for you.)
     """
-    import urllib.request
     tier_key = f"tier{GEN_CFG.get('tier', 0)}"
     tier_cfg = GEN_CFG.get(tier_key, {})
     body = {
@@ -109,44 +136,57 @@ def _local_generate_llama_server(prompt: str) -> Optional[str]:
         "max_tokens": tier_cfg.get("max_new_tokens", 96),
         "stop": GEN_CFG.get("stop_markers", []),
     }
-    req = urllib.request.Request(GEN_CFG["server_url"],
-                                 json.dumps(body).encode("utf-8"),
-                                 {"Content-Type": "application/json"})
-    try:
-        with urllib.request.urlopen(req, timeout=5) as r:
-            return json.load(r)["choices"][0]["message"]["content"].strip()
-    except Exception:
-        return None
+    return _post_chat_completion(GEN_CFG["server_url"], body, GEN_TIMEOUT_S)
 
 
 def _local_generate_ollama(prompt: str) -> Optional[str]:
-    """Alternative local engine (Tier 1 alt): Ollama CPU mode with tiny model."""
-    try:
-        import ollama
-        cfg_alt = MODELS.get("generation_ollama_alt", {})
-        resp = ollama.chat(model=cfg_alt.get("model_name", "qwen2.5:0.5b-instruct"),
-                           messages=[{"role": "system", "content": SYSTEM_PROMPT},
-                                     {"role": "user", "content": prompt}],
-                           options={
-                               "num_ctx": cfg_alt.get("context_length", 1024),
-                               "num_predict": cfg_alt.get("max_new_tokens", 96),
-                               "temperature": cfg_alt.get("temperature", 0),
-                               "top_p": cfg_alt.get("top_p", 1.0),
-                               "num_thread": HARDWARE.get("threads", 2),
-                           })
-        return resp["message"]["content"].strip()
-    except Exception:
-        return None
+    """Alternative local engine (Tier 1 alt): Ollama CPU mode with tiny model.
+
+    Also bounded by the same hard 60-second deadline (TASK 2). Never touches
+    the network unless an ollama server is already listening on localhost.
+    """
+    import threading
+
+    cfg_alt = MODELS.get("generation_ollama_alt", {})
+    box: dict = {}
+
+    def _do():
+        try:
+            import ollama
+            resp = ollama.chat(model=cfg_alt.get("model_name", "qwen2.5:0.5b-instruct"),
+                               messages=[{"role": "system", "content": SYSTEM_PROMPT},
+                                         {"role": "user", "content": prompt}],
+                               options={
+                                   "num_ctx": cfg_alt.get("context_length", 1024),
+                                   "num_predict": cfg_alt.get("max_new_tokens", 96),
+                                   "temperature": cfg_alt.get("temperature", 0),
+                                   "top_p": cfg_alt.get("top_p", 1.0),
+                                   "num_thread": HARDWARE.get("threads", 2),
+                               })
+            box["text"] = resp["message"]["content"].strip()
+        except Exception:
+            box["text"] = None
+
+    t = threading.Thread(target=_do, daemon=True)
+    t.start()
+    t.join(GEN_TIMEOUT_S)
+    if t.is_alive():
+        return None          # timed out -> caller degrades, never hangs
+    return box.get("text")
 
 
 # --------------------------- hosted generation -------------------- #
 def _hosted_generate(prompt: str) -> Optional[str]:
     """Approved hosted OPENAI-compatible fallback (Tier 2). Requires .env.
 
-    This tier is optional and disabled by default, so a missing dotenv/openai
-    install must return None (fall through to the extractive answer) rather
-    than raise and break the whole answer path.
+    HARD RULE: disabled unless config/models.yaml generation.hosted.enabled is
+    true AND a key exists in .env — so an offline machine NEVER dials out.
+    A missing dotenv/openai install returns None (fall through to extractive)
+    rather than raising and breaking the whole answer path.
     """
+    hosted = GEN_CFG.get("hosted") or {}
+    if not hosted.get("enabled", False):
+        return None
     try:
         from dotenv import load_dotenv
         load_dotenv(ROOT / ".env")
@@ -207,6 +247,47 @@ def _load_passage_store():
     return store
 
 
+def _generate_with_deadline(prompt: str) -> tuple[Optional[str], str]:
+    """Run the local generation chain under a HARD 60-second deadline (TASK 2).
+
+    Returns (text, mode):
+      ("...", "local-llm")        — ollama answered in time
+      ("...", "local-llm")        — llama-server answered in time
+      (None,   "extractive_timeout") — engine was reachable but too slow
+      (None,   "extractive")      — no local engine available at all
+    Never raises, never hangs past GEN_TIMEOUT_S.
+    """
+    import threading
+
+    box: dict = {"text": None, "mode": "extractive"}
+
+    def _chain():
+        # 1) Ollama alt (fastest for this laptop + already configured)
+        text = _local_generate_ollama(prompt)
+        if text is not None:
+            box["text"], box["mode"] = text, "local-llm"
+            return
+        # 2) llama-server (started by START_CHATBOT.bat when the model exists)
+        text = _local_generate_llama_server(prompt)
+        if text is not None:
+            box["text"], box["mode"] = text, "local-llm"
+            return
+        # 3) approved hosted endpoint — only with written approval; the config
+        #    flag stays false, so offline machines never reach this code path.
+        text = _hosted_generate(prompt)
+        if text is not None:
+            box["text"], box["mode"] = text, "hosted-approved"
+
+    t = threading.Thread(target=_chain, daemon=True)
+    t.start()
+    t.join(GEN_TIMEOUT_S)
+    if t.is_alive():
+        # Engine hung past the hard cap: degrade honestly, label it distinctly
+        # so the UI can say "the model timed out", not "no model installed".
+        return None, "extractive_timeout"
+    return box["text"], box["mode"]
+
+
 def build(question: str, top_k: Optional[int] = None) -> dict:
     """Main entry point. Returns the common answer payload.
 
@@ -215,7 +296,7 @@ def build(question: str, top_k: Optional[int] = None) -> dict:
       "sources": [{"book_id": ..., "page": ..., "chunk_id": ...}],
       "insufficient_evidence": bool,
       "conflicts": [...],   # optional; surfaces contradictory passages
-      "mode": "local-llm" | "extractive" | "hosted-approved"
+      "mode": "local-llm" | "extractive" | "extractive_timeout" | "hosted-approved"
     }
     """
     k = top_k or TOP_K
@@ -227,19 +308,11 @@ def build(question: str, top_k: Optional[int] = None) -> dict:
     hits_used = hits[:used]
     prompt = f"Passages:\n{context}\n\nQuestion: {question}"
 
-    # 1) Ollama alt (fastest for this laptop + already configured) ->
-    # 2) llama-server (llama.cpp, does not exist on this machine) ->
-    # 3) approved hosted endpoint -> 4) deterministic extractive fallback.
-    generated = _local_generate_ollama(prompt)
-    mode = 'local-llm'
+    generated, mode = _generate_with_deadline(prompt)
+    timed_out = (mode == "extractive_timeout")
     if generated is None:
-        generated = _local_generate_llama_server(prompt)
-    if generated is None:
-        generated = _hosted_generate(prompt)
-        mode = 'hosted-approved' if generated else mode
-    if not generated:
         generated = _extractive_answer(question, hits_used)
-        mode = 'extractive'
+        mode = "extractive_timeout" if timed_out else "extractive"
     text = generated.strip()
 
 
@@ -268,6 +341,8 @@ def build(question: str, top_k: Optional[int] = None) -> dict:
         if generated == "INSUFFICIENT-EVIDENCE":
             return {"answer": ABSTAIN, "sources": [],
                     "insufficient_evidence": True, "mode": "extractive"}
+        text = generated.strip()
+        mode = "extractive_timeout" if timed_out else "extractive"
         sources = cite.validate_citations(generated, hits_used, store) or \
                   _format_sources(hits_used[:1])
 
