@@ -56,4 +56,4 @@ After changing any file, run `python tools/build_docs.py`. It regenerates `BUILD
 
 ## History
 
-This repository previously held the Group G014 book-grounded RAG chatbot (FAISS, Qwen2.5-0.5B). That code is preserved under the git tag `g014-final`.
+This repository previously held the Group G014 book-grounded RAG chatbot (FAISS, Qwen2.5-0.5B). That code is preserved on the `g014-final` branch.

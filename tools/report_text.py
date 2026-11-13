@@ -205,4 +205,4 @@ def write(d: Doc, files: list[dict]) -> None:
     d.table(["Path", "Lines", "Purpose"], [[f"<code>{E(f['path'])}</code>", f"{f['lines']:,}", E(f["purpose"])] for f in files])
     d.p("Also in the repository: <code>BUILD_GUIDE.html</code> (rebuild everything from scratch), <code>docs/manifest.json</code> "
         "(every file's size and SHA-256), <code>tools/</code> (the scripts that generate these documents and the file "
-        "checker). The previous Group G014 code is kept in the repository history under the tag <code>g014-final</code>.")
+        "checker). The previous Group G014 code is kept on the <code>g014-final</code> branch of the repository.")
