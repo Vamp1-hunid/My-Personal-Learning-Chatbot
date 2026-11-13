@@ -1,22 +1,28 @@
-# Never commit source book PDFs or extracted text (copyright)
-*.pdf
-artifacts/fulltext/
-
-# Never commit secrets
-.env
-
-# Heavy or generated artifacts that exceed normal repo budgets
-artifacts/
-*.gguf
+# Downloaded programs and models (large; fetched by SETUP.bat and VOICE_SETUP.bat)
+runtime/python/
+runtime/wheels/
+runtime/*.zip
+engine/
 models/
-index/
+voice/
+*.gguf
+*.onnx
+*.tar.bz2
+*.whl
 
-# Python noise
-.venv/
+# Your own books and everything QuantaKai saves (private)
+books/
+data/
+logs/
+new stuff/
+inbox/
+backup-*/
+Claude outputs/
+
+# Python and OS noise
 __pycache__/
 *.pyc
-.pytest_cache/
-
-# OS noise
+.venv/
 Thumbs.db
+desktop.ini
 .DS_Store

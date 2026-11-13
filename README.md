@@ -1,124 +1,59 @@
-# Book-Grounded RAG Chatbot — Group G014
+# QuantaKai
 
-A Retrieval-Augmented Generation (RAG) chatbot grounded in **15+ assigned books**:
-retrieves passages (FAISS, CPU), generates short answers with a tiny local Q4-quantized
-model (Qwen2.5-0.5B) served over a separate llama.cpp `llama-server` HTTP process),
-cites page-accurate
-sources, and **refuses** (abstains) when the corpus cannot support an answer.
+A private, offline AI assistant for a Windows laptop. It chats and remembers you, answers from your own books with page numbers, searches the web when asked, writes stories and characters, runs the code it writes, reads pictures and documents, and talks and listens. Everything runs from one portable folder with its own Python, engine and models.
 
-Everything runs **CPU-only** on the target laptop: HP Pavilion, AMD A8-7410,
-12 GB RAM (10.9 usable), 1.82 TB HDD, Windows 10/11 64-bit, no admin rights.
-Full implementation guide: `docs/final_plan.html` (open in any browser — 49 sections).
+**Full rebuild guide:** open [`BUILD_GUIDE.html`](BUILD_GUIDE.html) in a browser (download the file, then double-click it). It lists every program, link, folder, command and the complete code of every file, in build order, with a file checker and an automatic test.
+**Project report:** [`docs/REPORT.html`](docs/REPORT.html) covers design, technology choices, security, testing, results and future work.
 
-## One-time install (PowerShell, from this folder)
+## Features
 
-```powershell
-py -0p                                   # confirm Python 3.11 exists; installed for user only
-py -3.11 -m venv .venv
-.\.venv\Scripts\Activate.ps1             # if blocked: Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-python src\doctor.py                     # hardware + package compatibility check
-```
+| Area | What you get |
+|---|---|
+| Modes | **Chat** (personal, with long-term memory), **Offline** (answers only from your books, cited with pages), **Online** (DuckDuckGo search, cited links), **Create** (stories and character sheets) |
+| Answer styles | Detailed (default), Quick, Code (with a Run button for Python and Java), Teach (full lessons), Quiz (interactive quiz, flashcards, printable study guide) |
+| Library | PDF, EPUB, Word, PowerPoint, .txt and .md; hybrid search (meaning vectors + BM25 keywords, fused with reciprocal rank fusion); 80 subjects in 11 groups; spelling correction; only new or changed books are processed |
+| Memory | "remember that …", automatic learning after chat replies, and an editable Memory page |
+| Extras | Pictures (Windows OCR, vision models), documents attached to a chat, highlight any text to read it aloud or explain it |
+| Voice | Offline voice typing (whisper.cpp); reading aloud with Piper or Kokoro, sentence by sentence while the answer streams; Stop or Esc |
+| Look | Light (default) and dark themes, custom wallpaper, a nickname, and an animated mascot that dresses for each mode and style |
+| Models | Any GGUF chat model up to 5 GB, switched by hand; default Qwen2.5-3B-Instruct Q4_K_M; search model bge-small-en-v1.5 |
 
-Session env (every new window, weak-CPU friendly):
-```powershell
-$env:OMP_NUM_THREADS="2"; $env:MKL_NUM_THREADS="2"
-```
+## Quick start (Windows 10/11)
 
-## Downloads (nothing on the critical path needs admin)
+1. Copy this repository into a folder, for example `C:\Users\<you>\Desktop\QuantaKai`.
+2. Put the numpy (cp314) and PyMuPDF `.whl` files in `runtime\wheels` (links in the guide).
+3. Double-click **SETUP.bat**: it fetches portable Python 3.14, the llama.cpp CPU engine and both models (about 2.1 GB), then runs a speed test.
+4. Optional: double-click **VOICE_SETUP.bat** for voice typing and the reading voice (about 230 MB).
+5. Double-click **START.bat**. The app opens at <http://127.0.0.1:8000>. Put books in `books`, then press **Add all new** on the Library page.
 
-| Artifact | Where | Then |
-|---|---|---|
-| llama.cpp Windows zip tagged **avx** (NOT avx2/avx512) | github.com/ggml-org/llama.cpp/releases | unzip into `tools\llama.cpp\` |
-| Qwen2.5-0.5B-Instruct Q4_K_M GGUF | official Qwen repo on Hugging Face | save into `models\`, record SHA-256 in `config\models.yaml` |
-| Embedding model `all-MiniLM-L6-v2` + **coordinator-pinned revision** | auto-downloaded on first embed run, cached in `%USERPROFILE%\.cache\huggingface` | pin revision in `config\models.yaml` (doctor warns while a placeholder) |
-| (only if a book is scanned) Tesseract UB-Mannheim + `pip install ocrmypdf` | per-user install | OCR one book at a time to `data\cache\ocr\` |
+To stop: close the black window or double-click **STOP.bat**.
 
-**Page convention:** every citation page number is the **PDF page index (1-based)**,
-not the printed book page. Stated here AND in every report.
-
-## Build the index (once per corpus change)
+## Check a build
 
 ```powershell
-python src\ingest.py     # PDFs -> page cache, flags scanned books for OCR
-python src\chunk.py      # 160 words / 30 overlap, per page -> data\passages\passages.jsonl
-python src\embed.py      # MiniLM, batch 4 -> artifacts\embeddings.npy   (10-40 min; offline)
-python src\index.py      # FAISS IndexFlatIP -> artifacts\index.faiss + index_config.json
+runtime\python\python.exe tools\verify_files.py   # every source file matches the guide (SHA-256)
+runtime\python\python.exe tests\smoke_test.py     # the whole app, with a fake engine: ALL TESTS PASSED
 ```
 
-## Ask questions
-
-CLI (primary):
-```powershell
-python -m src.cli "State Ohm's law exactly as the books define it."
-python -m src.cli --json --show-sources "Compare the two books' definitions of EMF."
-```
-
-Streamlit demo (memory-safe: bounded 8-turn log, live RAM stats, abstention banners):
-```powershell
-python -m streamlit run src/app.py
-```
-The demo shows **retrieved passages** (with cosine score bars), **validated citations**
-(expandable to the exact supporting text), **abstention with reasons**, latency,
-answer mode, and free-RAM / process-RSS against the 6 GB warn / 7 GB hard caps.
-Optional separate generation process (unloads with `Stop-Process -Name llama-server`):
-```powershell
-Start-Process tools\llama.cpp\llama-server.exe -ArgumentList "-m models\qwen2.5-0.5b-instruct-q4_k_m.gguf -c 1024 -t 2 --port 8081 --host 127.0.0.1"
-```
-
-## Tests & evaluation
-
-```powershell
-python -m pytest tests/ -v                                       # all tests green before demoing
-python evaluation\run_eval.py validation                          # tune only here (min_score, top_k, chunk size)
-python evaluation\run_eval.py test                                # ONCE at the end; report honest numbers
-```
-Question set: `evaluation\questions.json` — 40 balanced questions
-(10 direct / 6 reasoning / 6 numerical / 6 cross-book / 8 unanswerable / 4 citation-check),
-≈40% validation / 60% test, **split before tuning**. Human-review columns are filled
-row by row in `report_validation.json` / `report_test.json`.
-
-## The three integration contracts (130-group platform)
-
-1. **Passage schema** — see `data/schema/passage.json`; `chunk_id` = `G###_BOOK_###_P#_C##`,
-   row *i* of `embeddings.npy` ↔ line *i* of `data/passages/passages.jsonl`, never reorder one alone.
-2. **Retrieval interface** — `retrieve(question: str, top_k: int = 5) -> list[dict]` in `src\retrieve.py`
-   returning `{text, score, book_id, title, page, chunk_id, edition}`.
-3. **Answer JSON** — exactly `{"answer": str, "sources": [{book_id, page, chunk_id}], "insufficient_evidence": bool}`
-   built via `answer_schema.to_contract_payload()`; extension keys (`mode`, `conflicts`) are local-only.
-
-## Repo layout
+## Repository layout
 
 ```
-src\          doctor ingest chunk embed index retrieve generate citations answer_schema cli app memwatch
-config\       models.yaml chunking.yaml retrieval.yaml hardware.yaml memory.yaml
-data\         books\ (PRIVATE) cache\ passages\ book_manifest.json schema\
-artifacts\    embeddings.npy index.faiss index_config.json passages.example.jsonl
-tests\        test_ingest retrieve citations answer_format abstention chunk
-evaluation\   questions.json run_eval.py template_report.md
-docs\         final_plan.html (full build guide)   SUMMARY.md
-tools\        llama.cpp\ (git-ignored)     models\ (git-ignored)
+app/        Python program: server, chat, library, memory, engines, web, voice, documents, OCR, code runner
+ui/         index.html - the complete interface (HTML, CSS, JavaScript; no libraries)
+scripts/    setup.ps1 and setup_voice.ps1 (used by SETUP.bat and VOICE_SETUP.bat)
+tests/      smoke_test.py and the fake llama-server it uses
+tools/      build_docs.py (regenerates the guide, report and manifest from the code), verify_files.py
+docs/       REPORT.html and manifest.json (every file's size, lines and SHA-256)
+*.bat       START, STOP, SETUP, VOICE_SETUP
+config.json all settings; requirements.txt; README.txt (the in-folder reminder)
 ```
 
-## Safety rules (non-negotiable)
+Not in the repository (downloaded or private): `runtime/`, `engine/`, `models/`, `voice/`, `books/`, `data/`, `logs/`.
 
-- **Never commit**: PDFs, extracted/passages text, `artifacts\`, `models\`, `tools\`, `.env`.
-  (`.gitignore` enforces; still run the secrets audit before each push.)
-- Contract keys stay exactly three for the router; open-source/tunable internals differ per group.
-- Memory-attendance is a request, not a right: < 6 GB free ⇒ tier-0 (top_k 3, ctx 1024);
-  > 6 GB process RSS ⇒ warn; ≥ 7 GB ⇒ stop and drop a tier.
-- Never tune on the test split; never show an unvalidated citation; never average out conflicts.
-- Hosted generation (Tier 2) runs **only** with written approval; keys live in `.env`, never committed.
+## Rebuilding the documents
 
-## Team roles
+After changing any file, run `python tools/build_docs.py`. It regenerates `BUILD_GUIDE.html`, `docs/REPORT.html`, `docs/manifest.json` and `tools/verify_files.py` from the real source, so the guide always shows the current code.
 
-- **Intake/Ops** — books, manifest, permissions, OCR (§16–17 of the guide).
-- **Indexing** — ingest → chunk → embed → index correctness and rebuild scripts.
-- **Generation** — llama-server ops, prompt template, fallback chain.
-- **Evaluation** — questions.json review, human scoring, report numbers.
-- **Integration/QA** — schema/interface checks, secrets audit, submission checklist.
+## History
 
-## Current status
-
-See `HANDOFF.md` for the exact next steps and the one-pass verification status of this copy.
+This repository previously held the Group G014 book-grounded RAG chatbot (FAISS, Qwen2.5-0.5B). That code is preserved under the git tag `g014-final`.

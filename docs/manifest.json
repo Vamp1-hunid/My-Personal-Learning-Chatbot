@@ -1,0 +1,284 @@
+{
+  "project": "QuantaKai",
+  "files": [
+    {
+      "path": "config.json",
+      "lines": 32,
+      "bytes": 968,
+      "sha256": "0eae207bcab3e6eaa199e5b140e043aed8152a6d616c5f6a4bcd90c1049f9af8",
+      "purpose": "Every setting in one place: names, ports, threads, the 5 GB model limit, model file names, search, answer lengths, voice.",
+      "needs": []
+    },
+    {
+      "path": "requirements.txt",
+      "lines": 2,
+      "bytes": 25,
+      "sha256": "414f04b96d211d54b294437dba8742e5742aa43b60c26cf3818b3aef57dbe094",
+      "purpose": "The two Python packages QuantaKai needs. Everything else uses Python's built-in library.",
+      "needs": []
+    },
+    {
+      "path": "app/__init__.py",
+      "lines": 1,
+      "bytes": 96,
+      "sha256": "70df3555e9c095fa128e9890e5098221a4031dd208fa5acc16db74cd1ae355ff",
+      "purpose": "Marks the app folder as a Python package, so the files can import each other (from . import library).",
+      "needs": []
+    },
+    {
+      "path": "app/settings.py",
+      "lines": 78,
+      "bytes": 2817,
+      "sha256": "c389f95d0fd8027924b66fc838afc63981f57054c592cf051c5c4a27bf7576dc",
+      "purpose": "Loads config.json and defines every folder path. Every other module imports its paths and settings from here.",
+      "needs": [
+        "config.json"
+      ]
+    },
+    {
+      "path": "app/prompts.py",
+      "lines": 177,
+      "bytes": 9827,
+      "sha256": "b66c8f35126a10e035f9b2f45fc2abe414147c656fb6cf53ac6dbc3c4deee1f0",
+      "purpose": "The written instructions the model receives before the user's message, one block per mode and style.",
+      "needs": []
+    },
+    {
+      "path": "app/engine.py",
+      "lines": 338,
+      "bytes": 13324,
+      "sha256": "30ce8c9b67ca298c8e9da99bb19edd5f59d833cfc842c9f4b782115c155524f2",
+      "purpose": "Starts, stops and switches the two llama-server processes, and enforces the model size limit.",
+      "needs": [
+        "app/settings.py"
+      ]
+    },
+    {
+      "path": "app/llm.py",
+      "lines": 121,
+      "bytes": 4743,
+      "sha256": "ef91433dfbaba37b19885f6c59dc86076b2f781a46fb7eb94028722e692322bd",
+      "purpose": "Talks to the engines over HTTP with Python's built-in urllib (OpenAI-compatible API).",
+      "needs": [
+        "app/engine.py"
+      ]
+    },
+    {
+      "path": "app/library.py",
+      "lines": 865,
+      "bytes": 45242,
+      "sha256": "0734f1c12a656cac7e3eaccf7bb0b5fe44d644966de6878bc756bd098313bbfd",
+      "purpose": "The book library: reads books and notes, cuts them into passages, builds vectors, sorts books into subjects, and searches.",
+      "needs": [
+        "app/settings.py",
+        "app/llm.py"
+      ]
+    },
+    {
+      "path": "app/memory.py",
+      "lines": 143,
+      "bytes": 4785,
+      "sha256": "f07c6c67a12b5aff86fb1ccd0b46fb433022281b075a2f80b35e5cd58e655354",
+      "purpose": "Long-term memory: facts about the user in data\\memory.json, each with its search vector.",
+      "needs": [
+        "app/llm.py",
+        "app/prompts.py"
+      ]
+    },
+    {
+      "path": "app/web.py",
+      "lines": 111,
+      "bytes": 4506,
+      "sha256": "5300fc142cf16039aea1e2a2c78a0266ce9d20a27cbe4c4035e73b85066ec9b9",
+      "purpose": "Online mode: searches DuckDuckGo's plain-HTML page, reads the top 3 pages in parallel and keeps the paragraphs that best match the question.",
+      "needs": []
+    },
+    {
+      "path": "app/runner.py",
+      "lines": 80,
+      "bytes": 3302,
+      "sha256": "bd9a081876cbabb173a2c01ae2d2b32bda5ff77879f167778c46669ca0d27e07",
+      "purpose": "Runs Python or Java code from an answer on this laptop (the Run button) and returns its output.",
+      "needs": [
+        "app/settings.py"
+      ]
+    },
+    {
+      "path": "app/ocr.py",
+      "lines": 78,
+      "bytes": 3867,
+      "sha256": "054d5718d45ee062ca6010257c1f07f32a5a91b69eebfb2fdeaa754d042c3614",
+      "purpose": "Reads the text in a picture (a screenshot of a question, a photo of notes) with the text recognition built into Windows 10/11.",
+      "needs": [
+        "app/settings.py"
+      ]
+    },
+    {
+      "path": "app/docs.py",
+      "lines": 429,
+      "bytes": 17637,
+      "sha256": "eaa6d0f8da0f8cf26dcb660e0f2fdd5f1522e7f1c63bf10922ed2a92bbd9b251",
+      "purpose": "Documents attached to one chat: read once, saved beside the chat, and their most relevant parts sent with each question in that chat.",
+      "needs": [
+        "app/settings.py"
+      ]
+    },
+    {
+      "path": "app/organize.py",
+      "lines": 67,
+      "bytes": 2761,
+      "sha256": "bb229879c41735bd623cb5c8c7302516cd8cbe1fb6122743685983eb40d6f9bf",
+      "purpose": "Tidies downloads: files dropped in a \"new stuff\" or \"inbox\" folder inside QuantaKai are moved to the right folder at start-up.",
+      "needs": [
+        "app/settings.py"
+      ]
+    },
+    {
+      "path": "app/kokoro_worker.py",
+      "lines": 174,
+      "bytes": 7649,
+      "sha256": "c9da9aea890628041b37900b9ff948bd77978dd9dcd38aea6c22f3bd402c0fbd",
+      "purpose": "A helper program that keeps the Kokoro voice loaded in memory and turns each line of text it receives into a WAV file.",
+      "needs": []
+    },
+    {
+      "path": "app/voice.py",
+      "lines": 608,
+      "bytes": 25217,
+      "sha256": "9ef531c2a48f09b7acdf23386196825a3a8c5e711642ac05473e3199f9d25469",
+      "purpose": "Offline voice: speech-to-text with whisper.cpp, and reading answers aloud with Kokoro or Piper (Windows voices are the page's last resort).",
+      "needs": [
+        "app/settings.py",
+        "app/kokoro_worker.py"
+      ]
+    },
+    {
+      "path": "app/chat.py",
+      "lines": 323,
+      "bytes": 16171,
+      "sha256": "674c4f1f84c9358115ed577d1a00d6ecdbac95276a87f88cc313bbe49447a4bc",
+      "purpose": "Builds every reply: loads the chat, gathers memories, book passages, web extracts or attached documents, fits everything into the context window, streams, saves.",
+      "needs": [
+        "app/docs.py",
+        "app/engine.py",
+        "app/library.py",
+        "app/llm.py",
+        "app/memory.py",
+        "app/ocr.py",
+        "app/web.py",
+        "app/prompts.py"
+      ]
+    },
+    {
+      "path": "app/server.py",
+      "lines": 390,
+      "bytes": 17331,
+      "sha256": "f9b7a1bf3b2adda1d3a5defa0781142c322213d736e78b1e43d44fbd2c70f2d5",
+      "purpose": "The local web server: serves the page and the JSON API, starts the engines, opens the browser.",
+      "needs": [
+        "app/chat.py",
+        "app/docs.py",
+        "app/engine.py",
+        "app/library.py",
+        "app/memory.py",
+        "app/organize.py",
+        "app/runner.py",
+        "app/voice.py"
+      ]
+    },
+    {
+      "path": "app/stop.py",
+      "lines": 6,
+      "bytes": 263,
+      "sha256": "b8da98201c3e62fdc662f67f717861108a34b6ef0b9529b7b83747c991ffb6bc",
+      "purpose": "Used by STOP.bat: stops the app and both engines (process names are checked first).",
+      "needs": [
+        "app/engine.py"
+      ]
+    },
+    {
+      "path": "ui/index.html",
+      "lines": 2269,
+      "bytes": 147620,
+      "sha256": "103fd410c1ef3956ad86a09861f56890deab4d5794f34c1e6e1e718a2a872987",
+      "purpose": "The whole interface in one file: HTML, CSS and JavaScript, no libraries, no internet.",
+      "needs": [
+        "app/server.py"
+      ]
+    },
+    {
+      "path": "START.bat",
+      "lines": 10,
+      "bytes": 241,
+      "sha256": "ffdc2b18a5634c7a76344d3e5a29d3622988f2f89fa61bdccc7a966ef600bf70",
+      "purpose": "Double-click to run QuantaKai with its own portable Python. Keep the black window open while you use it.",
+      "needs": []
+    },
+    {
+      "path": "STOP.bat",
+      "lines": 10,
+      "bytes": 230,
+      "sha256": "c7b5417e9473c307fc18169fb39d160a6caee7a836a2652d0a88e37f6ada6afe",
+      "purpose": "Double-click to stop everything (for example after the START window was closed oddly).",
+      "needs": []
+    },
+    {
+      "path": "SETUP.bat",
+      "lines": 13,
+      "bytes": 439,
+      "sha256": "a925e8c23b88f9e3bedbb43009e95b6c9736217f4986e7af252d816b89db65bf",
+      "purpose": "Runs scripts\\setup.ps1, which does the download steps of this guide automatically.",
+      "needs": []
+    },
+    {
+      "path": "VOICE_SETUP.bat",
+      "lines": 8,
+      "bytes": 226,
+      "sha256": "ca3198f7dfa03ab1fa22035fbe7e7cfe8e1c8a9cf2484ff28859305f67c12cc1",
+      "purpose": "Runs scripts\\setup_voice.ps1 (whisper.cpp, the Whisper model, Piper and a voice).",
+      "needs": []
+    },
+    {
+      "path": "scripts/setup.ps1",
+      "lines": 283,
+      "bytes": 14088,
+      "sha256": "6b9eff55fe0289ce3c9648795c5fb863940877e30b267e3724524943e4b8c65f",
+      "purpose": "Automatic setup: portable Python and its packages, the llama.cpp CPU engine, both models, a speed test. Safe to run again.",
+      "needs": []
+    },
+    {
+      "path": "scripts/setup_voice.ps1",
+      "lines": 121,
+      "bytes": 7244,
+      "sha256": "ee563bd6b87b68a1911d33a6fec64ddec2191d5591a3363543ea3f1c0bdac8ea",
+      "purpose": "Downloads whisper.cpp (whisper-cli), the Whisper base.en model, Piper and the en_US-hfc_female-medium voice into the voice folder.",
+      "needs": []
+    },
+    {
+      "path": "README.txt",
+      "lines": 28,
+      "bytes": 1558,
+      "sha256": "79470198b07512d4bafb77ec4df57be1149edb234428c42353bea8c1ba15508a",
+      "purpose": "The short reminder kept in the QuantaKai folder: start, stop, voice, and what each folder holds.",
+      "needs": []
+    },
+    {
+      "path": "tests/fake_llama_server.py",
+      "lines": 91,
+      "bytes": 3712,
+      "sha256": "f5057c38e36e8f5d329e871ea9a67cc4734265f0178a688de7504ad13a435d33",
+      "purpose": "A stand-in for llama-server used only by tests: answers /health, chat (streamed and not) and embeddings with predictable fake data.",
+      "needs": []
+    },
+    {
+      "path": "tests/smoke_test.py",
+      "lines": 176,
+      "bytes": 8629,
+      "sha256": "e39aa27ea24040803e649ef58d229126c348281b8fd3f754c5852af704caf690",
+      "purpose": "Checks the whole app in a temporary copy with the fake engine: start-up, the size limit, adding a book, study answers with sources, chat, memory, saved chats, security.",
+      "needs": [
+        "tests/fake_llama_server.py"
+      ]
+    }
+  ]
+}

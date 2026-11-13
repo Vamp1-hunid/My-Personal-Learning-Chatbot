@@ -1,0 +1,2269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QuantaKai</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%235eead4'/%3E%3Cstop offset='1' stop-color='%23818cf8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='14' fill='url(%23g)'/%3E%3C/svg%3E">
+<style>
+/* ------------------------------------------------------------------ colours
+   Dark is the default; light is used when Windows is in light mode or when
+   you click the sun/moon button. Change the --accent colours to re-theme. */
+:root{
+  --bg:#0b0f17; --bg2:#111725; --panel:#151c2c; --panel2:#1b2336; --line:#26304a;
+  --text:#e7ecf5; --muted:#8e9ab3; --faint:#5d6886;
+  --accent:#5eead4; --accent2:#818cf8; --danger:#f87171; --ok:#4ade80; --warn:#fbbf24;
+  --user:#1f2a44; --shadow:0 10px 30px rgba(0,0,0,.35); --radius:14px;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f6f7fb; --bg2:#eef1f7; --panel:#ffffff; --panel2:#f3f5fa; --line:#dfe4ee;
+    --text:#151a26; --muted:#5b6478; --faint:#9aa3b5; --user:#e6ecfb;
+    --accent:#0d9488; --accent2:#4f46e5; --shadow:0 10px 30px rgba(20,30,60,.10); color-scheme:light;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#f6f7fb; --bg2:#eef1f7; --panel:#ffffff; --panel2:#f3f5fa; --line:#dfe4ee;
+  --text:#151a26; --muted:#5b6478; --faint:#9aa3b5; --user:#e6ecfb;
+  --accent:#0d9488; --accent2:#4f46e5; --shadow:0 10px 30px rgba(20,30,60,.10); color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font:15px/1.6 "Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.5}
+.app{display:grid;grid-template-columns:272px 1fr;height:100vh}
+
+/* ------------------------------------------------------------------ sidebar */
+.side{background:var(--bg2);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.brand{display:flex;align-items:center;gap:10px;padding:18px 18px 12px}
+.orb{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff8,transparent 40%),linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 0 18px color-mix(in srgb,var(--accent) 45%,transparent)}
+.brand b{font-size:16px;letter-spacing:.2px}
+.newchat{margin:6px 14px 10px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--panel);display:flex;gap:8px;align-items:center;justify-content:center;font-weight:600}
+.newchat:hover{border-color:var(--accent)}
+.label{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--faint);padding:10px 20px 6px}
+.history{flex:1;overflow:auto;padding:0 8px}
+.hitem{display:flex;align-items:center;gap:6px;padding:8px 10px;border-radius:10px;color:var(--muted);cursor:pointer;font-size:14px}
+.hitem span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hitem:hover,.hitem.on{background:var(--panel);color:var(--text)}
+.hitem .x{opacity:0;border:0;background:none;color:var(--faint);padding:0 4px}
+.hitem:hover .x{opacity:1}
+.nav{padding:8px;border-top:1px solid var(--line);display:grid;gap:2px}
+.nav button{display:flex;gap:10px;align-items:center;padding:9px 12px;border:0;background:none;border-radius:10px;color:var(--muted);text-align:left}
+.nav button:hover,.nav button.on{background:var(--panel);color:var(--text)}
+.nav .count{margin-left:auto;font-size:12px;color:var(--faint)}
+.engine{margin:8px 12px 14px;padding:10px 12px;border-radius:12px;background:var(--panel);border:1px solid var(--line);font-size:12.5px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--faint);flex:none}
+.dot.ready{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+.dot.loading{background:var(--warn);animation:pulse 1s infinite}
+.dot.error{background:var(--danger)}
+@keyframes pulse{50%{opacity:.3}}
+.engine .name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.iconbtn{border:1px solid var(--line);background:var(--panel);border-radius:10px;width:34px;height:34px;display:grid;place-items:center;flex:none}
+.iconbtn:hover{border-color:var(--accent)}
+svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+/* ------------------------------------------------------------------ main */
+.main{display:flex;flex-direction:column;min-width:0;min-height:0}
+.top{display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(8px)}
+.menu{display:none}
+.seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:3px}
+.seg button{border:0;background:none;padding:6px 14px;border-radius:9px;color:var(--muted);font-weight:600;font-size:13.5px;display:flex;gap:6px;align-items:center}
+.seg button.on{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 22%,transparent),color-mix(in srgb,var(--accent2) 22%,transparent));color:var(--text);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 35%,transparent)}
+.spacer{flex:1}
+select{font:inherit;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:7px 10px;max-width:340px}
+.view{flex:1;overflow:auto;min-height:0}
+.hidden{display:none!important}
+
+/* ------------------------------------------------------------------ messages */
+.thread{max-width:820px;margin:0 auto;padding:26px 22px 10px}
+.welcome{text-align:center;padding:9vh 10px 20px}
+.welcome .orb{width:64px;height:64px;margin:0 auto 18px}
+.welcome h1{font-size:28px;margin:0 0 6px;font-weight:650;letter-spacing:-.3px}
+.welcome p{color:var(--muted);margin:0 0 22px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chip{border:1px solid var(--line);background:var(--panel);padding:8px 14px;border-radius:999px;color:var(--muted);font-size:13.5px}
+.chip:hover{color:var(--text);border-color:var(--accent)}
+.msg{display:flex;gap:12px;margin:0 0 22px;animation:rise .25s ease}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}}
+.msg.user{justify-content:flex-end}
+.msg.user .bubble{background:var(--user);border-radius:18px 18px 4px 18px;padding:10px 16px;max-width:78%;white-space:pre-wrap;word-wrap:break-word}
+.av{width:28px;height:28px;border-radius:50%;flex:none;margin-top:2px;background:linear-gradient(135deg,var(--accent),var(--accent2))}
+.msg.bot .body{flex:1;min-width:0}
+.tag{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+.md{word-wrap:break-word}
+.md p{margin:0 0 10px}
+.md h1,.md h2,.md h3{font-size:16px;margin:14px 0 6px}
+.md ul,.md ol{margin:0 0 10px;padding-left:22px}
+.md li{margin:2px 0}
+.md code{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:1px 5px;font:13px Consolas,ui-monospace,monospace}
+.md pre{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px;overflow:auto}
+.md pre code{border:0;padding:0;background:none}
+.cite{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 4px;margin:0 1px;border-radius:6px;font-size:11px;font-weight:700;vertical-align:1px;background:color-mix(in srgb,var(--accent) 20%,transparent);color:var(--accent);cursor:pointer;border:0}
+.cursor::after{content:"";display:inline-block;width:8px;height:15px;margin-left:2px;background:var(--accent);vertical-align:-2px;animation:pulse .8s infinite}
+.thinking{color:var(--muted);font-size:14px;display:flex;gap:8px;align-items:center}
+.sources{margin:8px 0 4px;border:1px solid var(--line);border-radius:12px;background:var(--panel);overflow:hidden}
+.sources summary{padding:8px 12px;cursor:pointer;font-size:13px;color:var(--muted);list-style:none;display:flex;gap:8px;align-items:center}
+.sources summary::-webkit-details-marker{display:none}
+.src{padding:10px 12px;border-top:1px solid var(--line);font-size:13.5px}
+.src .h{display:flex;gap:8px;align-items:baseline}
+.src .n{color:var(--accent);font-weight:700}
+.src .t{font-weight:600}
+.src .p{color:var(--muted);font-size:12.5px;margin-left:auto;white-space:nowrap}
+.src .x{color:var(--muted);margin-top:4px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
+.src .x.open{-webkit-line-clamp:unset}
+.src.flash{animation:flash 1.2s}
+@keyframes flash{30%{background:color-mix(in srgb,var(--accent) 18%,transparent)}}
+.actions{user-select:none;-webkit-user-select:none;display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap}
+.ucol{display:flex;flex-direction:column;align-items:flex-end;max-width:78%;min-width:0}
+.ucol .bubble{max-width:100%!important}
+.uacts{display:flex;gap:6px;margin-top:5px;opacity:0;transition:opacity .15s}
+.msg.user:hover .uacts,.msg.user:focus-within .uacts{opacity:1}
+@media (hover:none){.uacts{opacity:1}}
+.uedit{width:min(560px,70vw);display:flex;flex-direction:column;gap:8px}
+.uedit textarea{width:100%;resize:vertical;min-height:70px;border-radius:14px;border:1px solid var(--accent2);background:var(--panel);color:var(--text);padding:10px 14px;font:inherit}
+.uedit .row{display:flex;gap:8px;justify-content:flex-end}
+.cut{font-size:12.5px;color:var(--muted);margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.act.resend{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 60%,transparent)}
+.act{border:1px solid var(--line);background:none;border-radius:8px;padding:3px 10px;font-size:12.5px;color:var(--muted);display:flex;gap:5px;align-items:center}
+.act:hover{color:var(--text);border-color:var(--accent)}
+.act svg{width:14px;height:14px}
+.stats{font-size:12px;color:var(--faint);margin-left:4px}
+.err{border:1px solid color-mix(in srgb,var(--danger) 50%,transparent);background:color-mix(in srgb,var(--danger) 10%,transparent);color:var(--text);border-radius:12px;padding:10px 14px;font-size:14px}
+
+/* ------------------------------------------------------------------ composer */
+.composer{padding:10px 20px 18px}
+.box{max-width:820px;margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:8px 8px 8px 16px;display:flex;gap:8px;align-items:flex-end;box-shadow:var(--shadow)}
+.box:focus-within{border-color:color-mix(in srgb,var(--accent) 60%,var(--line))}
+textarea{flex:1;border:0;outline:0;background:none;color:var(--text);font:inherit;resize:none;max-height:200px;padding:7px 0;line-height:1.5}
+.send{width:40px;height:40px;border-radius:12px;border:0;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#071018;display:grid;place-items:center}
+.send svg{stroke-width:2.4}
+.hint{max-width:820px;margin:7px auto 0;font-size:12px;color:var(--faint);text-align:center}
+
+/* ------------------------------------------------------------------ pages */
+.page{max-width:860px;margin:0 auto;padding:28px 22px 60px}
+.page h2{margin:0 0 4px;font-size:24px;letter-spacing:-.2px}
+.page .sub{color:var(--muted);margin:0 0 20px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.btn{border:1px solid var(--line);background:var(--panel);padding:9px 14px;border-radius:11px;font-weight:600;display:inline-flex;gap:8px;align-items:center}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#071018;border:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;display:flex;gap:14px;align-items:center}
+.card .grow{flex:1;min-width:0}
+.card .title{font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.card .meta{color:var(--muted);font-size:13px}
+.badge{font-size:11.5px;padding:2px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.badge.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 40%,transparent)}
+.badge.new{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 40%,transparent)}
+.badge.bad{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 40%,transparent)}
+.progress{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px}
+.bar{height:8px;border-radius:99px;background:var(--panel2);overflow:hidden;margin:10px 0 8px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s}
+.log{font-size:12.5px;color:var(--muted);max-height:140px;overflow:auto;white-space:pre-wrap}
+.memtext{outline:0;border-radius:6px;padding:2px 4px;margin:-2px -4px}
+.memtext[contenteditable="true"]{background:var(--panel2);box-shadow:0 0 0 1px var(--accent)}
+.input{flex:1;min-width:220px;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:9px 12px;color:var(--text);font:inherit;outline:0}
+.input:focus{border-color:var(--accent)}
+.switch{display:flex;gap:10px;align-items:center;color:var(--muted);font-size:14px;cursor:pointer}
+.switch input{width:38px;height:22px;appearance:none;border-radius:99px;background:var(--line);position:relative;cursor:pointer;transition:.2s;margin:0}
+.switch input::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s}
+.switch input:checked{background:var(--accent)}
+.switch input:checked::after{left:19px}
+.empty{color:var(--muted);text-align:center;padding:40px 10px;border:1px dashed var(--line);border-radius:var(--radius)}
+.selpop{position:fixed;z-index:30;display:flex;gap:4px;padding:4px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);animation:rise .15s}
+.selpop[hidden]{display:none}
+.selpop button{display:flex;align-items:center;gap:6px;border:0;background:transparent;color:var(--text);font:inherit;font-size:13px;padding:6px 10px;border-radius:8px;cursor:pointer;white-space:nowrap}
+.selpop button:hover{background:var(--line)}
+.selpop svg{width:15px;height:15px;flex:none}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);padding:10px 16px;border-radius:12px;font-size:14px;z-index:20;animation:rise .2s}
+.note{font-size:13px;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:14px 0}
+
+
+/* ================================================================== QUANTA THEME
+   A cooler look done with CSS only. Everything here is static (gradients,
+   borders, shadows) or GPU-cheap (transform/opacity on small elements), so it
+   costs nothing while the model is writing. Delete this block to go back. */
+:root{
+  --bg:#070a12; --bg2:#0a0e19; --panel:#0f1424; --panel2:#141b2f; --line:#1f2942;
+  --accent:#2ee6d0; --accent2:#8b7bff; --accent3:#ff6ad5;
+  --glow:0 0 0 1px color-mix(in srgb,var(--accent) 35%,transparent),0 0 24px -6px color-mix(in srgb,var(--accent) 55%,transparent);
+  --mode:var(--accent2);
+}
+:root[data-theme="light"]{--accent3:#db2777}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--accent3:#db2777}}
+body{
+  font-family:"Segoe UI Variable Display","Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+  background:
+    radial-gradient(900px 500px at 85% -10%,color-mix(in srgb,var(--accent2) 16%,transparent),transparent 60%),
+    radial-gradient(700px 420px at 10% 110%,color-mix(in srgb,var(--accent) 11%,transparent),transparent 60%),
+    var(--bg);
+  background-attachment:fixed;
+}
+/* faint grid, painted once */
+.main{position:relative;isolation:isolate}
+.main::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.35;
+  background-image:linear-gradient(color-mix(in srgb,var(--line) 55%,transparent) 1px,transparent 1px),
+                   linear-gradient(90deg,color-mix(in srgb,var(--line) 55%,transparent) 1px,transparent 1px);
+  background-size:44px 44px;
+  -webkit-mask-image:radial-gradient(ellipse at 50% 0%,#000 0%,transparent 70%);mask-image:radial-gradient(ellipse at 50% 0%,#000 0%,transparent 70%)}
+::selection{background:color-mix(in srgb,var(--accent) 35%,transparent)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px;border:3px solid transparent;background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background-color:var(--faint)}
+::-webkit-scrollbar-track{background:transparent}
+
+/* sidebar */
+.side{background:linear-gradient(180deg,color-mix(in srgb,var(--bg2) 92%,var(--accent2)) 0%,var(--bg2) 40%);border-right:1px solid var(--line)}
+.brand b{font-size:17px;font-weight:700;letter-spacing:.4px;background:linear-gradient(90deg,var(--text),color-mix(in srgb,var(--accent) 70%,var(--text)));-webkit-background-clip:text;background-clip:text;color:transparent}
+.orb{position:relative;background:conic-gradient(from 0deg,var(--accent),var(--accent2),var(--accent3),var(--accent));box-shadow:0 0 22px -2px color-mix(in srgb,var(--accent2) 70%,transparent)}
+.orb::after{content:"";position:absolute;inset:3px;border-radius:50%;background:radial-gradient(circle at 32% 30%,#ffffffcc,transparent 35%),radial-gradient(circle,color-mix(in srgb,var(--bg) 30%,transparent),transparent 70%)}
+.brand .orb{animation:spin 14s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.newchat{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 16%,var(--panel)),color-mix(in srgb,var(--accent2) 16%,var(--panel)));border-color:color-mix(in srgb,var(--accent) 30%,var(--line));transition:transform .15s,box-shadow .15s}
+.newchat:hover{box-shadow:var(--glow);transform:translateY(-1px)}
+.hitem{transition:background .15s,color .15s;position:relative}
+.hitem.on{background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 14%,transparent),transparent)}
+.hitem.on::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:3px;background:linear-gradient(var(--accent),var(--accent2))}
+.nav button.on{background:color-mix(in srgb,var(--accent2) 14%,transparent);color:var(--text)}
+.engine{background:color-mix(in srgb,var(--panel) 80%,transparent)}
+
+/* top bar + mode switch */
+.top{background:color-mix(in srgb,var(--bg) 70%,transparent);border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
+.seg{background:color-mix(in srgb,var(--panel) 85%,transparent);border-radius:14px}
+.seg button{transition:color .15s,background .2s,box-shadow .2s}
+.seg button:hover{color:var(--text)}
+#modeSeg button[data-mode="chat"]{--m:var(--accent2)}
+#modeSeg button[data-mode="study"]{--m:var(--accent)}
+#modeSeg button[data-mode="online"]{--m:var(--accent3)}
+#modeSeg button[data-mode="create"]{--m:var(--warn)}
+.msg.bot[data-mode="create"] .tag{color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent)}
+#modeSeg button.on{background:color-mix(in srgb,var(--m) 20%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--m) 55%,transparent),0 0 16px -4px color-mix(in srgb,var(--m) 70%,transparent)}
+#modeSeg button::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--m);opacity:.45}
+#modeSeg button.on::before{opacity:1;box-shadow:0 0 8px var(--m)}
+
+/* welcome */
+.welcome .orb{width:84px;height:84px;animation:float 6s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-8px)}}
+.welcome h1{font-size:34px;font-weight:700;letter-spacing:-.6px;background:linear-gradient(90deg,var(--accent),var(--accent2) 50%,var(--accent3));-webkit-background-clip:text;background-clip:text;color:transparent}
+.chip{background:color-mix(in srgb,var(--panel) 80%,transparent);transition:transform .15s,border-color .15s,color .15s}
+.chip:hover{transform:translateY(-2px);box-shadow:var(--glow)}
+
+/* messages */
+.msg.user .bubble{background:linear-gradient(135deg,color-mix(in srgb,var(--accent2) 30%,var(--panel)),color-mix(in srgb,var(--accent) 18%,var(--panel)));border:1px solid color-mix(in srgb,var(--accent2) 30%,transparent);box-shadow:0 6px 20px -10px color-mix(in srgb,var(--accent2) 60%,transparent)}
+.av{position:relative;background:conic-gradient(from 210deg,var(--accent),var(--accent2),var(--accent3),var(--accent));box-shadow:0 0 14px -3px color-mix(in srgb,var(--accent) 70%,transparent)}
+.av::after{content:"Q";position:absolute;inset:2px;border-radius:50%;background:var(--bg);display:grid;place-items:center;font-size:12px;font-weight:800;color:var(--accent)}
+.tag{display:inline-block;padding:1px 8px;border-radius:99px;font-weight:700;letter-spacing:1.2px;color:var(--accent2);background:color-mix(in srgb,var(--accent2) 12%,transparent);margin-bottom:6px}
+.md pre{background:color-mix(in srgb,var(--bg) 70%,var(--panel2));border-color:color-mix(in srgb,var(--accent2) 22%,var(--line))}
+.md code{color:color-mix(in srgb,var(--accent) 75%,var(--text))}
+.md pre code{color:var(--text)}
+.md strong{color:color-mix(in srgb,var(--accent) 35%,var(--text))}
+.md a{color:var(--accent)}
+.cite{transition:transform .1s}
+.cite:hover{transform:scale(1.15)}
+.sources{background:color-mix(in srgb,var(--panel) 75%,transparent);border-color:color-mix(in srgb,var(--accent) 22%,var(--line));border-left:3px solid var(--accent)}
+.src a{color:var(--text);text-decoration:none;border-bottom:1px dashed var(--faint)}
+.src a:hover{color:var(--accent);border-color:var(--accent)}
+.act{transition:color .15s,border-color .15s}
+.thinking .dot.loading{background:var(--accent);box-shadow:0 0 10px var(--accent)}
+
+/* composer */
+.box{position:relative;background:color-mix(in srgb,var(--panel) 92%,transparent);border-radius:20px;transition:border-color .2s,box-shadow .2s}
+.box:focus-within{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));box-shadow:var(--shadow),var(--glow)}
+.send{background:linear-gradient(135deg,var(--accent),var(--accent2) 60%,var(--accent3));transition:transform .15s,box-shadow .15s}
+.send:hover:not(:disabled){transform:translateY(-1px) scale(1.04);box-shadow:0 0 20px -4px var(--accent2)}
+.send:active{transform:scale(.96)}
+
+/* pages */
+.page h2{background:linear-gradient(90deg,var(--text),color-mix(in srgb,var(--accent) 60%,var(--text)));-webkit-background-clip:text;background-clip:text;color:transparent;width:fit-content}
+.card{background:color-mix(in srgb,var(--panel) 85%,transparent);transition:border-color .15s,transform .15s}
+.card:hover{border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
+.btn{transition:border-color .15s,box-shadow .15s}
+.btn.primary:hover{box-shadow:0 0 20px -4px var(--accent2)}
+
+/* mode colour for answer tags (set by the page script via data-mode) */
+.msg.bot[data-mode="study"] .tag{color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.msg.bot[data-mode="online"] .tag{color:var(--accent3);background:color-mix(in srgb,var(--accent3) 12%,transparent)}
+.msg.bot[data-mode="online"] .sources{border-left-color:var(--accent3)}
+
+/* people who turn off animations in Windows get none */
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* ------------------------------------------------------------------ tidy top bar */
+#modelSelect{max-width:270px;text-overflow:ellipsis}
+.voicewrap{position:relative}
+#voiceMenuBtn.on{color:var(--accent3,var(--accent));border-color:var(--accent3,var(--accent));box-shadow:0 0 14px -4px var(--accent3,var(--accent))}
+.voicepop{position:absolute;right:0;top:calc(100% + 8px);z-index:30;width:300px;padding:14px;border-radius:14px;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px}
+.vrow{display:flex;gap:12px;align-items:center;justify-content:space-between}
+.vrow b{font-size:13.5px}.vrow small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.vlabel{display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--muted)}
+.vlabel .voicesel{max-width:none;width:100%}
+.switch{flex:none;width:40px;height:22px;border-radius:99px;border:1px solid var(--line);background:var(--panel2);position:relative;cursor:pointer;padding:0}
+.switch i{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--muted);transition:left .15s,background .15s}
+.switch.on{background:color-mix(in srgb,var(--accent) 30%,var(--panel2));border-color:var(--accent)}
+.switch.on i{left:20px;background:var(--accent)}
+.toolrow{max-width:820px;margin:0 auto 8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.seg.small{padding:2px;border-radius:11px}.seg.small button{padding:4px 11px;font-size:12.5px}
+.toolrow .bookbar{max-width:none;margin:0 0 0 auto;display:flex;align-items:center;gap:6px}
+.toolrow .bookbar.hidden{display:none}
+
+/* ------------------------------------------------------------------ living logo */
+canvas.qblob{display:block;flex:none;cursor:default;touch-action:none}
+.brand canvas.qblob{margin:-5px -3px -5px -5px}
+.welcome canvas.qblob.big{margin:-10px auto 4px}
+/* moving text-character field behind the welcome blob */
+#view-chat{overflow-x:hidden}
+.top{position:relative;z-index:30}   /* top bar and its pop-ups always sit above the page */
+.welcome{position:relative}
+.welcome>*:not(.qfield){position:relative;z-index:1}
+canvas.qfield{position:absolute;z-index:0;left:50%;transform:translateX(-50%);top:calc(9vh - 165px);
+  width:min(100vw,1600px);height:460px;pointer-events:none;display:block}
+
+/* ------------------------------------------------------------------ voice menu */
+.voicesel{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:6px 8px;font-size:12.5px;max-width:230px}
+
+/* ------------------------------------------------------------------ library subjects */
+.thumbs{max-width:820px;margin:0 auto 8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.thumb{position:relative;width:72px;height:72px;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb button{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;font-size:11px;cursor:pointer}
+.thumbnote{font-size:12px;color:var(--muted)}
+.ctxbar{max-width:820px;margin:0 auto 8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12.5px}
+.ctxbar .lbl{color:var(--muted);margin-right:2px}
+.dchip{display:inline-flex;align-items:center;gap:6px;max-width:260px;padding:4px 6px 4px 9px;border-radius:9px;border:1px solid var(--line);
+  background:color-mix(in srgb,var(--panel) 85%,transparent)}
+.dchip svg{width:14px;height:14px;flex:none;fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.dchip .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dchip .sz{color:var(--muted);white-space:nowrap}
+.dchip button{border:0;background:none;color:var(--muted);padding:0 3px;font-size:14px;line-height:1;cursor:pointer}
+.dchip button:hover{color:var(--text)}
+.dchip.up{opacity:.7}.dchip.up .sz::after{content:"";display:inline-block;width:9px;height:9px;margin-left:5px;border:2px solid var(--muted);border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-1px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ctxused{font-size:12px;color:var(--muted);margin:2px 0 6px;display:flex;gap:6px;align-items:center}
+.ctxused svg{width:13px;height:13px;fill:none;stroke:var(--accent);stroke-width:2}
+.upic{display:block;max-width:260px;max-height:220px;border-radius:10px;margin-bottom:8px}
+.ocrbox{font-size:12.5px;color:var(--muted);margin:4px 0 8px}.ocrbox pre{white-space:pre-wrap;max-height:220px;overflow:auto}
+.fixes{font-size:12.5px;color:var(--muted);margin:4px 0 6px}.fixes b{color:var(--accent);font-weight:600}.fixes s{color:var(--faint);margin-left:2px}
+.meta .est{color:var(--warn);font-weight:600}
+.cathead{margin:22px 2px 8px;font-size:13px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--accent)}
+.cathead span{color:var(--faint);font-weight:500;text-transform:none;letter-spacing:0;margin-left:6px}
+.catsel{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:5px 8px;font-size:12.5px;max-width:190px}
+.btn.small{padding:5px 14px;font-size:13px}
+.bookbar{max-width:820px;margin:0 auto 8px;font-size:12.5px;color:var(--muted)}
+.bookbar select{margin-left:8px;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:4px 8px;font-size:12.5px}
+.ctag{font-size:11px;padding:1px 7px;border-radius:99px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);margin:0 6px;white-space:nowrap}
+.sources .cats{color:var(--faint);font-weight:400}
+
+/* ------------------------------------------------------------------ run code + quiz */
+.runbar{display:flex;gap:6px;margin:-4px 0 8px}
+.runout{border:1px solid var(--line);border-radius:10px;margin:0 0 10px;overflow:hidden}
+.runout .rh{font-size:12px;font-weight:700;padding:4px 10px;background:var(--panel2)}
+.runout.good .rh{color:var(--accent)} .runout.bad .rh{color:var(--danger)}
+.runout pre{margin:0;border:0;border-radius:0;max-height:300px;overflow:auto}
+.runout .act{margin:8px 10px}
+.quizbox{display:flex;flex-direction:column;gap:12px}
+.qhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.qhead b{font-size:16px}
+.qscore{margin-left:auto;font-weight:700;color:var(--accent)}
+.qq{border:1px solid var(--line);border-radius:12px;padding:12px;background:color-mix(in srgb,var(--panel) 80%,transparent)}
+.qt{font-weight:600;margin-bottom:8px}
+.qo{display:block;width:100%;text-align:left;margin:5px 0;padding:8px 12px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--text);cursor:pointer}
+.qo:hover{border-color:var(--accent)}.qo b{color:var(--accent2);margin-right:6px}
+.qo.right{border-color:#22c55e;background:color-mix(in srgb,#22c55e 18%,var(--panel2))}
+.qo.wrong{border-color:var(--danger);background:color-mix(in srgb,var(--danger) 18%,var(--panel2))}
+.qq.done .qo{cursor:default}
+.qwhy{margin-top:8px;font-size:14px;color:var(--muted)}
+.qcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}.qcards .qt{grid-column:1/-1}
+.fc{position:relative;min-height:96px;border-radius:12px;border:1px solid var(--line);cursor:pointer;padding:12px;display:grid;place-items:center;text-align:center;background:linear-gradient(135deg,color-mix(in srgb,var(--accent2) 14%,var(--panel)),var(--panel));transition:transform .2s}
+.fc:hover{transform:translateY(-2px)}.fc .bk{display:none}.fc.flip .f{display:none}.fc.flip .bk{display:block}
+.fc.flip{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 16%,var(--panel)),var(--panel))}
+
+/* ------------------------------------------------------------------ voice */
+.mic{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--muted);display:grid;place-items:center;flex:none;transition:color .15s,border-color .15s,background .15s}
+.mic:hover{color:var(--text);border-color:var(--accent)}
+.mic.rec{color:#fff;border-color:transparent;background:var(--danger);animation:recpulse 1.4s ease-in-out infinite}
+.mic.wait{color:var(--accent);border-color:var(--accent)}
+@keyframes recpulse{50%{box-shadow:0 0 0 7px color-mix(in srgb,var(--danger) 25%,transparent)}}
+#voiceBtn.on{color:var(--accent3,var(--accent));border-color:var(--accent3,var(--accent));box-shadow:0 0 14px -4px var(--accent3,var(--accent))}
+.act.speaking{color:var(--accent);border-color:var(--accent)}
+.recbar{max-width:820px;margin:0 auto 8px;display:flex;gap:10px;align-items:center;font-size:13px;color:var(--muted)}
+.recbar .lvl{flex:1;height:6px;border-radius:99px;background:var(--panel2);overflow:hidden}
+.recbar .lvl i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--danger));transition:width .08s}
+
+/* ------------------------------------------------------------------ small screens */
+@media (max-width:820px){
+  .app{grid-template-columns:1fr}
+  .side{position:fixed;inset:0 auto 0 0;width:272px;z-index:10;transform:translateX(-100%);transition:transform .2s;box-shadow:var(--shadow)}
+  .side.open{transform:none}
+  .menu{display:grid}
+  .top{padding:10px 12px;flex-wrap:wrap}
+  .msg.user .bubble{max-width:90%}
+  select{max-width:150px}
+}
+/* ------------------------------------------------------------------ wallpaper (Personalise page) */
+#wall{position:fixed;inset:-40px;z-index:0;background:center/cover no-repeat;display:none;filter:blur(var(--wall-blur,0px))}
+#wall::after{content:"";position:absolute;inset:0;background:var(--bg);opacity:var(--wall-dim,.35)}
+body.has-wall #wall{display:block}
+body.has-wall .app{position:relative;z-index:1;background:transparent}
+body.has-wall .side{background:color-mix(in srgb,var(--bg2) 82%,transparent);backdrop-filter:blur(14px)}
+body.has-wall .msg.bot .body,body.has-wall .welcome p{text-shadow:0 0 12px var(--bg),0 0 2px var(--bg)}
+/* ------------------------------------------------------------------ personalise page */
+.pset{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px}
+.pset h3{margin:0 0 4px;font-size:16px}
+.pset p{margin:0 0 12px;color:var(--muted);font-size:13.5px}
+.pset .row{margin-bottom:0}
+.wallprev{width:220px;height:124px;border-radius:12px;border:1px solid var(--line);background:var(--panel2) center/cover no-repeat;display:grid;place-items:center;color:var(--faint);font-size:13px}
+.slider{display:flex;gap:10px;align-items:center;color:var(--muted);font-size:13.5px;margin-top:10px}
+.slider input{flex:1;accent-color:var(--accent)}
+.slider b{min-width:44px;text-align:right;color:var(--text);font-weight:600}
+/* ------------------------------------------------------------------ stop talking */
+.stoptalk{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);z-index:40;display:flex;gap:10px;align-items:center;
+  padding:9px 16px 9px 12px;border-radius:999px;border:1px solid var(--line);background:var(--panel);box-shadow:var(--shadow);font-weight:600;font-size:14px;animation:rise .2s}
+.stoptalk i{width:10px;height:10px;border-radius:2px;background:var(--danger)}
+.stoptalk .bars{display:flex;gap:2px;align-items:flex-end;height:14px}
+.stoptalk .bars span{width:3px;background:var(--accent);border-radius:2px;animation:talk 0.9s ease-in-out infinite}
+.stoptalk .bars span:nth-child(2){animation-delay:.15s}.stoptalk .bars span:nth-child(3){animation-delay:.3s}
+@keyframes talk{0%,100%{height:4px}50%{height:14px}}
+.stoptalk small{color:var(--faint);font-weight:400}
+</style>
+</head>
+<body>
+<div id="wall" aria-hidden="true"></div>
+<div class="app">
+  <!-- ============================================================ SIDEBAR -->
+  <aside class="side" id="side">
+    <div class="brand"><canvas class="qblob" data-size="40" aria-hidden="true"></canvas><b id="appName">QuantaKai</b></div>
+    <button class="newchat" id="newChat"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New chat</button>
+    <div class="label">Recent</div>
+    <div class="history" id="history"></div>
+    <div class="nav">
+      <button data-view="chat" class="on"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>Chat</button>
+      <button data-view="library"><svg viewBox="0 0 24 24"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 19a2 2 0 0 0 2 2h13"/></svg>Library<span class="count" id="countBooks"></span></button>
+      <button data-view="memory"><svg viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0-6 6c0 2.2 1.2 3.6 2 4.5.7.8 1 1.5 1 2.5h6c0-1 .3-1.7 1-2.5.8-.9 2-2.3 2-4.5a6 6 0 0 0-6-6zM9 20h6"/></svg>Memory<span class="count" id="countMem"></span></button>
+      <button data-view="models"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 9h6v6H9zM9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/></svg>Models</button>
+      <button data-view="personal"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Personalise</button>
+    </div>
+    <div class="engine"><span class="dot" id="engineDot"></span><span class="name" id="engineName">Starting...</span>
+      <button class="iconbtn" id="themeBtn" title="Switch light / dark"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+    </div>
+  </aside>
+
+  <!-- ============================================================ MAIN -->
+  <main class="main">
+    <div class="top">
+      <button class="iconbtn menu" id="menuBtn" title="Menu"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <div class="seg" id="modeSeg">
+        <button data-mode="chat" class="on">Chat</button>
+        <button data-mode="study" title="Answers only from your PDF books">Offline</button>
+        <button data-mode="online" title="Searches the web for the best answer">Online</button>
+        <button data-mode="create" title="Write stories and create characters">Create</button>
+      </div>
+      <div class="spacer"></div>
+      <div class="voicewrap">
+        <button class="iconbtn" id="voiceMenuBtn" title="Voice settings"><svg viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></button>
+        <div class="voicepop hidden" id="voicePop">
+          <div class="vrow"><div><b>Voice mode</b><small>Speak your question and hear every answer read aloud</small></div>
+            <button class="switch" id="voiceBtn" role="switch" title="Turn voice mode on or off"><i></i></button></div>
+          <label class="vlabel">Reading voice<select id="voiceSel" class="voicesel" title="Used by Read aloud and voice mode"></select></label>
+          <button class="btn small" id="voicePrev" title="Hear the selected voice">&#9654; Preview voice</button>
+        </div>
+      </div>
+      <select id="modelSelect" title="Chat model (switch by hand)"></select>
+    </div>
+
+    <!-- chat view -->
+    <section class="view" id="view-chat">
+      <div class="thread" id="thread"></div>
+    </section>
+    <div class="composer" id="composer">
+      <div class="toolrow hidden" id="toolrow">
+      <div class="seg small" id="styleSeg" title="How answers are written">
+        <button data-style="explain" class="on" title="Detailed, expert answers (default)">Detailed</button>
+        <button data-style="quick" title="Short answers">Quick</button>
+        <button data-style="code" title="Complete, runnable code using your sources">Code</button>
+        <button data-style="teach" title="A full lesson: examples, practice questions, project walkthroughs">Teach</button>
+        <button data-style="quiz" title="An interactive quiz and flashcards you can save as a study guide">Quiz</button>
+      </div>
+      <div class="seg small hidden" id="createSeg" title="What to create">
+        <button data-cstyle="story" class="on" title="Write a story from your prompt; say 'continue' for more">Story</button>
+        <button data-cstyle="character" title="Build a full character sheet from your idea">Character</button>
+      </div>
+        <label class="bookbar hidden" id="bookbar">Books
+          <select id="bookCat" title="Which subject's books to search. Auto picks the best match for each question."></select></label>
+      </div>
+      <div class="recbar hidden" id="recbar"><span id="recText">Listening...</span><div class="lvl"><i id="recLvl"></i></div><span id="recTime">0:00</span></div>
+      <div class="ctxbar hidden" id="ctxbar"></div>
+      <div class="thumbs hidden" id="thumbs"></div>
+      <div class="box">
+        <button class="mic" id="attachBtn" title="Add pictures or documents (PDF, Word, PowerPoint, Excel, text, code...) - or paste a screenshot with Ctrl+V"><svg viewBox="0 0 24 24"><path d="M21 11.5l-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l8.6-8.6a3.7 3.7 0 0 1 5.2 5.2l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6l7.9-7.9"/></svg></button>
+        <input type="file" id="fileIn" multiple hidden>
+        <textarea id="input" rows="1" spellcheck="true" lang="en" autocorrect="on" placeholder="Message your assistant..."></textarea>
+        <button class="mic" id="micBtn" title="Voice typing: click, speak, click again (offline)"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+        <button class="send" id="sendBtn" title="Send (Enter)"><svg viewBox="0 0 24 24" id="sendIcon"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      </div>
+      <div class="hint" id="hint">Enter to send - Shift+Enter for a new line - everything stays on this laptop</div>
+    </div>
+
+    <!-- library view -->
+    <section class="view hidden" id="view-library"><div class="page">
+      <h2>Library</h2>
+      <p class="sub">Books the assistant can study from, grouped by subject. Put PDF or EPUB books, Word (.docx) or PowerPoint (.pptx) files, or .txt / .md notes in the books folder, then press <b>Add</b> on the ones you want. Each book's subject - textbooks, novels, the Bible, notes, anything - helps the assistant pick the right books to consult. Subjects are guessed from the title, then from the book's content once it is added; change any guess, or make your own with "+ New subject".</p>
+      <div class="row">
+        <button class="btn" id="scanBtn" title="Queue every book that hasn't been added yet">Add all new</button>
+        <button class="btn" data-open="books">Open books folder</button>
+      </div>
+      <div class="progress hidden" id="progress">
+        <div id="progTitle">Working...</div>
+        <div class="bar"><i id="progBar"></i></div>
+        <div class="log" id="progLog"></div>
+      </div>
+      <div id="bookList"></div>
+    </div></section>
+
+    <!-- memory view -->
+    <section class="view hidden" id="view-memory"><div class="page">
+      <h2>Memory</h2>
+      <p class="sub">What the assistant has learned about you. It reads the most relevant facts before each chat reply. Everything is stored only in data\memory.json.</p>
+      <div class="row">
+        <input class="input" id="memInput" placeholder="Teach it something, e.g. My exam is on 3 December">
+        <button class="btn primary" id="memAdd">Remember</button>
+      </div>
+      <label class="switch"><input type="checkbox" id="autoLearn"> Learn automatically from chat-mode conversations</label>
+      <div class="note">Tip: in Chat mode you can also type "remember that ..." and it is saved straight away.</div>
+      <div id="memList"></div>
+    </div></section>
+
+    <!-- models view -->
+    <section class="view hidden" id="view-models"><div class="page">
+      <h2>Models</h2>
+      <p class="sub" id="modelsSub">Every .gguf file in the models folder. Switching is manual: pick one and press Load.</p>
+      <div class="row"><button class="btn" data-open="models">Open models folder</button><button class="btn" id="refreshModels">Refresh list</button></div>
+      <div id="modelList"></div>
+    </div></section>
+
+    <!-- personalise view -->
+    <section class="view hidden" id="view-personal"><div class="page">
+      <h2>Personalise</h2>
+      <p class="sub">Make QuantaKai yours. Everything here is saved in this folder (data\state.json and data\wallpaper), so it moves with it.</p>
+      <div class="pset">
+        <h3>What should QuantaKai call you?</h3>
+        <p>Used in replies and read aloud. If the voice says your name wrongly, try a nickname, or spell it the way it sounds (for example <i>Mwahmbah</i>). Leave empty to use <span id="cfgName"></span>.</p>
+        <div class="row">
+          <input class="input" id="nickIn" maxlength="40" placeholder="Your nickname">
+          <button class="btn primary" id="nickSave">Save</button>
+          <button class="btn" id="nickHear" title="Hear how the reading voice says it">&#9654; Hear it</button>
+        </div>
+      </div>
+      <div class="pset">
+        <h3>Theme</h3>
+        <p>Light is the default.</p>
+        <div class="seg" id="themeSeg">
+          <button data-theme="light">Light</button><button data-theme="dark">Dark</button><button data-theme="system">Match Windows</button>
+        </div>
+      </div>
+      <div class="pset">
+        <h3>Wallpaper</h3>
+        <p>Show your own picture behind the chat. PNG, JPG, GIF or WebP, up to 15 MB.</p>
+        <div class="row" style="align-items:flex-start">
+          <div class="wallprev" id="wallPrev">No wallpaper</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button class="btn primary" id="wallPick">Choose picture...</button>
+            <button class="btn" id="wallRemove">Remove</button>
+            <input type="file" id="wallIn" accept="image/png,image/jpeg,image/gif,image/webp" hidden>
+          </div>
+        </div>
+        <label class="slider">Fade <input type="range" id="wallDim" min="0" max="90" step="5"><b id="wallDimV"></b></label>
+        <label class="slider">Blur <input type="range" id="wallBlur" min="0" max="30" step="1"><b id="wallBlurV"></b></label>
+      </div>
+    </div></section>
+  </main>
+</div>
+
+<script>
+"use strict";
+/* ================================================================ helpers */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const store = {  // browser storage can be unavailable; never let that break the page
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} }
+};
+async function api(path, method = "GET", body) {
+  const res = await fetch(path, {method, headers: {"Content-Type": "application/json"},
+                                 body: body === undefined ? undefined : JSON.stringify(body)});
+  return res.json().catch(() => ({}));
+}
+function toast(text) {
+  const t = document.createElement("div");
+  t.className = "toast"; t.textContent = text; document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2600);
+}
+const ICON = {
+  doc: '<svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>',
+  retry: '<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>',
+  edit: '<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg>',
+  speak: '<svg viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>',
+  copy: '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>',
+  simple: '<svg viewBox="0 0 24 24"><path d="M12 3l2.4 5 5.6.8-4 3.9 1 5.5L12 15.6 7 18.2l1-5.5-4-3.9 5.6-.8z"/></svg>',
+  book: '<svg viewBox="0 0 24 24"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 19a2 2 0 0 0 2 2h13"/></svg>',
+  send: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  stop: '<rect x="7" y="7" width="10" height="10" rx="2"/>'
+};
+
+/* ================================================================ markdown
+   Turns the model's **bold**, lists, `code` and [1] citations into HTML.
+   Text is escaped FIRST, so nothing the model writes can run as code.   */
+function inline(s) {
+  return s
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/(^|[^*])\*([^*\s][^*]*)\*/g, "$1<em>$2</em>")
+    .replace(/\[(\d{1,2})\]/g, '<button class="cite" data-n="$1">$1</button>');
+}
+function markdown(src) {
+  let text = esc(src);
+  const fences = (text.match(/```/g) || []).length;
+  if (fences % 2) text += "\n```";               // close a code block that is still being written
+  const out = [];
+  const parts = text.split(/```/);
+  parts.forEach((part, i) => {
+    if (i % 2) {
+      const lang = ((part.match(/^(\w*)\n/) || [])[1] || "").toLowerCase();
+      out.push(`<pre data-lang="${lang}"><code>` + part.replace(/^\w*\n/, "") + "</code></pre>");
+      return;
+    }
+    let list = null, para = [];
+    const flushPara = () => { if (para.length) { out.push("<p>" + inline(para.join("<br>")) + "</p>"); para = []; } };
+    const flushList = () => { if (list) { out.push(`<${list.type}>` + list.items.map(x => "<li>" + inline(x) + "</li>").join("") + `</${list.type}>`); list = null; } };
+    for (const line of part.split("\n")) {
+      let m;
+      if (!line.trim()) { flushPara(); flushList(); continue; }
+      if ((m = line.match(/^\s*#{1,4}\s+(.*)/))) { flushPara(); flushList(); out.push("<h3>" + inline(m[1]) + "</h3>"); continue; }
+      if ((m = line.match(/^\s*(?:[-*•])\s+(.*)/)) || (m = line.match(/^\s*\d+[.)]\s+(.*)/))) {
+        const type = /^\s*\d/.test(line) ? "ol" : "ul";
+        flushPara();
+        if (!list || list.type !== type) { flushList(); list = {type, items: []}; }
+        list.items.push(m[1]); continue;
+      }
+      flushList(); para.push(line);
+    }
+    flushPara(); flushList();
+  });
+  return out.join("");
+}
+
+/* ================================================================ state */
+const S = {
+  conv: null, mode: store.get("mode", "chat"), style: store.get("style2", "explain"), cstyle: store.get("cstyle", "story"),
+  busy: false, ctrl: null, status: null
+};
+
+/* ================================================================ theme */
+function applyTheme(t) {
+  if (t === "system") delete document.documentElement.dataset.theme;
+  else if (t) document.documentElement.dataset.theme = t;
+  $$("#themeSeg button").forEach(b => b.classList.toggle("on", b.dataset.theme === (t || "light")));
+}
+if (store.get("themeDefault", "") !== "light") {   // light is the default (once; your later choice is kept)
+  store.set("theme", "light"); store.set("themeDefault", "light");
+}
+applyTheme(store.get("theme", "light"));
+$("#themeBtn").onclick = () => {
+  const dark = getComputedStyle(document.documentElement).colorScheme.includes("dark");
+  const next = dark ? "light" : "dark";
+  applyTheme(next); store.set("theme", next);
+};
+$$("#themeSeg button").forEach(b => b.onclick = () => { applyTheme(b.dataset.theme); store.set("theme", b.dataset.theme); });
+
+/* ================================================================ navigation */
+function show(view) {
+  $$(".nav button").forEach(b => b.classList.toggle("on", b.dataset.view === view));
+  $$(".view").forEach(v => v.classList.add("hidden"));
+  $("#view-" + view).classList.remove("hidden");
+  $("#composer").classList.toggle("hidden", view !== "chat");
+  $("#modeSeg").classList.toggle("hidden", view !== "chat");
+  $("#styleSeg").classList.toggle("hidden", view !== "chat" || S.mode === "chat" || S.mode === "create");
+  $("#side").classList.remove("open");
+  if (view === "library") loadBooks();
+  if (view === "memory") loadMemory();
+  if (view === "models") loadModels();
+  if (view === "personal") loadPersonal();
+}
+$$(".nav button").forEach(b => b.onclick = () => show(b.dataset.view));
+$("#menuBtn").onclick = () => $("#side").classList.toggle("open");
+$$("[data-open]").forEach(b => b.onclick = () => api("/api/open-folder", "POST", {which: b.dataset.open}));
+
+function setMode(mode) {
+  S.mode = mode; store.set("mode", mode); window.Blobs && Blobs.refresh();
+  $$("#modeSeg button").forEach(b => b.classList.toggle("on", b.dataset.mode === mode));
+  $("#styleSeg").classList.toggle("hidden", mode === "chat" || mode === "create");
+  $("#createSeg").classList.toggle("hidden", mode !== "create");
+  $("#toolrow").classList.toggle("hidden", mode === "chat");
+  $("#bookbar").classList.toggle("hidden", mode !== "study");
+  const story = S.cstyle !== "character";
+  $("#input").placeholder = mode === "study" ? "Ask a question about your books..."
+    : mode === "online" ? "Ask anything - I'll search the web..."
+    : mode === "create" ? (story ? "Describe a story: genre, characters, setting, length..." : "Describe a character: who they are, their world, their role...")
+    : "Message your assistant...";
+  $("#hint").textContent = mode === "study"
+    ? "Offline mode answers only from your books and shows the pages it used"
+    : mode === "online" ? "Online mode searches the web (your question is sent to DuckDuckGo) and links its sources"
+    : mode === "create" ? (story ? "Story: say \"continue\" for the next part, or ask for changes" : "Character: ask for changes and the full sheet is rewritten")
+    : "Enter to send - Shift+Enter for a new line - everything stays on this laptop";
+}
+function setStyle(style) {
+  S.style = style; store.set("style2", style); window.Blobs && Blobs.refresh();
+  $$("#styleSeg button").forEach(b => b.classList.toggle("on", b.dataset.style === style));
+}
+$$("#modeSeg button").forEach(b => b.onclick = () => setMode(b.dataset.mode));
+$$("#styleSeg button").forEach(b => b.onclick = () => setStyle(b.dataset.style));
+function setCreateStyle(cs) {
+  S.cstyle = cs; store.set("cstyle", cs);
+  $$("#createSeg button").forEach(b => b.classList.toggle("on", b.dataset.cstyle === cs));
+  if (S.mode === "create") setMode("create");
+}
+$$("#createSeg button").forEach(b => b.onclick = () => setCreateStyle(b.dataset.cstyle));
+
+/* ================================================================ status + model picker */
+async function refreshStatus() {
+  try {
+    const s = await api("/api/status");
+    S.status = s;
+    const wk = `${s.wallpaper}/${s.wall_dim}/${s.wall_blur}`;
+    if (S.wallKey !== wk) { S.wallKey = wk; applyWall(s); }
+    $("#appName").textContent = s.app_name;
+    document.title = s.app_name;
+    const dot = $("#engineDot");
+    dot.className = "dot " + (s.chat.state === "ready" ? "ready" : s.chat.state === "loading" ? "loading" : s.chat.state === "error" ? "error" : "");
+    $("#engineName").textContent = s.chat.state === "loading" ? "Loading " + (s.chat.model || "model") + "..."
+      : s.chat.state === "ready" ? s.chat.model : (s.chat.error || "No model loaded");
+    $("#engineName").title = s.chat.error || s.chat.model || "";
+    $("#countBooks").textContent = s.books || "";
+    $("#countMem").textContent = s.memories || "";
+    if (!S.busy) $("#sendBtn").disabled = s.chat.state !== "ready";
+  } catch { $("#engineName").textContent = "App not running"; $("#engineDot").className = "dot error"; }
+}
+async function fillModelSelect() {
+  const r = await api("/api/models");
+  const sel = $("#modelSelect");
+  sel.innerHTML = r.models.length ? "" : "<option>No models in folder</option>";
+  for (const m of r.models) {
+    const o = document.createElement("option");
+    o.value = m.name; o.disabled = !m.allowed;
+    const short = m.name.replace(/\.gguf$/i, "").replace(/^[A-Za-z]+_(?=[A-Z])/, "").replace(/[-_.](i?q\d\w*|f16|bf16)$/i, "").replace(/-instruct/i, "");
+    o.textContent = `${short} - ${m.size_gb} GB${m.allowed ? "" : " (blocked)"}`; o.title = m.name;
+    if (m.name === r.active) o.selected = true;
+    sel.appendChild(o);
+  }
+}
+$("#modelSelect").onchange = async e => {
+  await api("/api/models/load", "POST", {name: e.target.value});
+  toast("Loading " + e.target.value + "...");
+  setTimeout(refreshStatus, 300);
+};
+
+/* ================================================================ chat history */
+async function loadHistory() {
+  const r = await api("/api/chats");
+  const box = $("#history");
+  box.innerHTML = r.chats.length ? "" : '<div class="hitem" style="cursor:default"><span>No chats yet</span></div>';
+  for (const c of r.chats) {
+    const d = document.createElement("div");
+    d.className = "hitem" + (c.id === S.conv ? " on" : "");
+    d.innerHTML = `<span title="${esc(c.title)}">${esc(c.title)}</span><button class="x" title="Delete">&times;</button>`;
+    d.onclick = () => openChat(c.id);
+    d.querySelector(".x").onclick = async ev => {
+      ev.stopPropagation();
+      if (!confirm("Delete this chat?")) return;
+      await api("/api/chats/" + c.id, "DELETE");
+      if (S.conv === c.id) newChat(); else loadHistory();
+    };
+    box.appendChild(d);
+  }
+}
+function welcome() {
+  const name = S.status ? S.status.user_name : "";
+  $("#thread").innerHTML = `<div class="welcome"><canvas class="qfield" aria-hidden="true"></canvas><canvas class="qblob big" data-size="150" aria-label="QuantaKai"></canvas>
+    <h1>Hi${name ? " " + esc(name) : ""}, what's on your mind?</h1>
+    <p>Chat about anything, switch to Offline to learn from your books, or Online to search the web.</p>
+    <div class="chips">
+      <button class="chip" data-q="Help me plan my study week">Plan my study week</button>
+      <button class="chip" data-q="Explain overfitting in machine learning" data-m="study">Offline: overfitting</button>
+      <button class="chip" data-q="What do you remember about me?">What do you remember about me?</button>
+    </div></div>`;
+  $$(".chip").forEach(c => c.onclick = () => { if (c.dataset.m) setMode(c.dataset.m); $("#input").value = c.dataset.q; send(); });
+  if (Blobs) Blobs.mount($("#thread"));
+}
+function newChat() { S.conv = null; Docs.set([]); welcome(); loadHistory(); show("chat"); $("#input").focus(); }
+$("#newChat").onclick = newChat;
+
+async function openChat(id) {
+  const c = await api("/api/chats/" + id);
+  if (!c.messages && !c.docs) return;
+  c.messages = c.messages || [];
+  S.conv = id; show("chat"); Docs.set(c.docs);
+  const thread = $("#thread"); thread.innerHTML = "";
+  if (!c.messages.length) welcome();
+  let u = null;
+  for (const m of c.messages) {
+    if (m.role === "user") {
+      const shown = m.display || m.content;
+      u = addUser(shown); u.dataset.turn = m.turn || "";
+      u._payload = {message: m.content, text: shown.replace(/ \(with picture\)$/, ""), images: [],
+                    mode: m.mode || "chat", style: m.style || "explain", simpler: shown === "Explain that more simply"};
+    }
+    else { const b = addBot(m.mode); b._user = u; finishBot(b, m.content, m.sources || [], m.stats || {}, m.mode); }
+  }
+  loadHistory(); scrollDown(true);
+}
+
+/* ================================================================ messages */
+function scrollDown(force) {
+  const v = $("#view-chat");
+  if (force || v.scrollHeight - v.scrollTop - v.clientHeight < 160) v.scrollTop = v.scrollHeight;
+}
+function addUser(text, images) {
+  if ($(".welcome")) $("#thread").innerHTML = "";
+  const d = document.createElement("div");
+  const pics = (images || []).map(src => `<img class="upic" src="${src}" alt="attached picture">`).join("");
+  d.className = "msg user";
+  d.innerHTML = `<div class="ucol"><div class="bubble">${pics}${esc(text)}</div>
+    <div class="uacts"><button class="act" data-u="edit" title="Change this question and ask again">${ICON.edit}Edit</button>
+    <button class="act" data-u="copy">${ICON.copy}Copy</button></div></div>`;
+  $("#thread").appendChild(d); scrollDown(true);
+  bindUser(d, text);
+  return d;
+}
+function bindUser(d, text) {
+  d.querySelector('[data-u="edit"]').onclick = () => editUser(d);
+  d.querySelector('[data-u="copy"]').onclick = () => { navigator.clipboard?.writeText(d._payload ? (d._payload.text ?? d._payload.message) : text); toast("Copied"); };
+}
+/* Retry, Resend and Edit: remove that question and everything after it, then ask again */
+function removeFrom(el) { while (el.nextSibling) el.nextSibling.remove(); el.remove(); }
+function busyNote() { toast("Wait for the current answer to finish, or press Stop first"); }
+function retry(b) {
+  if (S.busy) return busyNote();
+  const u = b._user;
+  if (!u || !u._payload) return toast("This answer can't be retried");
+  removeFrom(u);
+  send({resend: u._payload, rewind: u.dataset.turn});
+}
+function editUser(u) {
+  if (S.busy) return busyNote();
+  const p = u._payload; if (!p) return;
+  const col = u.querySelector(".ucol"), before = col.innerHTML;
+  col.innerHTML = `<div class="uedit"><textarea aria-label="Edit your question"></textarea>
+    <div class="row"><button class="btn small" data-e="cancel">Cancel</button><button class="btn small primary" data-e="send">Send</button></div></div>`;
+  const ta = col.querySelector("textarea");
+  ta.value = p.simpler ? "Explain that more simply" : (p.text ?? p.message);
+  const fit = () => { ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight + 2, 320) + "px"; };
+  fit(); ta.addEventListener("input", fit); ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
+  const cancel = () => { col.innerHTML = before; bindUser(u, p.text ?? p.message); };
+  const go = () => {
+    const v = ta.value.trim();
+    if (!v && !(p.images || []).length) return;
+    if (S.busy) return busyNote();
+    removeFrom(u);
+    send({resend: {...p, message: v, text: v, simpler: false}, rewind: u.dataset.turn});
+  };
+  col.querySelector('[data-e="cancel"]').onclick = cancel;
+  col.querySelector('[data-e="send"]').onclick = go;
+  ta.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); go(); }
+    else if (e.key === "Escape") cancel();
+  });
+}
+function showResend(b, note) {
+  const a = b.querySelector(".actions");
+  const w = document.createElement("div"); w.className = "cut";
+  w.innerHTML = `<span>${esc(note)}</span><button class="act resend">${ICON.retry}Resend</button>`;
+  w.querySelector("button").onclick = () => retry(b);
+  a.after(w);
+}
+function addBot(mode) {
+  const d = document.createElement("div");
+  d.className = "msg bot";
+  d.dataset.mode = mode;
+  d.innerHTML = `<div class="av"></div><div class="body">
+    <div class="tag">${mode === "study" ? "Offline" : mode === "online" ? "Online" : mode === "create" ? "Create" : "Chat"}</div>
+    <div class="srcwrap"></div>
+    <div class="md"><div class="thinking"><span class="dot loading"></span>${mode === "study" ? "Searching your books..." : mode === "online" ? "Searching the web..." : mode === "create" ? "Writing..." : "Thinking..."}</div></div>
+    <div class="actions"></div></div>`;
+  $("#thread").appendChild(d); scrollDown(true);
+  return d;
+}
+function renderSources(b, sources, categories, corrections) {
+  const fixes = corrections && Object.keys(corrections).length
+    ? `<div class="fixes" title="Spelling was corrected for the book search only">Searched for ${Object.entries(corrections)
+        .map(([a, c]) => `<b>${esc(c)}</b> <s>${esc(a)}</s>`).join(", ")}</div>` : "";
+  const online = sources.length && sources[0].url;
+  if (!sources.length) {
+    b.querySelector(".srcwrap").innerHTML = fixes + '<div class="note" style="margin:6px 0">No matching sources found.</div>';
+    return;
+  }
+  if (online) {
+    const items = sources.map(s => `<div class="src" data-n="${s.n}"><div class="h"><span class="n">[${s.n}]</span>
+       <span class="t"><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a></span>
+       <span class="p">${esc(new URL(s.url).hostname)}</span></div><div class="x">${esc(s.text)}</div></div>`).join("");
+    b.querySelector(".srcwrap").innerHTML = `<details class="sources"><summary>${sources.length} web source${sources.length > 1 ? "s" : ""}</summary>${items}</details>`;
+    $$(".src .x", b).forEach(x => x.onclick = () => x.classList.toggle("open"));
+    return;
+  }
+  const items = sources.map(s => `<div class="src" data-n="${s.n}"><div class="h"><span class="n">[${s.n}]</span>
+     <span class="t">${esc(s.title)}</span>${s.category ? `<span class="ctag">${esc(s.category)}</span>` : ""}<span class="p">${s.page === s.page_end ? "p. " + s.page : "pp. " + s.page + "-" + s.page_end} - match ${Math.round(s.score * 100)}%</span></div>
+     <div class="x">${esc(s.text)}</div></div>`).join("");
+  const searched = categories && categories.length ? ` <span class="cats">- searched: ${categories.map(esc).join(", ")}</span>` : "";
+  b.querySelector(".srcwrap").innerHTML = fixes + `<details class="sources"><summary>${ICON.book}${sources.length} passage${sources.length > 1 ? "s" : ""} from your books${searched}</summary>${items}</details>`;
+  $$(".src .x", b).forEach(x => x.onclick = () => x.classList.toggle("open"));
+}
+function finishBot(b, text, sources, stats, mode) {
+  if (mode === "study" || mode === "online") renderSources(b, sources);
+  b.querySelector(".md").innerHTML = markdown(text);
+  $$(".cite", b).forEach(c => c.onclick = () => {
+    const det = b.querySelector("details"); if (!det) return;
+    det.open = true;
+    const row = b.querySelector(`.src[data-n="${c.dataset.n}"]`);
+    if (row) { row.classList.remove("flash"); void row.offsetWidth; row.classList.add("flash"); row.scrollIntoView({block: "nearest", behavior: "smooth"}); }
+  });
+  const a = b.querySelector(".actions");
+  a.innerHTML = `<button class="act" data-a="copy">${ICON.copy}Copy</button>
+    <button class="act" data-a="simple">${ICON.simple}Simpler please</button>
+    <button class="act" data-a="speak">${ICON.speak}Read aloud</button>
+    <button class="act" data-a="retry" title="Ask the same question again for a new answer">${ICON.retry}Retry</button>
+    <span class="stats">${stats.seconds ? stats.seconds + " s" : ""}${stats.tokens_per_second ? " - " + stats.tokens_per_second + " tokens/s" : ""}</span>`;
+  a.querySelector('[data-a="copy"]').onclick = () => { navigator.clipboard?.writeText(text); toast("Copied"); };
+  a.querySelector('[data-a="simple"]').onclick = () => send({simpler: true, mode});
+  const sp = a.querySelector('[data-a="speak"]');
+  sp.onclick = () => Voice.speaking === sp ? Voice.stopSpeaking() : Voice.speak(text, sp);
+  a.querySelector('[data-a="retry"]').onclick = () => retry(b);
+  a.querySelector(".stats").title = "Tokens are word pieces. More per second = faster.";
+  addRunButtons(b);
+}
+
+/* ================================================================ running code */
+function addRunButtons(b) {
+  const can = (S.status && S.status.run) || {python: true};
+  $$("pre[data-lang]", b).forEach(pre => {
+    let lang = pre.dataset.lang;
+    if (lang === "py" || lang === "python3") lang = "python";
+    if (!(lang === "python" || lang === "java")) return;
+    const bar = document.createElement("div"); bar.className = "runbar";
+    bar.innerHTML = `<button class="act" data-r="run">&#9654; Run ${lang === "java" ? "Java" : "Python"}</button>
+      <button class="act" data-r="copy">${ICON.copy}Copy code</button>`;
+    pre.after(bar);
+    const code = pre.innerText;
+    bar.querySelector('[data-r="copy"]').onclick = () => { navigator.clipboard?.writeText(code); toast("Code copied"); };
+    bar.querySelector('[data-r="run"]').onclick = async e => {
+      if (lang === "java" && !can.java) { toast("Java isn't installed on this laptop. Install a JDK 17+ to run Java."); return; }
+      const btn = e.currentTarget; btn.disabled = true; btn.textContent = "Running...";
+      let out = bar.nextElementSibling;
+      if (!out || !out.classList.contains("runout")) { out = document.createElement("div"); out.className = "runout"; bar.after(out); }
+      try {
+        const r = await (await fetch("/api/run", {method: "POST", headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({code, language: lang})})).json();
+        const text = (r.output || "") + (r.error ? (r.output ? "\n" : "") + r.error : "");
+        out.className = "runout " + (r.ok ? "good" : "bad");
+        out.innerHTML = `<div class="rh">${r.ok ? "Output" : "Error"}${r.seconds != null ? " - " + r.seconds + " s" : ""}</div><pre>${esc(text || "(no output)")}</pre>`;
+        if (!r.ok) {
+          const fix = document.createElement("button"); fix.className = "act"; fix.textContent = "Fix this error";
+          fix.onclick = () => {
+            $("#input").value = "This code gave an error when I ran it. Please fix it and give the complete corrected code.\n\nCode:\n```" + lang + "\n" + code + "\n```\n\nError:\n```\n" + text.slice(-3000) + "\n```";
+            setStyle && S.mode !== "chat" && setStyle("code"); send();
+          };
+          out.appendChild(fix);
+        }
+      } catch (err) { out.className = "runout bad"; out.textContent = "Could not reach the app to run the code."; }
+      btn.disabled = false; btn.innerHTML = `&#9654; Run ${lang === "java" ? "Java" : "Python"}`;
+    };
+  });
+}
+
+/* ================================================================ quizzes and flashcards */
+function parseQuiz(md) {
+  const title = ((md.match(/##\s*Quiz:\s*(.+)/i) || [])[1] || "Revision quiz").trim();
+  const qs = [];
+  const blocks = md.split(/\n(?=\s*\**Q\d+[.)])/);
+  for (const blk of blocks) {
+    const q = blk.match(/^\s*\**Q\d+[.)]\**\s*(.+)/);
+    if (!q) continue;
+    const opts = [...blk.matchAll(/^\s*\**([A-D])[).]\**\s*(.+)$/gm)].map(m => ({k: m[1], t: m[2].trim()}));
+    const ans = (blk.match(/Answer:\**\s*\(?([A-D])/i) || [])[1];
+    const why = ((blk.match(/Why:\**\s*([\s\S]*?)(?=\n\s*\n|\n##|$)/i) || [])[1] || "").trim();
+    if (opts.length >= 2 && ans) qs.push({q: q[1].trim(), opts, ans: ans.toUpperCase(), why});
+  }
+  const cards = [...md.matchAll(/^\s*[-*]?\s*Card:\s*(.+?)\s*\|\s*(.+)$/gim)].map(m => ({f: m[1].trim(), b: m[2].trim()}));
+  return {title, qs, cards};
+}
+function renderQuiz(b, md, sources) {
+  const quiz = parseQuiz(md);
+  if (!quiz.qs.length && !quiz.cards.length) return;
+  const box = document.createElement("div"); box.className = "quizbox";
+  let score = 0, answered = 0;
+  box.innerHTML = `<div class="qhead"><b>${esc(quiz.title)}</b><span class="qscore">0 / ${quiz.qs.length}</span>
+      <button class="act" data-q="save">Save as study guide (HTML)</button></div>` +
+    quiz.qs.map((q, i) => `<div class="qq" data-i="${i}"><div class="qt">${i + 1}. ${inline(esc(q.q))}</div>` +
+      q.opts.map(o => `<button class="qo" data-k="${o.k}"><b>${o.k}</b> ${inline(esc(o.t))}</button>`).join("") +
+      `<div class="qwhy hidden">${inline(esc(q.why))}</div></div>`).join("") +
+    (quiz.cards.length ? `<div class="qcards"><div class="qt">Flashcards - click to flip</div>` +
+      quiz.cards.map(c => `<div class="fc"><div class="f">${inline(esc(c.f))}</div><div class="bk">${inline(esc(c.b))}</div></div>`).join("") + "</div>" : "");
+  $$(".qq", box).forEach(el => {
+    const q = quiz.qs[+el.dataset.i];
+    $$(".qo", el).forEach(btn => btn.onclick = () => {
+      if (el.classList.contains("done")) return;
+      el.classList.add("done"); answered++;
+      const right = btn.dataset.k === q.ans; if (right) score++;
+      btn.classList.add(right ? "right" : "wrong");
+      el.querySelector(`.qo[data-k="${q.ans}"]`).classList.add("right");
+      el.querySelector(".qwhy").classList.remove("hidden");
+      box.querySelector(".qscore").textContent = `${score} / ${quiz.qs.length}` + (answered === quiz.qs.length ? (score === quiz.qs.length ? " - perfect!" : "") : "");
+    });
+  });
+  $$(".fc", box).forEach(c => c.onclick = () => c.classList.toggle("flip"));
+  box.querySelector('[data-q="save"]').onclick = () => saveStudyGuide(quiz, sources);
+  b.querySelector(".md").replaceWith(box);
+}
+function saveStudyGuide(quiz, sources) {
+  const e = s => esc(s);
+  const levels = ["Easy", "Easy", "Medium", "Medium", "Hard", "Hard"];
+  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${e(quiz.title)} - study guide</title><style>
+body{font-family:Segoe UI,system-ui,sans-serif;max-width:820px;margin:40px auto;padding:0 20px;line-height:1.6;color:#1b2333;background:#f7f9fc}
+h1{color:#5b4bd6;margin-bottom:4px}.sub{color:#667;margin-top:0}
+section{background:#fff;border-radius:14px;padding:18px 22px;margin:18px 0;box-shadow:0 2px 10px rgba(0,0,0,.06);border-left:6px solid #5b4bd6}
+section.cards{border-left-color:#0ea5a0}section.src{border-left-color:#db2777}
+.q{margin:14px 0 18px}.lvl{display:inline-block;font-size:12px;font-weight:700;padding:1px 8px;border-radius:99px;margin-right:6px}
+.Easy{background:#dcfce7;color:#166534}.Medium{background:#fef3c7;color:#92400e}.Hard{background:#fee2e2;color:#991b1b}
+ol{margin:6px 0}details{margin-top:6px;background:#f2f0ff;border-radius:8px;padding:6px 10px}summary{cursor:pointer;font-weight:600;color:#5b4bd6}
+table{width:100%;border-collapse:collapse}td{border-top:1px solid #e5e7eb;padding:8px;vertical-align:top}td:first-child{font-weight:600;width:38%}
+@media print{details{display:block}details>*{display:block}}</style></head><body>
+<h1>${e(quiz.title)}</h1><p class="sub">Study guide made by QuantaKai on ${new Date().toLocaleDateString()}</p>
+<section><h2>Practice questions</h2>${quiz.qs.map((q, i) => `<div class="q"><span class="lvl ${levels[i] || "Hard"}">${levels[i] || "Hard"}</span><b>${i + 1}. ${e(q.q)}</b>
+<ol type="A">${q.opts.map(o => `<li>${e(o.t)}</li>`).join("")}</ol><details><summary>Show answer</summary><p><b>${q.ans}</b> - ${e(q.why)}</p></details></div>`).join("")}</section>
+${quiz.cards.length ? `<section class="cards"><h2>Flashcards</h2><table>${quiz.cards.map(c => `<tr><td>${e(c.f)}</td><td>${e(c.b)}</td></tr>`).join("")}</table></section>` : ""}
+${sources && sources.length ? `<section class="src"><h2>Sources</h2><ol>${sources.map(s => `<li>${e(s.title)}${s.page ? ", p. " + s.page : ""}${s.url ? " - " + e(s.url) : ""}</li>`).join("")}</ol></section>` : ""}
+</body></html>`;
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([html], {type: "text/html"}));
+  a.download = quiz.title.replace(/[^\w\- ]+/g, "").trim().replace(/\s+/g, "-").slice(0, 60) + "-study-guide.html";
+  document.body.appendChild(a); a.click(); a.remove();
+  toast("Study guide saved to your Downloads folder");
+}
+
+/* ================================================================ sending */
+function setBusy(busy) {
+  S.busy = busy;
+  $("#sendIcon").innerHTML = busy ? ICON.stop : ICON.send;
+  $("#sendBtn").title = busy ? "Stop" : "Send (Enter)";
+  $("#sendBtn").disabled = !busy && !(S.status && S.status.chat.state === "ready");
+}
+async function send(opts = {}) {
+  if (S.busy) { S.ctrl?.abort(); return; }
+  Voice.stopSpeaking();
+  const input = $("#input");
+  const re = opts.resend;          // set when retrying, resending or editing an earlier question
+  const simpler = re ? !!re.simpler : !!opts.simpler;
+  const message = re ? (re.message || "") : (simpler ? "" : input.value.trim());
+  const images = re ? (re.images || []) : (simpler ? [] : Pics.list.slice());
+  if (!message && !images.length && !simpler) return;
+  if (Docs.busy) { toast("Still reading your document - send again in a moment"); return; }
+  const mode = re ? re.mode : (opts.mode || S.mode);
+  const style = re ? (re.style || S.style) : (opts.style || (mode === "create" ? S.cstyle : S.style));
+  if (!re) { input.value = ""; grow(); Pics.clear(); }
+  const turn = Math.random().toString(36).slice(2, 12);
+  const u = addUser(simpler ? "Explain that more simply" : (message || "Answer the question in the picture"), images);
+  u.dataset.turn = turn;
+  u._payload = {message, text: re ? (re.text ?? message) : message, images, mode, style, simpler};
+  const b = addBot(mode); b._user = u;
+  setBusy(true);
+  S.ctrl = new AbortController();
+  let text = "", sources = [], stats = {}, pending = false, failed = false, stopped = false, finished = false;
+  let closed = false;
+  const paint = () => { pending = false; if (closed) return; b.querySelector(".md").innerHTML = markdown(text); b.querySelector(".md").classList.add("cursor"); scrollDown(); };
+  try {
+    const res = await fetch("/api/chat", {method: "POST", headers: {"Content-Type": "application/json"}, signal: S.ctrl.signal,
+      body: JSON.stringify({conv_id: S.conv, mode, style, message, simpler, turn, rewind: opts.rewind || null,
+        book_category: $("#bookCat").value || "auto", images, voice: Voice.on})});
+    const reader = res.body.getReader(), dec = new TextDecoder();
+    let buf = "";
+    for (;;) {
+      const {value, done} = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, {stream: true});
+      let i;
+      while ((i = buf.indexOf("\n\n")) >= 0) {
+        const line = buf.slice(0, i); buf = buf.slice(i + 2);
+        if (!line.startsWith("data: ")) continue;
+        const ev = JSON.parse(line.slice(6));
+        if (ev.type === "meta") S.conv = ev.conv_id;
+        else if (ev.type === "ocr") {
+          const w = document.createElement("details"); w.className = "ocrbox";
+          w.innerHTML = `<summary>Text read from the picture</summary><pre>${esc(ev.text)}</pre>`;
+          b.querySelector(".srcwrap").before(w);
+        }
+        else if (ev.type === "notice") toast(ev.text);
+        else if (ev.type === "context" && ev.names.length) {
+          const w = document.createElement("div"); w.className = "ctxused";
+          w.innerHTML = `${ICON.doc}Using this chat's documents: ${ev.names.map(esc).join(", ")}`;
+          b.querySelector(".srcwrap").before(w);
+        }
+        else if (ev.type === "status") { const t = b.querySelector(".thinking span, .thinking"); if (t && !text) t.lastChild && (t.lastChild.textContent = " " + ev.text); }
+        else if (ev.type === "sources") { sources = ev.sources; renderSources(b, sources, ev.categories, ev.corrections); }
+        else if (ev.type === "memory") toast(ev.note);
+        else if (ev.type === "token" && !failed) {
+          text += ev.text; if (!pending) { pending = true; requestAnimationFrame(paint); }
+          if (Voice.on && mode !== "create") Voice.feed(text, false);   // start talking after the first sentence
+        }
+        else if (ev.type === "done") { stats = ev.stats || {}; finished = true; }
+        else if (ev.type === "error") { failed = true; b.querySelector(".md").innerHTML = `<div class="err">${esc(ev.message)}</div>`; }
+      }
+    }
+  } catch (e) {
+    if (e.name === "AbortError") stopped = true;
+    else { failed = true; b.querySelector(".md").innerHTML = `<div class="err">Could not reach the app. Is the black START window still open?</div>`; }
+  }
+  closed = true;
+  b.querySelector(".md").classList.remove("cursor");
+  if (Voice.live) { if (stopped || failed) Voice.stopSpeaking(); else Voice.feed(text, true); }
+  if (!failed) {
+    if (text) {
+      finishBot(b, text, sources, stats, mode);
+      if (!finished) showResend(b, stopped ? "You stopped this answer early." : "This answer was cut off before it finished.");
+      else {
+        if (mode !== "chat" && style === "quiz") renderQuiz(b, text, sources);
+        if (Voice.live) Voice.attachButton(b.querySelector('[data-a="speak"]'));
+      }
+    }
+    else { b.querySelector(".md").innerHTML = '<div class="thinking">Stopped before an answer was written.</div>'; showResend(b, ""); }
+  }
+  else showResend(b, "Something went wrong.");
+  setBusy(false); refreshStatus(); loadHistory(); scrollDown();
+  setTimeout(refreshStatus, 8000);   // auto-learn may have added memories
+}
+$("#sendBtn").onclick = () => send();
+const grow = () => { const t = $("#input"); t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 200) + "px"; };
+$("#input").addEventListener("input", grow);
+$("#input").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } });
+
+/* ================================================================ voice
+   LISTENING: the microphone is recorded in the browser, turned into a small
+   16 kHz WAV file and sent to the app, which runs whisper.cpp on this laptop.
+   SPEAKING: uses the voices built into Windows (offline ones only).          */
+/* ---------- highlight any text on the page -> Read aloud / Explain */
+const SelPop = {
+  el: null, text: "",
+  init() {
+    const el = this.el = document.createElement("div");
+    el.className = "selpop"; el.hidden = true; el.setAttribute("role", "toolbar");
+    el.innerHTML = `<button data-s="read" title="Read the highlighted text aloud"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>Read aloud</button>` +
+      `<button data-s="explain" title="Ask for a detailed explanation of the highlighted text"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4M11 8v3l2 2"/></svg>Explain in detail</button>`;
+    document.body.appendChild(el);
+    el.addEventListener("mousedown", e => e.preventDefault());        // keep the highlight while clicking
+    el.querySelector('[data-s="read"]').onclick = () => { const t = this.text; this.hide(); Voice.speak(t, null); };
+    el.querySelector('[data-s="explain"]').onclick = () => this.explain();
+    let timer;
+    document.addEventListener("selectionchange", () => { clearTimeout(timer); timer = setTimeout(() => this.check(), 180); });
+    window.addEventListener("scroll", () => this.hide(), true);
+    window.addEventListener("resize", () => this.hide());
+    document.addEventListener("keydown", e => { if (e.key === "Escape" && !this.el.hidden) this.hide(); });
+  },
+  check() {
+    const sel = window.getSelection();
+    const text = sel && !sel.isCollapsed ? sel.toString().replace(/\s+/g, " ").trim() : "";
+    const a = document.activeElement;
+    const inBox = a && /^(INPUT|TEXTAREA)$/.test(a.tagName) && a.selectionStart !== a.selectionEnd;   // selecting inside a text box
+    if (text.length < 2 || inBox || this.el.contains(sel.anchorNode)) return this.hide();
+    const r = sel.getRangeAt(0).getBoundingClientRect();
+    if (!r.width && !r.height) return this.hide();
+    this.text = text.slice(0, 4000);
+    const el = this.el; el.hidden = false;
+    const w = el.offsetWidth, h = el.offsetHeight;
+    let x = r.left + r.width / 2 - w / 2, y = r.top - h - 8;
+    if (y < 8) y = r.bottom + 8;                                       // no room above: show it below
+    x = Math.max(8, Math.min(x, innerWidth - w - 8));
+    el.style.left = x + "px"; el.style.top = Math.min(y, innerHeight - h - 8) + "px";
+  },
+  hide() { if (this.el) this.el.hidden = true; },
+  explain() {
+    const t = this.text; this.hide();
+    if (S.busy) return busyNote();
+    window.getSelection()?.removeAllRanges();
+    const mode = S.mode === "create" ? "chat" : S.mode;                 // books stay in Study, web in Online
+    show("chat");
+    $("#input").value = "Explain this in detail, step by step, so I can really understand it:\n\n\"" + t + "\"";
+    send({mode, style: mode === "chat" ? undefined : "explain"});
+  }
+};
+SelPop.init();
+
+const Voice = {
+  on: String(store.get("voiceMode", false)) === "true", rec: null, speaking: null, voices: [], PREVIEW: "\u0000preview", live: null,
+
+  setMode(on) {
+    this.on = on; store.set("voiceMode", on); window.Blobs && Blobs.refresh();
+    $("#voiceBtn").classList.toggle("on", on);
+    $("#voiceMenuBtn").classList.toggle("on", on);
+    if (!on) this.stopSpeaking();
+  },
+
+  /* ---------- speaking */
+  loadVoices() {
+    // fallback only: offline Windows voices, preferring a US female one (Aria, Jenny, Zira)
+    const all = speechSynthesis.getVoices();
+    const offline = all.filter(v => v.localService);
+    const pool = (offline.length ? offline : all).filter(v => /^en/i.test(v.lang));
+    const score = v => (/en-US/i.test(v.lang) ? 2 : 0) + (/aria|jenny|zira|female|ava|emma/i.test(v.name) ? 3 : 0);
+    this.voices = pool.sort((a, b) => score(b) - score(a));
+  },
+  clean(md) {
+    return md.replace(/```[\s\S]*?```/g, " The code is shown on screen. ")
+      .replace(/`([^`]+)`/g, "$1").replace(/\s*\[(\d+)\]/g, "")
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/^#+\s*(.+?)[.:]?\s*$/gm, "$1.")
+      .replace(/[*_>|#]+/g, " ").replace(/^\s*[-•]\s+/gm, "").replace(/\s+/g, " ").trim();
+  },
+  chunk(text) {
+    const parts = text.match(/[^.!?]+[.!?]+["')]*|\S[^.!?]*$/g) || [text];
+    const chunks = [];
+    for (const p of parts) {
+      if (chunks.length && (chunks[chunks.length - 1] + p).length < 220) chunks[chunks.length - 1] += " " + p.trim();
+      else chunks.push(p.trim());
+    }
+    return chunks.filter(Boolean);
+  },
+  speak(md, btn) {
+    this.stopSpeaking();
+    const neural = S.status && S.status.voice && S.status.voice.tts;
+    if (neural) return this.speakNeural(this.clean(md), btn);
+    if (!("speechSynthesis" in window)) { toast("This browser cannot read aloud."); return; }
+    if (!this.voices.length) this.loadVoices();
+    const text = this.clean(md);
+    // short pieces: browsers stop long speeches halfway
+    const parts = text.match(/[^.!?]+[.!?]+|\S[^.!?]*$/g) || [text];
+    const chunks = [];
+    for (const p of parts) {
+      if (chunks.length && (chunks[chunks.length - 1] + p).length < 220) chunks[chunks.length - 1] += " " + p;
+      else chunks.push(p.trim());
+    }
+    this.speaking = btn || true;
+    btn?.classList.add("speaking"); this.ui();
+    chunks.forEach((c, i) => {
+      const u = new SpeechSynthesisUtterance(c);
+      if (this.voices[0]) u.voice = this.voices[0];
+      u.rate = 1.08; u.pitch = 1.15;   // brighter and a little brisker
+      if (i === chunks.length - 1) u.onend = () => { if (this.speaking === (btn || true)) this.stopSpeaking(); };
+      speechSynthesis.speak(u);
+    });
+  },
+  /* Piper neural voice: one request per sentence or two, the next one is fetched
+     while the current one plays, so speech starts fast and flows without gaps. */
+  async speakNeural(text, btn) {
+    const token = {}; this.token = token;
+    this.speaking = btn || true; btn?.classList.add("speaking"); this.ui();
+    const fetchAudio = c => fetch("/api/voice/speak", {method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(c === this.PREVIEW ? {preview: true} : {text: c})}).then(r => r.ok ? r.blob() : Promise.reject(r));
+    // a short first piece so speech starts quickly, then longer pieces (fewer joins)
+    const sentences = text === this.PREVIEW ? [text] : (text.match(/[^.!?]+[.!?]+["')]*|\S[^.!?]*$/g) || [text]).map(s => s.trim()).filter(Boolean);
+    const chunks = sentences.length ? [sentences[0]] : [];
+    for (const s of sentences.slice(1)) {
+      const lastIdx = chunks.length - 1;
+      if (lastIdx >= 1 && (chunks[lastIdx] + " " + s).length <= 420) chunks[lastIdx] += " " + s;
+      else chunks.push(s);
+    }
+    // gapless playback: each piece is scheduled to start exactly when the previous one ends
+    const ctx = this.ctx || (this.ctx = new (window.AudioContext || window.webkitAudioContext)());
+    if (ctx.state === "suspended") await ctx.resume();
+    let at = ctx.currentTime + 0.05, last = null;
+    let next = chunks.length ? fetchAudio(chunks[0]) : null;
+    try {
+      for (let i = 0; i < chunks.length; i++) {
+        const blob = await next;
+        if (this.token !== token) return;
+        next = i + 1 < chunks.length ? fetchAudio(chunks[i + 1]) : null;
+        const buf = await ctx.decodeAudioData(await blob.arrayBuffer());
+        if (this.token !== token) return;
+        const src = ctx.createBufferSource(); src.buffer = buf; src.connect(ctx.destination);
+        at = Math.max(at, ctx.currentTime + 0.02);
+        src.start(at); at += buf.duration;
+        (this.sources || (this.sources = [])).push(src); last = src;
+      }
+      if (last) await new Promise(res => { last.onended = res; });
+    } catch (e) {
+      if (this.token === token) {
+        // the neural voice failed: switch to the Windows voice for the rest of this session
+        if (S.status && S.status.voice) S.status.voice.tts = false;
+        toast("The offline neural voice isn't working, so I'm using the Windows voice.");
+        this.token = null; this.speaking = null; btn?.classList.remove("speaking");
+        return this.speak(text, btn);
+      }
+    }
+    if (this.token === token) this.stopSpeaking();
+  },
+  /* ---------- speaking WHILE the answer is being written (voice mode)
+     feed() is called with the whole answer so far; each finished sentence is sent to
+     the voice straight away, so you hear the start within seconds instead of waiting
+     for the full answer. */
+  feed(md, final) {
+    if (!this.live) { this.stopSpeaking(); this.live = {token: {}, pos: 0, queue: [], done: false, btn: null, at: 0, next: null}; this.token = this.live.token; this.speaking = true; this.ui(); }
+    const L = this.live;
+    if ((md.match(/```/g) || []).length % 2) md = md.slice(0, md.lastIndexOf("```"));   // skip half-written code
+    const rest = this.clean(md).slice(L.pos);
+    let take = "";
+    if (final) take = rest;
+    else {
+      const cut = [...rest.matchAll(/[.!?]["')]*\s/g)].pop();             // last finished sentence
+      if (cut && cut.index + cut[0].length >= (L.pos ? 60 : 12)) take = rest.slice(0, cut.index + cut[0].length);
+    }
+    if (take.trim()) { L.queue.push(take.trim()); L.pos += take.length; }
+    if (final) L.done = true;
+    this.pump();
+  },
+  async pump() {
+    const L = this.live; if (!L || L.busy) return;
+    L.busy = true;
+    const neural = S.status && S.status.voice && S.status.voice.tts;
+    try {
+      while (L.queue.length && this.token === L.token) {
+        const piece = L.queue.shift();
+        if (!neural) {                                       // Windows voice
+          const u = new SpeechSynthesisUtterance(piece);
+          if (this.voices[0]) u.voice = this.voices[0];
+          u.rate = 1.08; u.pitch = 1.15;
+          u.onend = () => { if (L.done && !L.queue.length && !speechSynthesis.pending && this.token === L.token) this.stopSpeaking(); };
+          speechSynthesis.speak(u); continue;
+        }
+        const res = await fetch("/api/voice/speak", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({text: piece})});
+        if (!res.ok) throw new Error("voice");
+        const ctx = this.ctx || (this.ctx = new (window.AudioContext || window.webkitAudioContext)());
+        if (ctx.state === "suspended") await ctx.resume();
+        const buf = await ctx.decodeAudioData(await (await res.blob()).arrayBuffer());
+        if (this.token !== L.token) return;
+        const src = ctx.createBufferSource(); src.buffer = buf; src.connect(ctx.destination);
+        L.at = Math.max(L.at, ctx.currentTime + 0.03); src.start(L.at); L.at += buf.duration;
+        (this.sources || (this.sources = [])).push(src);
+        src.onended = () => { if (L.done && !L.queue.length && !L.busy && this.token === L.token && this.ctx.currentTime >= L.at - 0.05) this.stopSpeaking(); };
+      }
+    } catch (e) {
+      if (this.token === L.token) { toast("The reading voice failed, so this answer won't be read aloud."); this.stopSpeaking(); }
+    } finally { L.busy = false; }
+    if (L.done && !L.queue.length && !neural && !speechSynthesis.speaking && this.token === L.token) this.stopSpeaking();
+    if (L.queue.length && this.token === L.token) this.pump();
+  },
+  attachButton(btn) { if (this.live && btn) { this.live.btn = btn; this.speaking = btn; btn.classList.add("speaking"); } },
+  ui() {   // the floating "Stop talking" button
+    let pill = $("#stopTalk");
+    if (this.speaking && !pill) {
+      pill = document.createElement("button"); pill.id = "stopTalk"; pill.className = "stoptalk";
+      pill.innerHTML = '<span class="bars"><span></span><span></span><span></span></span>Stop talking <small>Esc</small><i></i>';
+      pill.onclick = () => this.stopSpeaking();
+      document.body.appendChild(pill);
+    } else if (!this.speaking && pill) pill.remove();
+  },
+  stopSpeaking() {
+    if (this.live && this.live.btn) this.live.btn.classList.remove("speaking");
+    this.live = null;
+    this.token = null;
+    if (this.audio) { this.audio.pause(); this.audio = null; }
+    if (this.sources) { this.sources.forEach(s => { try { s.stop(); } catch (e) {} }); this.sources = []; }
+    if ("speechSynthesis" in window) speechSynthesis.cancel();
+    if (this.speaking && this.speaking !== true) this.speaking.classList.remove("speaking");
+    this.speaking = null;
+    this.ui();
+  },
+
+  /* ---------- listening */
+  async toggleRecording() {
+    if (this.rec) return this.stopRecording();
+    const vs = S.status && S.status.voice;
+    if (vs && !vs.available) { toast(vs.reason); return; }
+    this.stopSpeaking();
+    let stream;
+    try { stream = await navigator.mediaDevices.getUserMedia({audio: {channelCount: 1, echoCancellation: true, noiseSuppression: true}}); }
+    catch (e) { toast("Microphone blocked. Allow it in the browser's address bar, then try again."); return; }
+    const ctx = new AudioContext();
+    const src = ctx.createMediaStreamSource(stream);
+    const proc = ctx.createScriptProcessor(4096, 1, 1);
+    const chunks = [];
+    proc.onaudioprocess = e => {
+      const d = e.inputBuffer.getChannelData(0);
+      chunks.push(new Float32Array(d));
+      let peak = 0; for (let i = 0; i < d.length; i += 16) peak = Math.max(peak, Math.abs(d[i]));
+      $("#recLvl").style.width = Math.min(100, peak * 160) + "%";
+    };
+    src.connect(proc); proc.connect(ctx.destination);
+    const started = Date.now();
+    const timer = setInterval(() => {
+      const s = Math.floor((Date.now() - started) / 1000);
+      $("#recTime").textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+      if (s >= 300) this.stopRecording();          // 5-minute safety limit
+    }, 250);
+    this.rec = {stream, ctx, proc, src, chunks, timer};
+    $("#micBtn").classList.add("rec"); $("#micBtn").title = "Stop and turn speech into text";
+    $("#recText").textContent = "Listening... click the microphone again when you finish";
+    $("#recTime").textContent = "0:00"; $("#recbar").classList.remove("hidden");
+  },
+  async stopRecording() {
+    const r = this.rec; if (!r) return;
+    this.rec = null;
+    clearInterval(r.timer);
+    r.proc.disconnect(); r.src.disconnect(); r.stream.getTracks().forEach(t => t.stop());
+    const rate = r.ctx.sampleRate; r.ctx.close();
+    $("#micBtn").classList.remove("rec"); $("#micBtn").classList.add("wait"); $("#micBtn").disabled = true;
+    $("#recText").textContent = "Turning your speech into text..."; $("#recLvl").style.width = "0";
+    try {
+      const wav = this.toWav(r.chunks, rate);
+      const res = await fetch("/api/voice/transcribe", {method: "POST", headers: {"Content-Type": "audio/wav"}, body: wav});
+      const out = await res.json();
+      if (!out.ok) toast(out.error || "Voice typing failed.");
+      else if (!out.text) toast("I didn't catch anything. Try speaking a little closer to the microphone.");
+      else {
+        const input = $("#input");
+        input.value = (input.value ? input.value.trimEnd() + " " : "") + out.text; grow(); input.focus();
+        if (this.on && !S.busy) send();
+      }
+    } catch (e) { toast("Could not reach the app for voice typing."); }
+    $("#micBtn").classList.remove("wait"); $("#micBtn").disabled = false;
+    $("#micBtn").title = "Voice typing: click, speak, click again (offline)";
+    $("#recbar").classList.add("hidden");
+  },
+  toWav(chunks, rate) {
+    // join, shrink to 16 000 samples per second (what Whisper expects), save as 16-bit WAV
+    let n = 0; for (const c of chunks) n += c.length;
+    const all = new Float32Array(n); let o = 0; for (const c of chunks) { all.set(c, o); o += c.length; }
+    const ratio = rate / 16000, len = Math.floor(all.length / ratio);
+    const pcm = new Int16Array(len);
+    for (let i = 0; i < len; i++) {
+      const a = Math.floor(i * ratio), b = Math.min(all.length, Math.floor((i + 1) * ratio));
+      let s = 0; for (let j = a; j < b; j++) s += all[j];
+      const v = Math.max(-1, Math.min(1, s / Math.max(1, b - a)));
+      pcm[i] = v < 0 ? v * 0x8000 : v * 0x7fff;
+    }
+    const buf = new ArrayBuffer(44 + pcm.length * 2), dv = new DataView(buf);
+    const str = (p, s) => { for (let i = 0; i < s.length; i++) dv.setUint8(p + i, s.charCodeAt(i)); };
+    str(0, "RIFF"); dv.setUint32(4, 36 + pcm.length * 2, true); str(8, "WAVE"); str(12, "fmt ");
+    dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
+    dv.setUint32(24, 16000, true); dv.setUint32(28, 32000, true); dv.setUint16(32, 2, true); dv.setUint16(34, 16, true);
+    str(36, "data"); dv.setUint32(40, pcm.length * 2, true);
+    new Int16Array(buf, 44).set(pcm);
+    return new Blob([buf], {type: "audio/wav"});
+  },
+};
+if ("speechSynthesis" in window) { Voice.loadVoices(); speechSynthesis.onvoiceschanged = () => Voice.loadVoices(); }
+document.addEventListener("keydown", e => { if (e.key === "Escape" && Voice.speaking) { e.preventDefault(); Voice.stopSpeaking(); } });
+$("#micBtn").onclick = () => Voice.toggleRecording();
+$("#voiceBtn").onclick = () => { Voice.setMode(!Voice.on); toast(Voice.on ? "Voice mode on: speak with the microphone, answers are read aloud" : "Voice mode off"); };
+Voice.setMode(Voice.on);
+
+/* ---------- choosing the reading voice */
+async function loadVoiceMenu() {
+  let r; try { r = await api("/api/voices"); } catch (e) { return; }
+  const sel = $("#voiceSel"), c = r.choice;
+  const groups = {};
+  for (const o of r.options) (groups[o.group] = groups[o.group] || []).push(o);
+  sel.innerHTML = `<option value="auto|">Automatic - best voice available</option>` +
+    Object.entries(groups).map(([g, list]) => `<optgroup label="${esc(g)}">` +
+      list.map(o => `<option value="${o.engine}|${esc(String(o.id))}">${esc(o.name)}</option>`).join("") + "</optgroup>").join("");
+  const current = c.engine === "auto" ? "auto|" : c.engine === "kokoro" ? `kokoro|${c.kokoro_sid}`
+    : c.engine === "piper" ? `piper|${c.piper_voice}` : "windows|windows";
+  sel.value = [...sel.options].some(o => o.value === current) ? current : "auto|";
+  sel.title = "Reading voice" + (r.active ? ` - now using ${r.active === "kokoro" ? "Kokoro" : "Piper"}` : " - now using the Windows voice") +
+    (r.kokoro && r.kokoro.disabled ? " (Kokoro was too slow, so Automatic switched to Piper)" : "");
+}
+$("#voiceSel").onchange = async e => {
+  const [engine, id] = e.target.value.split("|");
+  const r = await api("/api/voices", "POST", {engine, id: id || null});
+  if (r.ok === false) { toast(r.error); return; }
+  await refreshStatus();
+  loadVoiceMenu();
+  toast(engine === "kokoro" ? "Kokoro voice chosen. Loading it into memory (a few seconds the first time), then it speaks quickly." : "Voice changed");
+};
+function previewVoice() {
+  if (!(S.status && S.status.voice && S.status.voice.tts)) {   // Windows voice: speak it in the page
+    Voice.speak(`Hi ${(S.status && S.status.user_name) || "there"}! This is the Windows voice.`, null); return;
+  }
+  Voice.stopSpeaking();
+  Voice.speakNeural(Voice.PREVIEW, $("#voicePrev"));
+}
+$("#voicePrev").onclick = () => Voice.speaking ? Voice.stopSpeaking() : previewVoice();
+$("#voiceMenuBtn").onclick = e => { e.stopPropagation(); $("#voicePop").classList.toggle("hidden"); };
+$("#voicePop").onclick = e => e.stopPropagation();
+document.addEventListener("click", () => $("#voicePop").classList.add("hidden"));
+loadVoiceMenu();
+
+/* ================================================================ pictures (screenshots of questions) */
+const Pics = {
+  list: [],
+  async add(file) {
+    if (!file || !file.type.startsWith("image/")) return;
+    if (this.list.length >= 4) { toast("Up to 4 pictures per message"); return; }
+    const url = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); });
+    // shrink big photos so they send quickly; 2000 px keeps small print readable
+    const img = new Image(); img.src = url; await img.decode();
+    const scale = Math.min(1, 2000 / Math.max(img.width, img.height));
+    const c = document.createElement("canvas"); c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+    const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+    this.list.push(c.toDataURL("image/jpeg", 0.9)); this.draw();
+  },
+  clear() { this.list = []; this.draw(); },
+  draw() {
+    const t = $("#thumbs"); t.classList.toggle("hidden", !this.list.length);
+    t.innerHTML = this.list.map((src, i) => `<div class="thumb"><img src="${src}" alt="picture ${i + 1}"><button data-i="${i}" title="Remove">x</button></div>`).join("") +
+      (this.list.length ? `<span class="thumbnote">${S.status && S.status.images && S.status.images.vision ? "The model will read and look at the picture" : "The text in the picture will be read and answered"}</span>` : "");
+    $$("button", t).forEach(b => b.onclick = () => { this.list.splice(+b.dataset.i, 1); this.draw(); });
+  },
+};
+/* ---------- documents attached to this chat (its context) */
+const Docs = {
+  list: [], queue: Promise.resolve(), busy: 0,
+  set(list) { this.list = (list || []).slice(); this.draw(); },
+  add(file) {
+    if (file.size > 18 * 1048576) { toast(`${file.name} is too big (up to 18 MB per file)`); return; }
+    const temp = {id: "up-" + Math.random().toString(36).slice(2), name: file.name, uploading: true};
+    this.list.push(temp); this.busy++; this.draw();
+    // one at a time, so a brand-new chat isn't created twice
+    this.queue = this.queue.then(async () => {
+      try {
+        const data = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); });
+        const r = await fetch("/api/docs", {method: "POST", headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({conv_id: S.conv, name: file.name, data})}).then(x => x.json());
+        if (r.ok) {
+          S.conv = r.conv_id;
+          const others = this.list.filter(d => d.uploading && d !== temp);
+          this.list = r.docs.concat(others);
+          toast(`${file.name} added to this chat (${r.doc.words.toLocaleString()} words)`);
+          loadHistory();
+        } else { toast(r.error || "Could not read that file"); this.list = this.list.filter(d => d !== temp); }
+      } catch (e) { toast("Could not reach the app to read that file"); this.list = this.list.filter(d => d !== temp); }
+      this.busy--; this.draw();
+    });
+  },
+  async remove(id) {
+    if (!S.conv) return;
+    try {
+      const r = await fetch(`/api/docs/${encodeURIComponent(S.conv)}/${encodeURIComponent(id)}`, {method: "DELETE"}).then(x => x.json());
+      this.list = r.docs || this.list.filter(d => d.id !== id);
+    } catch (e) { toast("Could not reach the app"); }
+    this.draw();
+  },
+  draw() {
+    const bar = $("#ctxbar");
+    bar.classList.toggle("hidden", !this.list.length);
+    const size = d => d.uploading ? "reading" : (d.words >= 1000 ? Math.round(d.words / 100) / 10 + "k words" : d.words + " words");
+    bar.innerHTML = this.list.length ? `<span class="lbl" title="Every answer in this chat can use these documents">Context for this chat:</span>` +
+      this.list.map(d => `<span class="dchip${d.uploading ? " up" : ""}" title="${esc(d.name)}">${ICON.doc}<span class="nm">${esc(d.name)}</span>
+        <span class="sz">${size(d)}</span>${d.uploading ? "" : `<button data-id="${esc(d.id)}" title="Remove from this chat" aria-label="Remove ${esc(d.name)}">&times;</button>`}</span>`).join("") : "";
+    $$("button[data-id]", bar).forEach(b => b.onclick = () => this.remove(b.dataset.id));
+  },
+};
+const isPic = f => f.type.startsWith("image/") && !/svg/.test(f.type);
+async function takeFiles(files) { for (const f of files) { if (isPic(f)) await Pics.add(f); else Docs.add(f); } }
+$("#attachBtn").onclick = () => $("#fileIn").click();
+$("#fileIn").onchange = async e => { const fs = [...e.target.files]; e.target.value = ""; await takeFiles(fs); };
+$("#input").addEventListener("paste", async e => {
+  const files = [...(e.clipboardData?.files || [])];
+  if (files.length) { e.preventDefault(); await takeFiles(files); }
+});
+$("#composer").addEventListener("dragover", e => { e.preventDefault(); });
+$("#composer").addEventListener("drop", async e => {
+  const files = [...(e.dataTransfer?.files || [])];
+  if (files.length) { e.preventDefault(); await takeFiles(files); }
+});
+
+/* ================================================================ library page */
+let bookTimer = null;
+function fmtDur(s) {
+  if (s < 90) return Math.max(1, Math.round(s)) + " sec";
+  if (s < 5400) return Math.round(s / 60) + " min";
+  const h = Math.floor(s / 3600), m = Math.round((s % 3600) / 60);
+  return h + " h" + (m ? " " + m + " min" : "");
+}
+// subjects under their group headings (Cybersecurity, Data & AI, ...); "only" limits a search to that subject
+function catOptions(groups, have, selected, suffix = "") {
+  const seen = new Set();
+  let html = "";
+  for (const g of groups || []) {
+    const items = g.subjects.filter(c => !have || have.has(c));
+    items.forEach(c => seen.add(c));
+    if (items.length) html += `<optgroup label="${esc(g.group)}">` +
+      items.map(c => `<option value="${esc(c)}"${c === selected ? " selected" : ""}>${esc(c)}${suffix}</option>`).join("") + `</optgroup>`;
+  }
+  const rest = [...(have || [])].filter(c => !seen.has(c));         // a subject not in any group
+  if (selected && !seen.has(selected) && !rest.includes(selected)) rest.push(selected);
+  if (rest.length) html += `<optgroup label="Your subjects">` +
+    rest.map(c => `<option value="${esc(c)}"${c === selected ? " selected" : ""}>${esc(c)}${suffix}</option>`).join("") + `</optgroup>`;
+  return html;
+}
+function fillBookCats(books, groups) {
+  const sel = $("#bookCat"), keep = sel.value || store.get("bookCat", "auto");
+  const have = new Set(books.filter(b => b.status === "ready").map(b => b.category));
+  sel.innerHTML = `<option value="auto">Auto - best subject for each question</option>` + catOptions(groups, have, null, " only");
+  sel.value = [...sel.options].some(o => o.value === keep) ? keep : "auto";
+}
+$("#bookCat").onchange = e => store.set("bookCat", e.target.value);
+async function addBooks(files) {
+  const r = await api("/api/books/add", "POST", {files});
+  if (r.ok === false) { toast(r.error); return; }
+  if (r.queued) toast(r.queued === 1 ? "Added to the queue" : r.queued + " books added to the queue");
+  setTimeout(loadBooks, 300);
+}
+async function loadBooks() {
+  const r = await api("/api/books");
+  const p = r.progress;
+  $("#progress").classList.toggle("hidden", !p.running && !p.messages.length);
+  $("#progTitle").textContent = p.running
+    ? `Adding book ${Math.min(p.done_books + 1, p.total_books)} of ${p.total_books}: ${p.book} - ${p.step}`
+    : "Last run: " + (p.step || "done");
+  $("#progBar").style.width = (p.running ? p.percent : 100) + "%";
+  $("#progLog").textContent = p.messages.join("\n");
+  const newOnes = r.books.filter(b => b.status === "new");
+  $("#scanBtn").disabled = !newOnes.length;
+  const total = newOnes.reduce((a, b) => a + (b.estimate_seconds || 0), 0);
+  $("#scanBtn").textContent = newOnes.length ? `Add all new (${newOnes.length}${total ? ", about " + fmtDur(total) : ""})` : "All books added";
+  fillBookCats(r.books, r.category_groups);
+  const list = $("#bookList");
+  list.innerHTML = r.books.length ? "" : '<div class="empty">No books yet. Click "Open books folder", copy your books in, then press Add on each one.</div>';
+  let lastCat = null;
+  for (const b of r.books) {
+    if (b.category !== lastCat) {
+      lastCat = b.category;
+      const n = r.books.filter(x => x.category === lastCat).length;
+      const h = document.createElement("div"); h.className = "cathead";
+      h.innerHTML = `${esc(lastCat)} <span>${n} book${n > 1 ? "s" : ""}</span>`;
+      list.appendChild(h);
+    }
+    const d = document.createElement("div"); d.className = "card";
+    const state = b.status === "ready" ? `<span class="badge ok">Ready</span>`
+      : b.status === "adding" ? `<span class="badge new">Adding... ${p.percent || 0}%</span>`
+      : b.status === "queued" ? `<span class="badge">Queued</span>`
+      : `<button class="btn primary small" data-add>Add</button>`;
+    d.innerHTML = `<div class="grow"><div class="title" title="${esc(b.file)}">${esc(b.title)}</div>
+      <div class="meta">${b.status === "ready"
+        ? `${b.size_mb != null ? b.size_mb + " MB - " : ""}${b.pages} pages - ${b.passages} passages - added ${esc(b.added)}${b.seconds ? " in " + fmtDur(b.seconds) : ""}${b.empty_pages > 5 ? " - " + b.empty_pages + " pages without text" : ""}`
+        : `${b.size_mb != null ? b.size_mb + " MB" : ""}${b.pages ? " - " + b.pages + " pages" : ""}${b.estimate_seconds ? ` - <b class="est">about ${fmtDur(b.estimate_seconds)} to add</b>` : ""}`}</div></div>
+      <select class="catsel" title="Subject - helps the assistant choose which books to consult">${catOptions(r.category_groups, null, b.category)}<option value="__new">+ New subject...</option></select>
+      ${state}`;
+    d.querySelector(".catsel").onchange = async e => {
+      let category = e.target.value;
+      if (category === "__new") {
+        category = (window.prompt("Name the new subject (for example: Novels by Chinua Achebe, Church notes, MSM 112):", "") || "").trim();
+        if (!category) { e.target.value = b.category; return; }
+      }
+      const res = await api("/api/books/category", "POST", {file: b.file, category});
+      if (res.ok === false) toast(res.error); else { toast("Subject updated"); loadBooks(); }
+    };
+    const add = d.querySelector("[data-add]");
+    if (add) add.onclick = () => { add.disabled = true; add.textContent = "..."; addBooks([b.file]); };
+    list.appendChild(d);
+  }
+  clearTimeout(bookTimer);
+  if (p.running || (r.queue && r.queue.length)) bookTimer = setTimeout(loadBooks, 1000); else refreshStatus();
+}
+$("#scanBtn").onclick = async () => {
+  const r = await api("/api/books");
+  addBooks(r.books.filter(b => b.status === "new").map(b => b.file));
+};
+api("/api/books").then(r => fillBookCats(r.books)).catch(() => {});
+
+/* ================================================================ memory page */
+async function loadMemory() {
+  const r = await api("/api/memory");
+  $("#autoLearn").checked = !!(S.status && S.status.auto_learn);
+  const list = $("#memList");
+  list.innerHTML = r.memories.length ? "" : '<div class="empty">Nothing remembered yet. Chat a little, or add a fact above.</div>';
+  for (const m of r.memories) {
+    const d = document.createElement("div"); d.className = "card";
+    d.innerHTML = `<div class="grow"><div class="memtext">${esc(m.text)}</div>
+      <div class="meta">${m.source === "auto" ? "Learned from chat" : "Added by you"} - ${esc(m.created)}</div></div>
+      <button class="act" data-a="edit">Edit</button><button class="act" data-a="del">Delete</button>`;
+    const t = d.querySelector(".memtext");
+    d.querySelector('[data-a="edit"]').onclick = async e => {
+      if (t.isContentEditable) {
+        t.contentEditable = "false"; e.target.textContent = "Edit";
+        await api("/api/memory/" + m.id, "PUT", {text: t.textContent}); toast("Saved");
+      } else { t.contentEditable = "true"; t.focus(); e.target.textContent = "Save"; }
+    };
+    d.querySelector('[data-a="del"]').onclick = async () => { await api("/api/memory/" + m.id, "DELETE"); loadMemory(); refreshStatus(); };
+    list.appendChild(d);
+  }
+}
+$("#memAdd").onclick = async () => {
+  const v = $("#memInput").value.trim(); if (!v) return;
+  const r = await api("/api/memory", "POST", {text: v});
+  toast(r.ok ? "Remembered" : "Already known"); $("#memInput").value = ""; loadMemory(); refreshStatus();
+};
+$("#memInput").addEventListener("keydown", e => { if (e.key === "Enter") $("#memAdd").click(); });
+$("#autoLearn").onchange = async e => { S.status = await api("/api/settings", "POST", {auto_learn: e.target.checked}); };
+
+/* ================================================================ models page */
+async function loadModels() {
+  const r = await api("/api/models");
+  $("#modelsSub").textContent = `Every .gguf file in the models folder. Files over ${r.max_gb} GB are blocked. Switching is manual: press Load.`;
+  const list = $("#modelList");
+  list.innerHTML = r.models.length ? "" : '<div class="empty">No models found. Download a .gguf file into the models folder.</div>';
+  for (const m of r.models) {
+    const active = m.name === r.active;
+    const d = document.createElement("div"); d.className = "card";
+    d.innerHTML = `<div class="grow"><div class="title">${esc(m.name)}</div>
+      <div class="meta">${m.size_gb} GB${m.reason ? " - " + esc(m.reason) : ""}</div></div>
+      <span class="badge ${!m.allowed ? "bad" : active ? "ok" : ""}">${!m.allowed ? "Blocked" : active ? (r.state === "loading" ? "Loading" : "In use") : "Available"}</span>
+      <button class="btn" ${!m.allowed || active ? "disabled" : ""}>Load</button>`;
+    d.querySelector("button").onclick = async () => {
+      await api("/api/models/load", "POST", {name: m.name}); toast("Loading " + m.name + "...");
+      setTimeout(() => { loadModels(); fillModelSelect(); refreshStatus(); }, 500);
+    };
+    list.appendChild(d);
+  }
+}
+$("#refreshModels").onclick = () => { loadModels(); fillModelSelect(); };
+
+/* ================================================================ start */
+/* ================================================================ personalise */
+function applyWall(s) {
+  if (!s) return;
+  document.body.classList.toggle("has-wall", !!s.wallpaper);
+  const url = s.wallpaper ? `url("/api/wallpaper?v=${s.wallpaper}")` : "";
+  $("#wall").style.backgroundImage = url;
+  document.documentElement.style.setProperty("--wall-dim", (s.wall_dim ?? 35) / 100);
+  document.documentElement.style.setProperty("--wall-blur", (s.wall_blur ?? 0) + "px");
+  const prev = $("#wallPrev");
+  if (prev) { prev.style.backgroundImage = url; prev.textContent = s.wallpaper ? "" : "No wallpaper"; }
+}
+function loadPersonal() {
+  const s = S.status || {};
+  $("#nickIn").value = s.nickname || ""; $("#cfgName").textContent = s.config_name || "your name";
+  $("#wallDim").value = s.wall_dim ?? 35; $("#wallDimV").textContent = ($("#wallDim").value) + "%";
+  $("#wallBlur").value = s.wall_blur ?? 0; $("#wallBlurV").textContent = $("#wallBlur").value + " px";
+  applyTheme(store.get("theme", "light")); applyWall(s);
+}
+async function saveSettings(data) { S.status = await api("/api/settings", "POST", data); applyWall(S.status); return S.status; }
+$("#nickSave").onclick = async () => {
+  const s = await saveSettings({nickname: $("#nickIn").value.trim()});
+  toast(s.nickname ? `I'll call you ${s.nickname}` : `I'll call you ${s.user_name}`);
+};
+$("#nickIn").addEventListener("keydown", e => { if (e.key === "Enter") $("#nickSave").click(); });
+$("#nickHear").onclick = () => { const n = $("#nickIn").value.trim() || (S.status && S.status.config_name) || "there"; Voice.speak(`Hi ${n}! Is that how you say it?`, $("#nickHear")); };
+$("#wallPick").onclick = () => $("#wallIn").click();
+$("#wallIn").onchange = e => {
+  const f = e.target.files[0]; e.target.value = "";
+  if (!f) return;
+  if (f.size > 15e6) { toast("That picture is too big (15 MB at most)."); return; }
+  const r = new FileReader();
+  r.onload = async () => {
+    const out = await api("/api/wallpaper", "POST", {data: r.result});
+    if (!out.ok) { toast(out.error || "Could not use that picture."); return; }
+    S.status = out; applyWall(out); toast("Wallpaper set");
+  };
+  r.readAsDataURL(f);
+};
+$("#wallRemove").onclick = async () => { await api("/api/wallpaper", "DELETE"); S.status = await api("/api/status"); applyWall(S.status); };
+$("#wallDim").oninput = e => { $("#wallDimV").textContent = e.target.value + "%"; document.documentElement.style.setProperty("--wall-dim", e.target.value / 100); };
+$("#wallDim").onchange = e => saveSettings({wall_dim: +e.target.value});
+$("#wallBlur").oninput = e => { $("#wallBlurV").textContent = e.target.value + " px"; document.documentElement.style.setProperty("--wall-blur", e.target.value + "px"); };
+$("#wallBlur").onchange = e => saveSettings({wall_blur: +e.target.value});
+
+setCreateStyle(S.cstyle);
+setMode(S.mode); setStyle(S.style);
+refreshStatus().then(() => { welcome(); setBusy(false); });
+fillModelSelect(); loadHistory();
+setInterval(refreshStatus, 3000);
+setInterval(() => { if (S.status && S.status.chat.state !== "loading") fillModelSelect(); }, 15000);
+
+/* ================================================================ QuantaKai blob (the living logo)
+   A watery body drawn on a small canvas: it wobbles, breathes, has a fine pixel
+   texture, eyes that follow the cursor, and parts around the cursor when you sweep
+   through it, then springs back. It stays where it is (not draggable).
+   Cost: one animation loop for all blobs, paused when hidden or off screen. */
+var Blobs = (() => {
+  const all = [];
+  const P = {x: -9999, y: -9999, vx: 0, vy: 0, t: 0};
+  const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let colors = null, running = false, last = 0;
+  addEventListener("pointermove", e => {
+    const now = performance.now(), dt = Math.max(8, now - P.t);
+    P.vx = (e.clientX - P.x) / dt; P.vy = (e.clientY - P.y) / dt;
+    P.x = e.clientX; P.y = e.clientY; P.t = now;
+    if (reduce) all.forEach(b => b.draw(now / 1000, 0));
+  }, {passive: true});
+  addEventListener("pointerleave", () => { P.x = P.y = -9999; });
+  const readColors = () => {
+    const cs = getComputedStyle(document.documentElement);
+    const get = (n, d) => (cs.getPropertyValue(n) || d).trim() || d;
+    colors = [get("--accent", "#2ee6d0"), get("--accent2", "#8b7bff"), get("--accent3", "#ff6ad5")];
+  };
+  new MutationObserver(readColors).observe(document.documentElement, {attributes: true, attributeFilter: ["data-theme", "class"]});
+
+  // ---- colours: Chat keeps the full mix, Offline turns teal, Online turns pink ----
+  const rgbOf = (() => {
+    const cx = document.createElement("canvas").getContext("2d"), cache = {};
+    return c => cache[c] || (cache[c] = (() => {
+      cx.fillStyle = "#000"; cx.fillStyle = c; const v = cx.fillStyle;
+      return v[0] === "#" ? [1, 3, 5].map(i => parseInt(v.slice(i, i + 2), 16)) : v.match(/[\d.]+/g).slice(0, 3).map(Number);
+    })());
+  })();
+  const mixRGB = (a, b, k) => a.map((v, i) => v + (b[i] - v) * k);
+  const css = (c, a = 1) => `rgba(${c.map(Math.round).join(",")},${a})`;
+  function palette(M) {
+    const base = colors.map(rgbOf);
+    const solid = c => [mixRGB(c, [255, 255, 255], 0.22), c, mixRGB(c, [0, 0, 0], 0.18)];   // one colour, light to dark
+    let p = base;
+    if (M.teal > 0.001) { const s1 = solid(base[0]); p = p.map((c, i) => mixRGB(c, s1[i], M.teal)); }
+    if (M.pink > 0.001) { const s1 = solid(base[2]); p = p.map((c, i) => mixRGB(c, s1[i], M.pink)); }
+    if (M.gold > 0.001) {   // Create mode: a warm sunset gold
+      const s1 = [[255, 214, 102], [245, 158, 11], [234, 88, 12]];
+      p = p.map((c, i) => mixRGB(c, s1[i], M.gold));
+    }
+    return p;
+  }
+
+  class Blob {
+    constructor(canvas) {
+      this.c = canvas; this.g = canvas.getContext("2d");
+      this.size = +canvas.dataset.size || 40;
+      this.N = this.size > 60 ? 48 : 28;
+      this.off = new Float32Array(this.N); this.vel = new Float32Array(this.N);
+      this.seed = Math.random() * 100;
+      this.blinkAt = 2 + Math.random() * 3; this.blink = 0; this.squint = 0;
+      this.visible = true; this.pokes = []; this.wasInside = false;
+      this.mood = {smile: 0, mask: 0, glasses: 0, tie: 0, cube: 0, vib: 0, teal: 0, pink: 0, gold: 0, masq: 0, bolt: 0, mono: 0};
+      const dpr = this.dpr = Math.min(2, devicePixelRatio || 1);
+      canvas.width = canvas.height = Math.round(this.size * dpr);
+      canvas.style.width = canvas.style.height = this.size + "px";
+      this.g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if ("IntersectionObserver" in window)
+        new IntersectionObserver(es => { this.visible = es[0].isIntersecting; wake(); }).observe(canvas);
+    }
+    targets() {
+      // what the blob wears depends on the mode and answer style you picked
+      const has = typeof S !== "undefined", mode = (has && S.mode) || "chat", style = (has && S.style) || "explain";
+      const st = (mode === "chat" || mode === "create") ? "" : style;   // styles belong to Offline and Online only
+      const v = (typeof Voice !== "undefined" && Voice.on) ? ((Voice.speaking || Voice.rec) ? 1 : 0.4) : 0;
+      return {smile: mode === "chat" ? 1 : 0, mask: st === "code" ? 1 : 0, glasses: st === "teach" ? 1 : 0,
+              tie: st === "teach" ? 1 : 0, cube: st === "quiz" ? 1 : 0, vib: v,
+              teal: mode === "study" ? 1 : 0, pink: mode === "online" ? 1 : 0,   // colour follows the mode buttons
+              gold: mode === "create" ? 1 : 0, masq: mode === "create" ? 1 : 0,
+              bolt: st === "quick" ? 1 : 0, mono: st === "explain" ? 1 : 0};
+    }
+    step(t, dt) {
+      const {N, off, vel, size} = this, R = size * 0.34;
+      const goal = this.targets(), M = this.mood;
+      for (const k in M) M[k] += (goal[k] - M[k]) * Math.min(1, 0.1 * dt);
+      this.bph = (this.bph || 0) + dt * 0.01667 * (1.4 + 1.0 * M.vib);             // rhythm speeds up smoothly while talking
+      const beat = Math.pow(0.5 + 0.5 * Math.sin(this.bph * Math.PI * 2), 2);
+      const rect = this.c.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+      const lx = P.x - cx, ly = P.y - cy, ld = Math.hypot(lx, ly), la = Math.atan2(ly, lx);
+      const speed = Math.min(3, Math.hypot(P.vx, P.vy));
+      let inside = false;
+      for (let i = 0; i < N; i++) {
+        const a = (i / N) * Math.PI * 2;
+        // idle wobble + breathing (the watery motion)
+        const rest = R * (0.045 * Math.sin(t * 1.7 + a * 3 + this.seed) + 0.03 * Math.sin(t * 1.1 - a * 2)
+                       + 0.025 * Math.sin(t * 0.9)) * (1 - 0.65 * M.cube)
+                   + R * M.vib * (0.05 * beat + 0.022 * Math.sin(a * 7 + t * 17) * (0.4 + 0.6 * beat));
+        let force = (rest - off[i]) * 0.09;
+        // the cursor parts the body: points near the cursor are pushed in to the cursor's distance
+        const edge = R + off[i];
+        if (ld < edge + R * 0.25) {
+          let da = Math.abs(a - la); da = Math.min(da, Math.PI * 2 - da);
+          const spread = Math.min(1.3, (R * 0.55) / Math.max(ld, R * 0.25));
+          if (da < spread) {
+            const fall = 1 - da / spread;
+            const targetEdge = Math.max(R * 0.18, ld - R * 0.06);
+            if (targetEdge < edge) force += (targetEdge - edge) * 0.35 * fall * fall * (0.6 + 0.4 * Math.min(1, speed * 2));
+            if (ld < edge) inside = true;
+          }
+        }
+        // neighbours pull together, so the surface stays smooth like water
+        const nb = off[(i + 1) % N] + off[(i - 1 + N) % N] - 2 * off[i];
+        vel[i] = (vel[i] + force * dt + nb * 0.08 * dt) * Math.pow(0.82, dt);
+        off[i] = Math.max(-R * 0.82, Math.min(R * 0.22, off[i] + vel[i] * dt));   // limit stretching
+      }
+      if (inside && !this.wasInside) { this.pokes.push(t); if (this.pokes.length > 4) this.pokes.shift(); }
+      this.wasInside = inside;
+      this.squint += ((inside ? 1 : 0) - this.squint) * 0.25 * dt;
+      if (t > this.blinkAt) { this.blink = 1; this.blinkAt = t + 2.5 + Math.random() * 4; }
+      this.blink = Math.max(0, this.blink - 0.12 * dt);
+      this.look = {lx, ly, ld};
+    }
+    path(R, cx, cy) {
+      const {N, off, g} = this, pts = [];
+      for (let i = 0; i < N; i++) {
+        const a = (i / N) * Math.PI * 2, c = this.mood ? this.mood.cube : 0;
+        const sq = c > 0.001 ? 0.9 / Math.pow(Math.pow(Math.abs(Math.cos(a)), 4) + Math.pow(Math.abs(Math.sin(a)), 4), 0.25) : 1;
+        const r = R * (1 + (sq - 1) * c) + off[i];
+        pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]);
+      }
+      g.beginPath();
+      const mid = (p, q) => [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
+      let m = mid(pts.at(-1), pts[0]); g.moveTo(m[0], m[1]);
+      for (let i = 0; i < N; i++) { const p = pts[i], q = pts[(i + 1) % N], n = mid(p, q); g.quadraticCurveTo(p[0], p[1], n[0], n[1]); }
+      g.closePath();
+    }
+    draw(t, dt) {
+      if (!colors) readColors();
+      const {g, size} = this, R = size * 0.34, cx = size / 2, cy = size / 2;
+      g.clearRect(0, 0, size, size);
+      const pal = this.pal = palette(this.mood);
+      // soft glow
+      const glow = g.createRadialGradient(cx, cy, R * 0.6, cx, cy, size * 0.5);
+      glow.addColorStop(0, css(pal[1], 0.33)); glow.addColorStop(1, css(pal[1], 0));
+      g.fillStyle = glow; g.fillRect(0, 0, size, size);
+      // body: slowly turning teal -> violet -> pink
+      this.path(R, cx, cy);
+      const ang = t * 0.4, gx = Math.cos(ang) * R, gy = Math.sin(ang) * R;
+      const body = g.createLinearGradient(cx - gx, cy - gy, cx + gx, cy + gy);
+      body.addColorStop(0, css(pal[0])); body.addColorStop(0.55, css(pal[1])); body.addColorStop(1, css(pal[2]));
+      g.fillStyle = body; g.fill();
+      // tiny cubic pixel pattern, shimmering inside the body
+      g.save(); g.clip();
+      const cell = Math.max(2, Math.round(size / 24));
+      for (let y = 0; y < size; y += cell) for (let x = 0; x < size; x += cell) {
+        const n = Math.sin(x * 0.37 + y * 0.53 + t * 2.1) * Math.sin(x * 0.11 - y * 0.29 - t * 1.3);
+        if (n > 0.25) { g.fillStyle = `rgba(255,255,255,${(n - 0.25) * 0.32})`; g.fillRect(x, y, cell - 1, cell - 1); }
+        else if (n < -0.55) { g.fillStyle = `rgba(10,14,30,${(-n - 0.55) * 0.35})`; g.fillRect(x, y, cell - 1, cell - 1); }
+      }
+      // glossy highlight
+      const hi = g.createRadialGradient(cx - R * 0.38, cy - R * 0.45, 0, cx - R * 0.38, cy - R * 0.45, R * 0.75);
+      hi.addColorStop(0, "rgba(255,255,255,.55)"); hi.addColorStop(1, "rgba(255,255,255,0)");
+      g.fillStyle = hi; g.fillRect(0, 0, size, size);
+      g.restore();
+      g.lineWidth = Math.max(1, size / 60); g.strokeStyle = "rgba(255,255,255,.28)"; this.path(R, cx, cy); g.stroke();
+      // eyes that follow the cursor
+      const L = this.look || {lx: 0, ly: 0, ld: 1};
+      const k = Math.min(1, L.ld / (size * 3)), ux = L.ld ? L.lx / L.ld : 0, uy = L.ld ? L.ly / L.ld : 0;
+      const ex = R * 0.34, ey = -R * 0.06 + (this.off[Math.round(this.N * 0.75)] || 0) * 0.4;
+      const rx = R * 0.17, ry = R * 0.21 * (1 - this.blink * 0.9);
+      const M = this.mood, ink = "#0b1020", lw = Math.max(1, size / 50), eyeY = cy + ey;
+      // CREATE mode: an original "night masquerade" half-mask - obsidian, gold trim,
+      // swept-up wing tips and twinkling stars - drawn under the eyes so they look through it
+      if (M.masq > 0.02) {
+        g.save(); g.globalAlpha = M.masq;
+        const w = R * 0.92, top = eyeY - R * 0.2, bot = eyeY + R * 0.2, lift = R * (0.42 + 0.03 * Math.sin(t * 2));
+        g.beginPath();
+        g.moveTo(cx, top + R * 0.05);
+        g.bezierCurveTo(cx + w * 0.35, top - R * 0.08, cx + w * 0.8, top - R * 0.02, cx + w * 1.05, eyeY - lift);   // right wing tip
+        g.bezierCurveTo(cx + w * 1.0, eyeY - R * 0.05, cx + w * 0.9, bot, cx + w * 0.55, bot);
+        g.bezierCurveTo(cx + w * 0.3, bot, cx + w * 0.12, bot - R * 0.02, cx, bot - R * 0.12);                       // nose dip
+        g.bezierCurveTo(cx - w * 0.12, bot - R * 0.02, cx - w * 0.3, bot, cx - w * 0.55, bot);
+        g.bezierCurveTo(cx - w * 0.9, bot, cx - w * 1.0, eyeY - R * 0.05, cx - w * 1.05, eyeY - lift);               // left wing tip
+        g.bezierCurveTo(cx - w * 0.8, top - R * 0.02, cx - w * 0.35, top - R * 0.08, cx, top + R * 0.05);
+        g.closePath();
+        const mg = g.createLinearGradient(cx, top - R * 0.3, cx, bot);
+        mg.addColorStop(0, "#2a1b3d"); mg.addColorStop(1, "#120b1c");
+        g.fillStyle = mg; g.fill();
+        g.lineWidth = Math.max(1, size / 45); g.strokeStyle = "#f5c451"; g.stroke();
+        // a fine gold filigree swirl on each wing
+        g.lineWidth = Math.max(0.7, size / 90); g.strokeStyle = "rgba(245,196,81,.75)";
+        for (const sd of [-1, 1]) {
+          g.beginPath(); g.moveTo(cx + sd * w * 0.62, bot - R * 0.04);
+          g.quadraticCurveTo(cx + sd * w * 0.95, eyeY - R * 0.02, cx + sd * w * 0.9, eyeY - lift * 0.7); g.stroke();
+        }
+        // twinkling four-point stars
+        const star = (x, y, r, a) => {
+          g.fillStyle = `rgba(255,236,170,${a})`; g.beginPath();
+          for (let i = 0; i < 8; i++) { const ang = i * Math.PI / 4, rr = i % 2 ? r * 0.28 : r; g.lineTo(x + Math.cos(ang) * rr, y + Math.sin(ang) * rr); }
+          g.fill();
+        };
+        star(cx + w * 0.78, eyeY - lift * 0.55, R * 0.07, 0.5 + 0.5 * Math.sin(t * 3.1));
+        star(cx - w * 0.7, eyeY - lift * 0.4, R * 0.055, 0.5 + 0.5 * Math.sin(t * 2.3 + 1));
+        star(cx, top - R * 0.02, R * 0.05, 0.5 + 0.5 * Math.sin(t * 2.7 + 2));
+        if (size > 60) {                                   // a curling quill feather on the right wing
+          g.strokeStyle = "rgba(255,214,102,.9)"; g.lineWidth = Math.max(1, size / 70); g.lineCap = "round";
+          const fx = cx + w * 1.02, fy = eyeY - lift, sway = Math.sin(t * 1.6) * R * 0.05;
+          g.beginPath(); g.moveTo(fx, fy); g.quadraticCurveTo(fx + R * 0.18, fy - R * 0.25, fx + R * 0.08 + sway, fy - R * 0.5); g.stroke();
+          g.lineWidth = Math.max(0.6, size / 140);
+          for (let i = 1; i < 7; i++) {
+            const k2 = i / 7, bx = fx + R * 0.13 * k2 + sway * k2 * k2, by = fy - R * 0.48 * k2;
+            g.beginPath(); g.moveTo(bx, by); g.lineTo(bx + R * 0.09 * (1 - k2 * 0.5), by + R * 0.03); g.stroke();
+            g.beginPath(); g.moveTo(bx, by); g.lineTo(bx - R * 0.07 * (1 - k2 * 0.5), by + R * 0.05); g.stroke();
+          }
+        }
+        g.restore();
+      }
+      for (const s of [-1, 1]) {
+        const x = cx + s * ex + ux * R * 0.05 * k, y = cy + ey + uy * R * 0.04 * k;
+        if (this.squint > 0.5) {               // happy squint while you poke through it
+          g.strokeStyle = "#0b1020"; g.lineWidth = Math.max(1.2, size / 34); g.lineCap = "round";
+          g.beginPath(); g.arc(x, y + ry * 0.35, rx * 0.9, Math.PI * 1.15, Math.PI * 1.85); g.stroke();
+          continue;
+        }
+        g.fillStyle = "#ffffff"; g.beginPath(); g.ellipse(x, y, rx, Math.max(0.6, ry), 0, 0, Math.PI * 2); g.fill();
+        if (ry > rx * 0.3) {
+          const px = x + ux * rx * 0.45 * k, py = y + uy * ry * 0.45 * k, pr = rx * 0.55;
+          g.fillStyle = "#0b1020"; g.beginPath(); g.arc(px, py, pr, 0, Math.PI * 2); g.fill();
+          g.fillStyle = "#ffffff"; g.beginPath(); g.arc(px - pr * 0.35, py - pr * 0.35, pr * 0.32, 0, Math.PI * 2); g.fill();
+        }
+      }
+      if (M.masq > 0.02) {
+        g.save(); g.globalAlpha = M.masq; g.strokeStyle = "#f5c451"; g.lineWidth = Math.max(1, size / 60);
+        for (const sd of [-1, 1]) { g.beginPath(); g.ellipse(cx + sd * ex, eyeY, rx * 1.35, rx * 1.15, sd * -0.25, 0, Math.PI * 2); g.stroke(); }
+        g.restore();
+      }
+      // CODE style: an original white hacker mask - a smooth porcelain faceplate with glowing
+      // slit eyes, faint circuit lines, a scan line and the odd digital glitch
+      if (M.mask > 0.02) {
+        g.save(); g.globalAlpha = M.mask;
+        const fw = R * 0.8, ftop = cy - R * 0.62, fbot = cy + R * 0.7;
+        const plate = () => {
+          g.beginPath();
+          g.moveTo(cx, ftop);
+          g.bezierCurveTo(cx + fw * 0.95, ftop, cx + fw * 1.02, cy - R * 0.1, cx + fw * 0.9, cy + R * 0.18);
+          g.bezierCurveTo(cx + fw * 0.75, cy + R * 0.5, cx + fw * 0.3, fbot, cx, fbot);
+          g.bezierCurveTo(cx - fw * 0.3, fbot, cx - fw * 0.75, cy + R * 0.5, cx - fw * 0.9, cy + R * 0.18);
+          g.bezierCurveTo(cx - fw * 1.02, cy - R * 0.1, cx - fw * 0.95, ftop, cx, ftop);
+          g.closePath();
+        };
+        plate();
+        const pg = g.createRadialGradient(cx - R * 0.2, cy - R * 0.3, R * 0.1, cx, cy, R * 0.95);
+        pg.addColorStop(0, "#ffffff"); pg.addColorStop(0.7, "#e8ecf3"); pg.addColorStop(1, "#b9c2d3");
+        g.fillStyle = pg; g.fill();
+        g.lineWidth = Math.max(1, size / 70); g.strokeStyle = "rgba(20,30,50,.35)"; g.stroke();
+        g.save(); plate(); g.clip();
+        // faint circuit traces on both cheeks
+        g.strokeStyle = "rgba(14,165,233,.45)"; g.fillStyle = "rgba(14,165,233,.6)"; g.lineWidth = Math.max(0.7, size / 110);
+        for (const sd of [-1, 1]) {
+          const x0 = cx + sd * fw * 0.25, y0 = cy + R * 0.48;
+          g.beginPath(); g.moveTo(x0, y0); g.lineTo(x0 + sd * R * 0.12, y0 - R * 0.12); g.lineTo(x0 + sd * R * 0.42, y0 - R * 0.12);
+          g.moveTo(x0 + sd * R * 0.2, y0 - R * 0.12); g.lineTo(x0 + sd * R * 0.3, y0 - R * 0.24); g.lineTo(x0 + sd * R * 0.5, y0 - R * 0.24); g.stroke();
+          for (const [px, py] of [[x0 + sd * R * 0.42, y0 - R * 0.12], [x0 + sd * R * 0.5, y0 - R * 0.24], [x0, y0]]) {
+            g.beginPath(); g.arc(px, py, Math.max(0.8, R * 0.025), 0, Math.PI * 2); g.fill();
+          }
+        }
+        // a thin seam down the middle
+        g.strokeStyle = "rgba(20,30,50,.18)"; g.beginPath(); g.moveTo(cx, ftop + R * 0.08); g.lineTo(cx, fbot - R * 0.05); g.stroke();
+        // scan line sweeping down the faceplate
+        const sy = ftop + ((t * 0.45) % 1) * (fbot - ftop);
+        g.fillStyle = "rgba(57,255,140,.55)"; g.fillRect(cx - fw, sy, fw * 2, Math.max(1, size / 110));
+        g.restore();
+        // glowing slit eyes that still follow the cursor
+        const open = 1 - this.blink * 0.85;
+        for (const sd of [-1, 1]) {
+          const x = cx + sd * ex + ux * R * 0.04 * k, y = eyeY + uy * R * 0.03 * k;
+          const ew = rx * 1.45, eh = rx * 0.42 * open;
+          g.beginPath();
+          g.moveTo(x - sd * ew, y + eh * 0.2);
+          g.lineTo(x + sd * ew * 0.9, y - eh * 1.1);
+          g.lineTo(x + sd * ew, y + eh * 0.15);
+          g.lineTo(x - sd * ew * 0.6, y + eh * 1.0);
+          g.closePath();
+          g.fillStyle = "#0b1020"; g.fill();
+          g.shadowColor = "rgba(34,211,238,.95)"; g.shadowBlur = size / 10;
+          g.fillStyle = `rgba(34,211,238,${0.75 + 0.25 * Math.sin(t * 4)})`;
+          g.beginPath(); g.ellipse(x + ux * rx * 0.25 * k, y + uy * rx * 0.1 * k, ew * 0.45, Math.max(0.5, eh * 0.38), sd * -0.32, 0, Math.PI * 2); g.fill();
+          g.shadowBlur = 0;
+        }
+        g.restore();
+        // now and then a quick digital glitch: two slices of the blob jump sideways
+        const ph = (t + this.seed) % 3.2;
+        if (ph < 0.12 && size > 30) {
+          const d = this.dpr || 1;
+          for (const [f, dx] of [[0.38, R * 0.08], [0.6, -R * 0.06]]) {
+            const y0 = size * f, h = size * 0.06;
+            g.drawImage(this.c, 0, Math.round(y0 * d), Math.round(size * d), Math.round(h * d), dx, y0, size, h);
+          }
+        }
+      }
+      // QUICK style: a crackling lightning bolt floating by the top of the head
+      if (M.bolt > 0.02) {
+        g.save(); g.globalAlpha = M.bolt;
+        const flick = 0.85 + 0.15 * Math.sin(t * 23) * Math.sin(t * 7), bob = Math.sin(t * 2.4) * R * 0.04;
+        const bx = cx + R * 0.62, by = cy - R * 0.98 + bob, s2 = R * 0.62 * (0.85 + 0.15 * M.bolt);
+        g.translate(bx, by); g.rotate(0.28);
+        g.beginPath();
+        g.moveTo(s2 * 0.12, -s2 * 0.5); g.lineTo(-s2 * 0.24, s2 * 0.06); g.lineTo(-s2 * 0.02, s2 * 0.06);
+        g.lineTo(-s2 * 0.14, s2 * 0.5); g.lineTo(s2 * 0.26, -s2 * 0.08); g.lineTo(s2 * 0.03, -s2 * 0.08); g.closePath();
+        g.shadowColor = `rgba(253,224,71,${0.9 * flick})`; g.shadowBlur = size / 8;
+        const bg = g.createLinearGradient(0, -s2 * 0.5, 0, s2 * 0.5);
+        bg.addColorStop(0, "#fff7b0"); bg.addColorStop(0.5, "#fde047"); bg.addColorStop(1, "#f59e0b");
+        g.fillStyle = bg; g.fill();
+        g.shadowBlur = 0; g.lineWidth = Math.max(1, size / 80); g.strokeStyle = "rgba(146,64,14,.7)"; g.stroke();
+        if (size > 60 && flick > 0.93) {                     // tiny sparks now and then
+          g.strokeStyle = "rgba(253,224,71,.9)"; g.lineWidth = Math.max(1, size / 110); g.lineCap = "round";
+          for (const [a2, l] of [[-0.6, 0.22], [2.3, 0.18], [0.9, 0.16]]) {
+            g.beginPath(); g.moveTo(Math.cos(a2) * s2 * 0.38, Math.sin(a2) * s2 * 0.38);
+            g.lineTo(Math.cos(a2) * s2 * (0.38 + l), Math.sin(a2) * s2 * (0.38 + l)); g.stroke();
+          }
+        }
+        g.restore();
+      }
+      // DETAILED style: a gentleman's monocle on the right eye and a curly mustache
+      if (M.mono > 0.02 && this.squint < 0.5) {
+        g.save(); g.globalAlpha = M.mono;
+        const mx = cx + ex + ux * R * 0.05 * k, my = eyeY + uy * R * 0.04 * k, mr = rx * 1.55;
+        g.fillStyle = "rgba(220,240,255,.18)"; g.beginPath(); g.arc(mx, my, mr, 0, Math.PI * 2); g.fill();
+        g.lineWidth = Math.max(1.2, size / 38); g.strokeStyle = "#c9a227"; g.stroke();
+        g.lineWidth = Math.max(0.6, size / 120); g.strokeStyle = "rgba(255,255,255,.7)";        // glint
+        g.beginPath(); g.arc(mx, my, mr * 0.72, Math.PI * 1.1, Math.PI * 1.45); g.stroke();
+        if (size > 30) {                                                                   // the chain, swinging a little
+          g.strokeStyle = "#c9a227"; g.lineWidth = Math.max(0.8, size / 90);
+          const sw = Math.sin(t * 1.8) * R * 0.05;
+          g.beginPath(); g.moveTo(mx + mr * 0.7, my + mr * 0.7);
+          g.quadraticCurveTo(mx + mr * 1.5 + sw, my + R * 0.55, mx + mr * 0.9 + sw, cy + R * 0.82); g.stroke();
+        }
+        // handlebar mustache
+        const yy = eyeY + R * 0.3, mw = R * 0.42, th = R * 0.11, wig = Math.sin(t * 2.2) * R * 0.015;
+        g.fillStyle = "#2b1a12";
+        for (const sd of [-1, 1]) {
+          g.beginPath();
+          g.moveTo(cx, yy - th * 0.35);
+          g.bezierCurveTo(cx + sd * mw * 0.35, yy - th * 1.1, cx + sd * mw * 0.8, yy - th * 0.2, cx + sd * mw * 0.95, yy - th * 1.1 + wig);
+          g.bezierCurveTo(cx + sd * mw * 1.08, yy - th * 1.6 + wig, cx + sd * mw * 1.2, yy - th * 0.9 + wig, cx + sd * mw * 1.06, yy - th * 0.5 + wig);
+          g.bezierCurveTo(cx + sd * mw * 0.95, yy + th * 0.55, cx + sd * mw * 0.4, yy + th * 0.75, cx, yy + th * 0.25);
+          g.closePath(); g.fill();
+        }
+        g.restore();
+      }
+      // round glasses (teach style)
+      if (M.glasses > 0.02) {
+        g.save(); g.globalAlpha = M.glasses; g.strokeStyle = ink; g.lineWidth = lw * 1.2;
+        const gr = rx * 1.6, gy = eyeY;
+        for (const sd of [-1, 1]) {
+          g.fillStyle = "rgba(255,255,255,.12)";
+          g.beginPath(); g.arc(cx + sd * ex, gy, gr, 0, Math.PI * 2); g.fill(); g.stroke();
+          g.beginPath(); g.moveTo(cx + sd * (ex + gr), gy - gr * 0.2); g.lineTo(cx + sd * R * 0.98, gy - gr * 0.45); g.stroke();
+        }
+        g.beginPath(); g.moveTo(cx - ex + gr, gy - gr * 0.15); g.quadraticCurveTo(cx, gy - gr * 0.6, cx + ex - gr, gy - gr * 0.15); g.stroke();
+        g.restore();
+      }
+      // little tie (teach style)
+      if (M.tie > 0.02 && size > 30) {
+        g.save(); g.globalAlpha = M.tie;
+        const top = cy + R * 0.56, len = R * 0.4 * M.tie, wdt = R * 0.11;
+        g.fillStyle = "#1c2445";
+        g.beginPath(); g.moveTo(cx - wdt, top); g.lineTo(cx + wdt, top); g.lineTo(cx + wdt * 0.55, top + wdt * 1.1); g.lineTo(cx - wdt * 0.55, top + wdt * 1.1); g.fill();
+        g.beginPath(); g.moveTo(cx - wdt * 0.6, top + wdt * 1.1); g.lineTo(cx + wdt * 0.6, top + wdt * 1.1);
+        g.lineTo(cx + wdt * 1.15, top + len); g.lineTo(cx, top + len + wdt * 0.9); g.lineTo(cx - wdt * 1.15, top + len); g.fill();
+        g.strokeStyle = colors[0]; g.lineWidth = Math.max(1, size / 70);
+        g.beginPath(); g.moveTo(cx - wdt * 0.8, top + len * 0.55); g.lineTo(cx + wdt * 0.8, top + len * 0.35); g.stroke();
+        g.restore();
+      }
+      // friendly smile (chat mode)
+      if (M.smile > 0.02 && this.squint < 0.5) {
+        g.save(); g.globalAlpha = M.smile; g.strokeStyle = ink; g.lineWidth = Math.max(1.2, size / 40); g.lineCap = "round";
+        const mw = R * 0.2 * (0.6 + 0.4 * M.smile), my2 = eyeY + R * 0.28;
+        g.beginPath(); g.arc(cx + (L.ld ? L.lx / L.ld : 0) * R * 0.03 * k, my2 - mw * 0.55, mw, Math.PI * 0.18, Math.PI * 0.82); g.stroke();
+        g.restore();
+      }
+      // little cheeks on the big one
+      if (size > 60 && M.mask < 0.5) {
+        g.fillStyle = css(mixRGB(rgbOf(colors[2]), [255, 255, 255], this.mood.pink * 0.5), 0.33 * (1 - M.mask));
+        for (const s of [-1, 1]) { g.beginPath(); g.ellipse(cx + s * R * 0.55, cy + R * 0.22, R * 0.11, R * 0.06, 0, 0, Math.PI * 2); g.fill(); }
+      }
+    }
+  }
+  // ---- The background: rings of text characters pulsing out from the big blob ----
+  const RAMP = " .:-=+xX#8@";
+  const fields = [];
+  class Field {
+    constructor(canvas) {
+      this.c = canvas; this.g = canvas.getContext("2d"); this.visible = true; this.drawnAt = 0;
+      this.cw = 9; this.ch = 15;
+      this.resize();
+      if ("ResizeObserver" in window) new ResizeObserver(() => this.resize()).observe(canvas);
+      if ("IntersectionObserver" in window)
+        new IntersectionObserver(es => { this.visible = es[0].isIntersecting; wake(); }).observe(canvas);
+    }
+    resize() {
+      const r = this.c.getBoundingClientRect(), dpr = this.dpr = Math.min(1.5, devicePixelRatio || 1);
+      this.w = Math.max(1, r.width); this.h = Math.max(1, r.height);
+      this.c.width = Math.round(this.w * dpr); this.c.height = Math.round(this.h * dpr);
+      this.g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      this.cols = Math.ceil(this.w / this.cw); this.rows = Math.ceil(this.h / this.ch);
+      this.atlas = null;
+    }
+    buildAtlas(pal) {
+      // every character in every colour, drawn once; each frame just copies them (much faster than text)
+      const {cw, ch, dpr} = this, a = document.createElement("canvas");
+      a.width = Math.ceil(RAMP.length * cw * dpr); a.height = Math.ceil(colors.length * ch * dpr);
+      const g = a.getContext("2d"); g.scale(dpr, dpr);
+      g.font = `600 12px ui-monospace, "Cascadia Mono", Consolas, monospace`; g.textAlign = "center"; g.textBaseline = "middle";
+      pal.forEach((col, ci) => { g.fillStyle = col; for (let i = 1; i < RAMP.length; i++) g.fillText(RAMP[i], i * cw + cw / 2, ci * ch + ch / 2 + 1); });
+      this.atlas = a; this.atlasKey = pal.join();
+    }
+    draw(t) {
+      if (!colors) readColors();
+      const host0 = this.c.parentElement && this.c.parentElement.querySelector("canvas.qblob.big");
+      const pal = host0 && host0._blob && host0._blob.pal ? host0._blob.pal.map(c => css(c)) : colors;   // same colours as the blob
+      if (!this.atlas || this.atlasKey !== pal.join()) this.buildAtlas(pal);
+      const {g, w, h, cw, ch, cols, rows, dpr, atlas} = this;
+      g.clearRect(0, 0, w, h);
+      const fr = this.c.getBoundingClientRect();
+      const host = this.c.parentElement && this.c.parentElement.querySelector("canvas.qblob.big");
+      const blob = host && host._blob;
+      let cx = w / 2, cy = h / 2;
+      if (host) { const br = host.getBoundingClientRect(); cx = br.left + br.width / 2 - fr.left; cy = br.top + br.height / 2 - fr.top; }
+      const mx = P.x - fr.left, my = P.y - fr.top;
+      const pokes = blob ? blob.pokes : [];
+      const step = Math.min(0.2, Math.max(0, t - (this.lt || t))); this.lt = t;
+      const ph = this.ph = (this.ph || 0) + step * (1.5 + (blob ? blob.mood.vib * 1.6 : 0));   // rings quicken in voice mode
+      const th = document.documentElement.dataset.theme, light = th === "light" || (th !== "dark" && matchMedia("(prefers-color-scheme: light)").matches);
+      const base = light ? 0.75 : 0.55;
+      const sw = cw * dpr, sh = ch * dpr, n = RAMP.length - 1, TAU = Math.PI * 2;
+      for (let row = 0; row < rows; row++) {
+        const y = row * ch + ch / 2, dy = (y - cy) * 2.1;          // squashed: wide ovals like the video
+        for (let col = 0; col < cols; col++) {
+          const x = col * cw + cw / 2, dx = x - cx;
+          const edge = 1 - Math.hypot(dx / (w * 0.5), (y - cy) / (h * 0.5));   // fade out towards the edges
+          if (edge <= 0.02) continue;
+          const d = Math.hypot(dx, dy);
+          // rings travelling outwards, with a slow shimmer so they never look mechanical
+          let ring = Math.max(0, Math.cos(d * 0.034 - ph)); ring *= ring; ring *= ring * ring;
+          const shimmer = 0.6 + 0.4 * Math.sin(x * 0.012 + t * 0.5) * Math.sin(y * 0.03 - t * 0.35);
+          let v = ring * shimmer * Math.exp(-d / 520);
+          for (const p of pokes) {                                   // a splash when you cut through the blob
+            const age = t - p; if (age > 1.8 || age < 0) continue;
+            const r = age * 300, q = (d - r) / 26;
+            v += Math.exp(-q * q) * (1 - age / 1.8);
+          }
+          const md = (x - mx) * (x - mx) + (y - my) * (y - my);
+          if (md < 22500) v += 0.3 * (1 - md / 22500);              // glows a little around the cursor
+          v *= Math.min(1, Math.max(0, (d - 70) / 70)) * Math.min(1, edge * 2.5);   // keep the blob itself clear
+          if (y > cy + 95) v *= Math.max(0.35, 1 - (y - cy - 95) / 90);   // softer behind the heading text
+          let level = Math.min(n, Math.floor(v * n * 1.15));
+          if (level < 1) {                                           // faint dot grid everywhere else
+            if (col % 5 || row % 2) continue;
+            level = 1; g.globalAlpha = 0.18 * Math.min(1, edge * 2) * base;
+          } else g.globalAlpha = Math.min(1, 0.3 + v) * base;
+          let a = (Math.atan2(dy, dx) + t * 0.25) / TAU; a -= Math.floor(a);
+          const ci = Math.floor(a * colors.length) % colors.length;
+          g.drawImage(atlas, level * sw, ci * sh, sw, sh, col * cw, row * ch, cw, ch);
+        }
+      }
+      g.globalAlpha = 1;
+    }
+  }
+
+  function frame(now) {
+    const t = now / 1000, dt = Math.min(3, (now - (last || now)) / 16.67) || 1;
+    last = now;
+    for (let i = all.length - 1; i >= 0; i--) if (!all[i].c.isConnected) all.splice(i, 1);
+    for (let i = fields.length - 1; i >= 0; i--) if (!fields[i].c.isConnected) fields.splice(i, 1);
+    const live = all.filter(b => b.visible);
+    live.forEach(b => { b.step(t, dt); b.draw(t, dt); });
+    fields.forEach(f => { if (f.visible && now - f.drawnAt > 33) { f.drawnAt = now; f.draw(t); } });   // 30 frames a second is plenty
+    if ((live.length || fields.some(f => f.visible)) && !document.hidden && !reduce) requestAnimationFrame(frame); else { running = false; last = 0; }
+  }
+  function wake() { if (!running && !reduce && !document.hidden) { running = true; requestAnimationFrame(frame); } }
+  document.addEventListener("visibilitychange", wake);
+  return {
+    refresh() {          // mode, style or voice changed: wake the animation (or redraw once if motion is reduced)
+      if (reduce) all.forEach(b => { Object.assign(b.mood, b.targets(), {vib: 0}); b.draw(performance.now() / 1000, 0); });
+      else wake();
+    },
+    mount(root = document) {
+      $$("canvas.qblob", root).forEach(c => {
+        if (c._blob) return;
+        const b = new Blob(c); c._blob = b; all.push(b);
+        b.step(performance.now() / 1000, 1); b.draw(performance.now() / 1000, 1);
+      });
+      $$("canvas.qfield", root).forEach(c => {
+        if (c._field) return;
+        const f = new Field(c); c._field = f; fields.push(f);
+        requestAnimationFrame(() => { f.resize(); f.draw(performance.now() / 1000); });   // a still picture even with reduced motion
+      });
+      wake();
+    },
+  };
+})();
+Blobs.mount();
+</script>
+</body>
+</html>
