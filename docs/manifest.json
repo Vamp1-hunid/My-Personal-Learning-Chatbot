@@ -65,9 +65,9 @@
     },
     {
       "path": "app/library.py",
-      "lines": 1000,
-      "bytes": 51041,
-      "sha256": "cbcf9245e86cf7033acddc078c6e8bd02843b0a432658a6fe03f0e5173cdd2f9",
+      "lines": 1001,
+      "bytes": 51153,
+      "sha256": "a10a8bf417648bf162395aad9a2b2cd947edc6226715db401762f2be40227bb0",
       "purpose": "The book library: reads books and notes, cuts them into passages, builds vectors, sorts books into subjects, and searches.",
       "needs": [
         "app/settings.py",
@@ -171,9 +171,9 @@
     },
     {
       "path": "app/server.py",
-      "lines": 409,
-      "bytes": 18514,
-      "sha256": "8b795108cb97982bf727c45fc36dbf3922e8091996829b24c27222eacebe933d",
+      "lines": 420,
+      "bytes": 18956,
+      "sha256": "a4a954513a91761ef105c5b402c85ec4c7490abdf6f54b4cf6231a2c68791201",
       "purpose": "The local web server: serves the page and the JSON API, starts the engines, opens the browser.",
       "needs": [
         "app/chat.py",
@@ -198,9 +198,9 @@
     },
     {
       "path": "ui/index.html",
-      "lines": 2431,
-      "bytes": 158409,
-      "sha256": "2d412a6abdbb78b2bd72955e763057cf1f799aeb19f43c94165d46ac079e0d50",
+      "lines": 2441,
+      "bytes": 159484,
+      "sha256": "9663f53f7db5d9c47c5bf1d9f5843681c77d74b3f0e8fac9832907067888058e",
       "purpose": "The whole interface in one file: HTML, CSS and JavaScript, no libraries, no internet.",
       "needs": [
         "app/server.py"

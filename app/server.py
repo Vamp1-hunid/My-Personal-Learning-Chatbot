@@ -18,6 +18,7 @@ import re
 import subprocess
 import sys
 import threading
+import time
 import webbrowser
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -27,6 +28,15 @@ from . import chat, docs, engine, library, memory, organize, runner, voice
 from .settings import BOOKS_DIR, CONFIG, DATA_DIR, MODELS_DIR, UI_DIR, load_state, save_state, user_name
 
 PORT = int(CONFIG["ui_port"])
+STARTED = time.time()          # Python reads its code only at start: newer files mean a restart is needed
+
+
+def restart_needed() -> bool:
+    """True when a program file changed after QuantaKai started (the page asks you to restart)."""
+    try:
+        return any(p.stat().st_mtime > STARTED + 2 for p in (UI_DIR.parent / "app").glob("*.py"))
+    except OSError:
+        return False
 ALLOWED_HOSTS = {f"127.0.0.1:{PORT}", f"localhost:{PORT}"}
 ALLOWED_ORIGINS = {f"http://{h}" for h in ALLOWED_HOSTS}
 
@@ -83,6 +93,7 @@ def status() -> dict:
         "voice": voice.status(),
         "run": runner.languages(),
         "images": {"ocr": os.name == "nt", "vision": bool(getattr(engine.CHAT, "vision", False))},
+        "restart_needed": restart_needed(),
     }
 
 

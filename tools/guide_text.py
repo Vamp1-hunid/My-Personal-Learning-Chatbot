@@ -529,7 +529,7 @@ def api(d: Doc) -> None:
         "Bodies are JSON unless stated.")
     rows = [
         ("GET", "/", "-", "The page (ui/index.html)"),
-        ("GET", "/api/status", "-", "app_name, user_name, nickname, config_name, wallpaper, wall_dim, wall_blur, chat{state,model,error}, search{state,error}, books, passages, memories, auto_learn, max_model_gb, voice{…}, run{python,java}, images{ocr,vision}"),
+        ("GET", "/api/status", "-", "app_name, user_name, nickname, config_name, wallpaper, wall_dim, wall_blur, chat{state,model,error}, search{state,error}, books, passages, memories, auto_learn, max_model_gb, voice{…}, run{python,java}, images{ocr,vision}, restart_needed"),
         ("GET", "/api/models", "-", "models[{name,size_gb,allowed,reason}], active, state, max_gb"),
         ("POST", "/api/models/load", "{name}", "Starts loading in the background: {ok}"),
         ("GET", "/api/books", "-", "books[…], progress{running,book,done_books,total_books,step,percent,messages}, categories, category_groups, queue"),
@@ -739,6 +739,7 @@ def troubleshooting(d: Doc) -> None:
         ["Kokoro very slow", "sherpa-onnx-c-api.dll is missing (not the shared build) or not v1.13.5; Piper is faster on 4 cores anyway"],
         ["Run: Java isn't installed", "Install a JDK 17+ and make sure java is on PATH"],
         ["Page looks old after an update", "Press Ctrl+F5 to reload without the cache"],
+        ["A change to the program does nothing (e.g. the book queue keeps its old order)", "Python reads the app's code only when it starts: close the START window (or STOP.bat) and start again. The page shows a \"QuantaKai was updated\" notice when this is needed"],
         ["Engines still running after closing", "Double-click STOP.bat"],
         ["verify_files.py says DIFFERENT", "Copy that file again with Save file (copy-paste can change quotes or spaces)"],
     ])

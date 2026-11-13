@@ -362,6 +362,9 @@ canvas.qfield{position:absolute;z-index:0;left:50%;transform:translateX(-50%);to
 .runout pre{margin:0;border:0;border-radius:0;max-height:300px;overflow:auto}
 .runout .act{margin:8px 10px}
 .quizbox{display:flex;flex-direction:column;gap:12px}
+.restartnote{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:40;max-width:min(680px,92vw);display:flex;gap:12px;align-items:center;
+  padding:11px 14px 11px 16px;border-radius:12px;background:var(--panel);border:1px solid var(--warn);box-shadow:var(--shadow);font-size:14px;animation:rise .2s}
+.restartnote button{flex:none;border:1px solid var(--line);background:var(--bg2);color:var(--text);border-radius:8px;padding:5px 12px;font:inherit;cursor:pointer}
 /* library subjects: add, rename, delete */
 .subjpanel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin:12px 0 6px}
 .subjpanel .sp-sub{display:block;color:var(--muted);font-size:13px;margin:2px 0 12px}
@@ -785,6 +788,13 @@ async function refreshStatus() {
       : s.chat.state === "ready" ? s.chat.model : (s.chat.error || "No model loaded");
     $("#engineName").title = s.chat.error || s.chat.model || "";
     $("#countBooks").textContent = s.books || "";
+    if (s.restart_needed && !S.restartShown) {        // program files changed after QuantaKai started
+      S.restartShown = true;
+      const n = document.createElement("div"); n.className = "restartnote";
+      n.innerHTML = `<b>QuantaKai was updated.</b> Close the black START window (or run STOP.bat), then start it again to use the changes. Books already added are kept. <button>OK</button>`;
+      n.querySelector("button").onclick = () => n.remove();
+      document.body.appendChild(n);
+    }
     $("#countMem").textContent = s.memories || "";
     if (!S.busy) $("#sendBtn").disabled = s.chat.state !== "ready";
   } catch { $("#engineName").textContent = "App not running"; $("#engineDot").className = "dot error"; }
@@ -1794,7 +1804,7 @@ async function loadBooks() {
     const d = document.createElement("div"); d.className = "card";
     const state = b.status === "ready" ? `<span class="badge ok">Ready</span>`
       : b.status === "adding" ? `<span class="badge new">Adding... ${p.percent || 0}%</span>`
-      : b.status === "queued" ? `<span class="badge">Queued</span>`
+      : b.status === "queued" ? `<span class="badge" title="Books are added quickest first">${b.queue_pos === 1 ? "Next" : "Queued #" + (b.queue_pos || "")}</span>`
       : `<button class="btn primary small" data-add>Add</button>`;
     d.innerHTML = `<div class="grow"><div class="title" title="${esc(b.file)}">${esc(b.title)}</div>
       <div class="meta">${b.status === "ready"

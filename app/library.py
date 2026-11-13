@@ -997,4 +997,5 @@ def list_books() -> list[dict]:
             b["status"] = "adding"
         elif b["file"] in QUEUE:
             b["status"] = "queued"
+            b["queue_pos"] = QUEUE.index(b["file"]) + 1      # 1 = added next (the quickest waits at the front)
     return sorted(books, key=lambda b: (category_rank(b["category"]), b["title"].lower()))
