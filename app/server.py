@@ -161,7 +161,8 @@ class Handler(BaseHTTPRequestHandler):
         elif path == "/api/books":
             self._json({"books": library.list_books(), "progress": library.PROGRESS,
                         "categories": library.all_categories(),
-                        "category_groups": library.category_groups(), "queue": list(library.QUEUE)})
+                        "category_groups": library.category_groups(), "subject_groups": library.subject_groups(),
+                        "queue": list(library.QUEUE)})
         elif path == "/api/memory":
             self._json({"memories": list(reversed(memory.list_all()))})
         elif path == "/api/voices":
@@ -218,6 +219,24 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 library.set_category(str(data.get("file", "")), str(data.get("category", "")))
                 self._json({"ok": True})
+            except ValueError as e:
+                self._json({"ok": False, "error": str(e)}, 400)
+        elif path == "/api/books/subjects":           # add, rename or delete a subject
+            action = str(data.get("action", ""))
+            try:
+                if action == "add":
+                    name = library.add_subject(str(data.get("name", "")), str(data.get("group", "")))
+                    note = f"Added {name}"
+                elif action == "rename":
+                    name = library.rename_subject(str(data.get("name", "")), str(data.get("new_name", "")))
+                    note = f"Renamed to {name}"
+                elif action == "delete":
+                    n = library.delete_subject(str(data.get("name", "")))
+                    note = "Deleted" + (f"; {n} book{'s' if n != 1 else ''} went back to automatic sorting" if n else "")
+                else:
+                    raise ValueError("Unknown action")
+                self._json({"ok": True, "note": note, "categories": library.all_categories(),
+                            "category_groups": library.category_groups()})
             except ValueError as e:
                 self._json({"ok": False, "error": str(e)}, 400)
         elif path == "/api/run":

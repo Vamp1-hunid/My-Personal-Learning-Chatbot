@@ -94,7 +94,8 @@ def main():
         page.insert_textbox(pymupdf.Rect(50, 50, 550, 800), f"Chapter {i + 1}. " + lines, fontsize=10)
     doc.save(books / "Intro_to_ML.pdf")
 
-    env = dict(os.environ, QUANTAKAI_FAKE_ENGINE="1", PYTHONUNBUFFERED="1")
+    env = dict(os.environ, QUANTAKAI_FAKE_ENGINE="1", PYTHONUNBUFFERED="1",
+               QUANTAKAI_FAKE_DUMP=str(Path(tmp) / "last_request.json"))
     # Start the COPY's app (the portable Python always looks in the real folder first, so point it at the copy).
     boot = (f"import sys, runpy; sys.path.insert(0, r'{tmp}'); sys.argv = ['app.server', '--no-browser']; "
             "runpy.run_module('app.server', run_name='__main__')")
@@ -161,6 +162,23 @@ def main():
         ev = chat("I choose 2: Bribe the guard", mode="create", style="adventure", conv_id=adv)
         saved = call("GET", f"/api/chats/{adv}")["messages"]
         check("adventure continues in the same chat", len(saved) == 4 and saved[-1]["style"] == "adventure", str(len(saved)))
+
+        import base64
+        ref = "The Copper Road. Nalu walked the copper road toward Kitwe with the stolen key."
+        up = call("POST", "/api/docs", {"conv_id": adv, "name": "my_story.txt",
+                                        "data": base64.b64encode(ref.encode()).decode()})
+        check("a reference document can be attached to a story", up.get("ok") is True, str(up))
+        chat("Continue my story", mode="create", style="story", conv_id=adv)
+        sent = json.loads((Path(tmp) / "last_request.json").read_text(encoding="utf-8"))
+        system = sent["messages"][0]["content"]
+        check("the story uses the attached document as its source", "Reference material" in system and "Nalu" in system)
+
+        r = call("POST", "/api/books/subjects", {"action": "add", "name": "Lecture slides", "group": "Study"})
+        check("a subject of your own can be added", r.get("ok") and "Lecture slides" in r["categories"], str(r)[:150])
+        r = call("POST", "/api/books/subjects", {"action": "rename", "name": "Mathematics", "new_name": "Maths"})
+        check("a built-in subject can be renamed", r.get("ok") and "Maths" in r["categories"] and "Mathematics" not in r["categories"])
+        r = call("POST", "/api/books/subjects", {"action": "delete", "name": "Lecture slides"})
+        check("your own subject can be deleted", r.get("ok") and "Lecture slides" not in r["categories"])
 
         bad = urllib.request.Request(BASE + "/api/status", headers={"Host": "evil.example:8765"})
         try:

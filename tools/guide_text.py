@@ -502,10 +502,14 @@ def how_it_works(d: Doc) -> None:
     d.ul(["No books, no web, temperature 0.9. Story: STORY_RULES (600-900 words, a bold title, \"continue\" for more), up to 1500 tokens. Character: CHARACTER_RULES (a fixed character sheet), 1100 tokens.",
           "Adventure: ADVENTURE_RULES, 900 tokens a turn. Each turn is a status line, a 200-350 word scene in second person ending at a decision, then <code>### What do you do?</code> and three numbered choices (bold or risky, clever or careful, surprising). The page turns them into buttons; a button sends \"I choose 2: …\"; Write my own lets you type any move. Up to 14 past messages are kept so names, items and secrets stay consistent; \"recap\" summarises the story; after 8-12 turns it builds to THE END with sequel ideas.",
           "Story and Adventure share CRAFT_NOTES: fresh names, no stock phrases, varied sentences, subtext in dialogue, and every scene changing something."])
+    d.sub("Customising the library")
+    d.ul(["Library > <b>Manage subjects</b>: add a subject and pick the group it is listed under; rename any subject inline, including built-in ones; delete subjects you added (click the X twice).",
+          "A renamed built-in subject keeps its original name inside categories.json, so automatic sorting still files new books into it. Each book's subject can still be changed from its own menu."])
     d.sub("Pictures and documents")
     d.ul([
         "Pictures (paste, drag or the picture button, up to 4 per message): Windows OCR reads their text, which is added to the question; a vision model also sees the image.",
         "Documents (the paperclip): read once by docs.py and saved with that chat. Every question in that chat gets the whole text if it fits, otherwise the most relevant 1000-character chunks.",
+        "In Create mode an attached document becomes the story's source: Story, Character and Adventure use its characters, world, events and voice, and can continue it, adapt it or spin off from it. Its opening and ending are always favoured. With context_window 4096 about 1,000 words of it fit each turn; raise context_window to 8192 for more (uses more RAM, slower).",
     ])
     d.sub("Code, Teach and Quiz")
     d.ul([
@@ -532,6 +536,7 @@ def api(d: Doc) -> None:
         ("POST", "/api/books/scan", "-", "Queue every new or changed book (409 if the search engine is not ready)"),
         ("POST", "/api/books/add", "{files:[…]} or {file}", "{ok, queued}"),
         ("POST", "/api/books/category", "{file, category}", "Set a book's subject (a new name creates your own subject)"),
+        ("POST", "/api/books/subjects", "{action: add|rename|delete, name, new_name?, group?}", "{ok, note, categories, category_groups} or {ok:false, error}"),
         ("POST", "/api/chat", "{conv_id, mode, style, message, simpler, book_category, images[], turn, rewind, voice}", "Server-Sent Events, one data: line each: meta, status, notice, ocr, memory, sources, context, token, done, error"),
         ("GET", "/api/chats", "-", "chats[{id,title,updated}], newest first"),
         ("GET", "/api/chats/&lt;id&gt;", "-", "The whole conversation file"),
@@ -580,7 +585,7 @@ def data_files(d: Doc) -> None:
         [c("data\\library\\books.json"), "{book_id: {file, title, pages, empty_pages, passages, size, mtime, added, seconds, category_auto}}"],
         [c("data\\library\\<book_id>.jsonl"), "One passage per line: {id, book_id, page, page_end, text}"],
         [c("data\\library\\<book_id>.npy"), "numpy float32 array, shape (passages, 384); row i belongs to line i"],
-        [c("data\\library\\categories.json"), "{\"<file name>\": \"<subject>\", \"_custom\": [your own subjects]}"],
+        [c("data\\library\\categories.json"), "{\"<file name>\": \"<subject>\", \"_custom\": [your own subjects], \"_groups\": {your subject: group}, \"_renames\": {built-in subject: your name for it}}"],
         [c("data\\engine_pids.json"), "{chat: pid, embed: pid, ui: pid}"],
         [c("data\\wallpaper.<png|jpg|gif|webp>"), "Your wallpaper"],
         [c("logs\\chat-engine.log, embed-engine.log"), "The exact engine command and everything it printed"],

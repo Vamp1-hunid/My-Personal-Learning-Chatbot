@@ -362,6 +362,22 @@ canvas.qfield{position:absolute;z-index:0;left:50%;transform:translateX(-50%);to
 .runout pre{margin:0;border:0;border-radius:0;max-height:300px;overflow:auto}
 .runout .act{margin:8px 10px}
 .quizbox{display:flex;flex-direction:column;gap:12px}
+/* library subjects: add, rename, delete */
+.subjpanel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin:12px 0 6px}
+.subjpanel .sp-sub{display:block;color:var(--muted);font-size:13px;margin:2px 0 12px}
+.sp-add{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.sp-add .input{flex:1 1 230px}
+.subjpanel select{background:var(--bg2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:8px 10px;font:inherit}
+.sp-find{width:100%}
+.sp-g{margin-top:14px}.sp-g>b{font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:var(--accent)}
+.sp-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.sp-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 4px 3px 11px;border:1px solid var(--line);border-radius:999px;background:var(--bg2);font-size:13.5px}
+.sp-chip.mine{border-color:color-mix(in srgb,var(--accent2) 55%,var(--line))}
+.sp-chip .c{font-size:11.5px;color:var(--faint);margin:0 2px}
+.sp-chip button{border:0;background:transparent;color:var(--muted);cursor:pointer;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:13px;padding:0}
+.sp-chip button:hover{background:var(--panel2);color:var(--text)}
+.sp-chip button.sure{background:var(--danger);color:#fff}
+.sp-chip input{width:190px;padding:3px 9px;border-radius:8px;border:1px solid var(--accent);background:var(--panel);color:var(--text);font:inherit;font-size:13.5px}
+.sp-empty{color:var(--faint);font-size:13px;margin-top:10px}
 /* interactive story (Create > Adventure): choice buttons under each scene */
 .choices{display:grid;gap:8px;margin-top:14px}
 .choices .ch-h{font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--warn)}
@@ -519,10 +535,23 @@ body.has-wall .msg.bot .body,body.has-wall .welcome p{text-shadow:0 0 12px var(-
     <!-- library view -->
     <section class="view hidden" id="view-library"><div class="page">
       <h2>Library</h2>
-      <p class="sub">Books the assistant can study from, grouped by subject. Put PDF or EPUB books, Word (.docx) or PowerPoint (.pptx) files, or .txt / .md notes in the books folder, then press <b>Add</b> on the ones you want. Each book's subject - textbooks, novels, the Bible, notes, anything - helps the assistant pick the right books to consult. Subjects are guessed from the title, then from the book's content once it is added; change any guess, or make your own with "+ New subject".</p>
+      <p class="sub">Books the assistant can study from, grouped by subject. Put PDF or EPUB books, Word (.docx) or PowerPoint (.pptx) files, or .txt / .md notes in the books folder, then press <b>Add</b> on the ones you want. Each book's subject - textbooks, novels, the Bible, notes, anything - helps the assistant pick the right books to consult. Subjects are guessed from the title, then from the book's content once it is added; change any guess, or use <b>Manage subjects</b> to add your own subjects and rename any of them.</p>
       <div class="row">
         <button class="btn" id="scanBtn" title="Queue every book that hasn't been added yet">Add all new</button>
         <button class="btn" data-open="books">Open books folder</button>
+        <button class="btn" id="subjBtn" title="Add your own subjects, rename any subject, delete the ones you added">Manage subjects</button>
+      </div>
+      <div class="subjpanel hidden" id="subjPanel">
+        <b>Subjects</b>
+        <span class="sp-sub">Add your own subjects, rename any subject (built-in ones too), and delete the ones you added.
+          Renaming keeps every book in its subject. Deleting one of yours sends its books back to automatic sorting.</span>
+        <div class="sp-add">
+          <input class="input" id="subjNew" maxlength="40" placeholder="New subject, e.g. MSM 112, Church notes, Ethical hacking labs">
+          <select id="subjGroup" title="Which group it is listed under"></select>
+          <button class="btn primary" id="subjAdd">Add subject</button>
+        </div>
+        <input class="input sp-find" id="subjFind" placeholder="Find a subject...">
+        <div id="subjList"></div>
       </div>
       <div class="progress hidden" id="progress">
         <div id="progTitle">Working...</div>
@@ -723,9 +752,9 @@ function setMode(mode) {
   $("#hint").textContent = mode === "study"
     ? "Offline mode answers only from your books and shows the pages it used"
     : mode === "online" ? "Online mode searches the web (your question is sent to DuckDuckGo) and links its sources"
-    : mode === "create" ? (cs === "character" ? "Character: ask for changes and the full sheet is rewritten"
-       : cs === "adventure" ? "Adventure: pick a choice or write your own move - say \"recap\" any time"
-       : "Story: say \"continue\" for the next part, or ask for changes")
+    : mode === "create" ? (cs === "character" ? "Character: ask for changes and the full sheet is rewritten - attach a story (paperclip) to build characters from it"
+       : cs === "adventure" ? "Adventure: pick a choice or write your own move - attach a story (paperclip) to play inside its world"
+       : "Story: attach a document (paperclip) to continue, adapt or spin off from it - say \"continue\" for more")
     : "Enter to send - Shift+Enter for a new line - everything stays on this laptop";
 }
 function setStyle(style) {
@@ -1673,6 +1702,63 @@ function fillBookCats(books, groups) {
   sel.value = [...sel.options].some(o => o.value === keep) ? keep : "auto";
 }
 $("#bookCat").onchange = e => store.set("bookCat", e.target.value);
+
+/* ---------- Manage subjects: add, rename (any subject), delete (your own) */
+async function subjectAction(body) {
+  const r = await api("/api/books/subjects", "POST", body);
+  if (r.ok === false) { toast(r.error || "That didn't work"); return false; }
+  toast(r.note); await loadBooks(); return true;
+}
+function renderSubjects() {
+  const r = S.lib; if (!r) return;
+  const sel = $("#subjGroup"), keep = sel.value;
+  sel.innerHTML = (r.subject_groups || ["Your subjects"]).map(g => `<option>${esc(g)}</option>`).join("");
+  sel.value = keep || "Your subjects";
+  const count = {};
+  for (const b of r.books) count[b.category] = (count[b.category] || 0) + 1;
+  const q = $("#subjFind").value.trim().toLowerCase();
+  const list = $("#subjList"); list.innerHTML = "";
+  for (const g of r.category_groups || []) {
+    const items = g.subjects.filter(c => !q || c.toLowerCase().includes(q));
+    if (!items.length) continue;
+    const box = document.createElement("div"); box.className = "sp-g";
+    box.innerHTML = `<b>${esc(g.group)}</b><div class="sp-chips"></div>`;
+    const chips = box.querySelector(".sp-chips");
+    for (const name of items) {
+      const mine = (g.custom || []).includes(name);
+      const chip = document.createElement("span");
+      chip.className = "sp-chip" + (mine ? " mine" : "");
+      const show = () => {
+        chip.innerHTML = `<span>${esc(name)}</span>${count[name] ? `<span class="c">${count[name]}</span>` : ""}` +
+          `<button data-r title="Rename">&#9998;</button>` + (mine ? `<button data-d title="Delete (click twice)">&#10005;</button>` : "");
+        chip.querySelector("[data-r]").onclick = edit;
+        const del = chip.querySelector("[data-d]");
+        if (del) del.onclick = () => {
+          if (!del.classList.contains("sure")) { del.classList.add("sure"); del.title = "Click again to delete"; setTimeout(() => del.classList.remove("sure"), 3000); return; }
+          subjectAction({action: "delete", name});
+        };
+      };
+      const edit = () => {
+        chip.innerHTML = `<input maxlength="40" value="${esc(name)}"><button data-ok title="Save">&#10003;</button><button data-x title="Cancel">&#10005;</button>`;
+        const inp = chip.querySelector("input"); inp.focus(); inp.select();
+        const save = () => { const v = inp.value.trim(); if (!v || v === name) return show(); subjectAction({action: "rename", name, new_name: v}); };
+        chip.querySelector("[data-ok]").onclick = save;
+        chip.querySelector("[data-x]").onclick = show;
+        inp.onkeydown = e => { if (e.key === "Enter") save(); if (e.key === "Escape") { e.stopPropagation(); show(); } };
+      };
+      show(); chips.appendChild(chip);
+    }
+    list.appendChild(box);
+  }
+  if (!list.children.length) list.innerHTML = `<div class="sp-empty">No subject matches "${esc(q)}". Type it above to add it.</div>`;
+}
+$("#subjBtn").onclick = () => { $("#subjPanel").classList.toggle("hidden"); renderSubjects(); };
+$("#subjFind").oninput = renderSubjects;
+$("#subjAdd").onclick = async () => {
+  const name = $("#subjNew").value.trim(); if (!name) { $("#subjNew").focus(); return; }
+  if (await subjectAction({action: "add", name, group: $("#subjGroup").value})) $("#subjNew").value = "";
+};
+$("#subjNew").addEventListener("keydown", e => { if (e.key === "Enter") $("#subjAdd").click(); });
 async function addBooks(files) {
   const r = await api("/api/books/add", "POST", {files});
   if (r.ok === false) { toast(r.error); return; }
@@ -1693,6 +1779,7 @@ async function loadBooks() {
   const total = newOnes.reduce((a, b) => a + (b.estimate_seconds || 0), 0);
   $("#scanBtn").textContent = newOnes.length ? `Add all new (${newOnes.length}${total ? ", about " + fmtDur(total) : ""})` : "All books added";
   fillBookCats(r.books, r.category_groups);
+  S.lib = r; if (!$("#subjPanel").classList.contains("hidden")) renderSubjects();
   const list = $("#bookList");
   list.innerHTML = r.books.length ? "" : '<div class="empty">No books yet. Click "Open books folder", copy your books in, then press Add on each one.</div>';
   let lastCat = null;

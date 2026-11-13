@@ -365,8 +365,17 @@ def _chunks(text: str, size: int = 1000, overlap: int = 150) -> list[str]:
     return [c for c in out if c]
 
 
-def context_block(conv: dict, question: str, token_budget: int) -> tuple[str, list[str]]:
+STORY_HEADER = ("Reference material the user attached for this story. Treat it as canon: use its characters, names, "
+                "places, events, rules of the world, tone and writing style. If asked to continue it, pick up exactly where "
+                "it ends. If asked to adapt, retell, or write a sequel, prequel or spin-off, stay faithful to it. Write new "
+                "prose in your own words and never copy long passages from it. Anything the reference does not cover, "
+                "invent so that it fits.\n")
+
+
+def context_block(conv: dict, question: str, token_budget: int, story: bool = False) -> tuple[str, list[str]]:
     """The attached documents (or their most relevant parts) as text for the model.
+    story=True (Create mode): the documents are a story's source material, and when they are too long
+    the opening and the ending (where a story to be continued stops) are favoured.
     Returns (text, names of the documents used)."""
     docs = conv.get("docs") or []
     if not docs or token_budget < 80:
@@ -376,18 +385,21 @@ def context_block(conv: dict, question: str, token_budget: int) -> tuple[str, li
     texts = [(d, t) for d, t in texts if t]
     if not texts:
         return "", []
-    header = ("Documents attached to this conversation by the user. Use them as background context and as the "
-              "main source when the question is about them; say which document you used. "
-              "If the answer is not in them, say so and answer from general knowledge.\n")
+    header = STORY_HEADER if story else (
+        "Documents attached to this conversation by the user. Use them as background context and as the "
+        "main source when the question is about them; say which document you used. "
+        "If the answer is not in them, say so and answer from general knowledge.\n")
     if sum(len(t) for _, t in texts) + 40 * len(texts) <= char_budget:      # small enough: send everything
         body = "\n\n".join(f"=== {d['name']} ===\n{t}" for d, t in texts)
         return header + body, [d["name"] for d, _ in texts]
 
     # too big: pick the most relevant parts (keyword scoring, like the book search)
     pieces = []   # (doc index, chunk index, text)
+    last_chunk = {}
     for di, (d, t) in enumerate(texts):
         for ci, c in enumerate(_chunks(t)):
             pieces.append((di, ci, c))
+            last_chunk[di] = ci
     q = set(_terms(question))
     df: dict[str, int] = {}
     toks = []
@@ -408,7 +420,10 @@ def context_block(conv: dict, question: str, token_budget: int) -> tuple[str, li
             idf = math.log(1 + (n - df[w] + 0.5) / (df[w] + 0.5))
             s += idf * f * 2.2 / (f + 1.2 * (0.25 + 0.75 * len(ts) / max(1, avg)))
         name_bonus = 0.6 if q & set(_terms(texts[pieces[i][0]][0]["name"])) else 0.0
-        scores.append(s + name_bonus + (0.35 if pieces[i][1] == 0 else 0.0))   # the start of a document often says what it is
+        start = 0.35 if pieces[i][1] == 0 else 0.0               # the start of a document often says what it is
+        if story:                                                 # a story's opening and its last pages matter most
+            start = 1.5 if pieces[i][1] == 0 else (2.0 if pieces[i][1] == last_chunk[pieces[i][0]] else 0.0)
+        scores.append(s + name_bonus + start)
     order = sorted(range(n), key=lambda i: -scores[i])
     chosen, used = [], 40 * len(texts)
     for i in order:

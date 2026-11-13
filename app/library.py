@@ -403,19 +403,132 @@ def _category_choices() -> dict:
         return {}
 
 
+# categories.json holds your library customisations:
+#   "<book file name>": "<subject>"   your choice for one book (built-in subjects by their original name)
+#   "_custom":  [subjects you added]
+#   "_groups":  {your subject: the group it is listed under}
+#   "_renames": {built-in subject: the name you gave it}
+RESERVED = ("_custom", "_groups", "_renames")
+YOUR_GROUP = "Your subjects"
+
+
+def _clean_name(name: str) -> str:
+    return re.sub(r"\s+", " ", str(name or "")).strip()[:40]
+
+
+def _renames(choices: dict | None = None) -> dict:
+    r = (choices if choices is not None else _category_choices()).get("_renames", {})
+    return r if isinstance(r, dict) else {}
+
+
+def display_name(subject: str, choices: dict | None = None) -> str:
+    """The name shown for a subject: your new name for a built-in one, else the subject itself."""
+    return _renames(choices).get(subject, subject)
+
+
+def _canonical(name: str, choices: dict) -> str:
+    """Turn a shown name back into the stored one (a renamed built-in subject -> its original name)."""
+    for base, shown in _renames(choices).items():
+        if shown == name:
+            return base
+    return name
+
+
+def _custom(choices: dict) -> list[str]:
+    return [c for c in choices.get("_custom", []) if c not in BASE_CATEGORIES]
+
+
 def all_categories() -> list[str]:
-    """The built-in subjects plus any you made yourself (kept just before Other)."""
-    custom = [c for c in _category_choices().get("_custom", []) if c not in BASE_CATEGORIES]
-    return BASE_CATEGORIES[:-1] + custom + ["Other"]
+    """Every subject by its shown name: built-in ones, then yours, then Other."""
+    choices = _category_choices()
+    return ([display_name(c, choices) for c in BASE_CATEGORIES[:-1]] + _custom(choices)
+            + [display_name("Other", choices)])
 
 
 def category_groups() -> list[dict]:
-    """Subjects in their groups, for the menus: [{"group": ..., "subjects": [...]}]."""
+    """Subjects in their groups, for the menus: [{"group": ..., "subjects": [...], "custom": [...]}]."""
+    choices = _category_choices()
+    my_groups = choices.get("_groups", {}) if isinstance(choices.get("_groups"), dict) else {}
     groups: dict[str, list[str]] = {}
-    for name in all_categories():
-        groups.setdefault(GROUP_OF.get(name, "Your subjects"), []).append(name)
-    order = list(dict.fromkeys([s[3] for s in SUBJECTS[:-1]] + ["Your subjects", "Other"]))
-    return [{"group": g, "subjects": groups[g]} for g in order if g in groups]
+    for base in BASE_CATEGORIES:
+        groups.setdefault(GROUP_OF[base], []).append(display_name(base, choices))
+    custom = _custom(choices)
+    for c in custom:
+        groups.setdefault(my_groups.get(c, YOUR_GROUP), []).append(c)
+    order = list(dict.fromkeys([s[3] for s in SUBJECTS[:-1]] + [YOUR_GROUP, "Other"]))
+    order += [g for g in groups if g not in order]
+    return [{"group": g, "subjects": groups[g], "custom": [c for c in groups[g] if c in custom]}
+            for g in order if g in groups]
+
+
+def subject_groups() -> list[str]:
+    """Group names a new subject can be listed under."""
+    return list(dict.fromkeys([s[3] for s in SUBJECTS[:-1]] + [YOUR_GROUP]))
+
+
+def _save_choices(choices: dict) -> None:
+    write_json_atomic(CATEGORY_FILE, choices)
+    INDEX.loaded = False          # rebuild the book-to-subject map on the next search
+
+
+def add_subject(name: str, group: str = YOUR_GROUP) -> str:
+    name = _clean_name(name)
+    if not name or name.startswith("_"):
+        raise ValueError("Type a name for the subject (it can't start with _).")
+    if name.lower() in {c.lower() for c in all_categories()}:
+        raise ValueError(f"There is already a subject called {name}.")
+    choices = _category_choices()
+    choices["_custom"] = _custom(choices) + [name]
+    group = _clean_name(group) or YOUR_GROUP
+    if group != YOUR_GROUP:
+        choices.setdefault("_groups", {})[name] = group
+    _save_choices(choices)
+    return name
+
+
+def rename_subject(old: str, new: str) -> str:
+    """Rename any subject. Built-in subjects keep their original name inside, so automatic
+    sorting still works; books you placed in a subject of your own move with it."""
+    old, new = _clean_name(old), _clean_name(new)
+    if not new or new.startswith("_"):
+        raise ValueError("Type the new name (it can't start with _).")
+    choices = _category_choices()
+    if old not in all_categories():
+        raise ValueError(f"There is no subject called {old}.")
+    if new != old and new.lower() in {c.lower() for c in all_categories() if c != old}:
+        raise ValueError(f"There is already a subject called {new}.")
+    base = _canonical(old, choices)
+    if base in BASE_CATEGORIES:
+        renames = _renames(choices)
+        if new == base:
+            renames.pop(base, None)                    # back to its original name
+        else:
+            renames[base] = new
+        choices["_renames"] = renames
+    else:                                              # one of yours
+        choices["_custom"] = [new if c == old else c for c in _custom(choices)]
+        groups = choices.get("_groups", {})
+        if old in groups:
+            groups[new] = groups.pop(old)
+        for k in [k for k in choices if k not in RESERVED and choices[k] == old]:
+            choices[k] = new
+    _save_choices(choices)
+    return new
+
+
+def delete_subject(name: str) -> int:
+    """Delete one of your own subjects. Its books go back to automatic sorting. Returns how many."""
+    name = _clean_name(name)
+    choices = _category_choices()
+    if name not in _custom(choices):
+        raise ValueError("Only subjects you added can be deleted. Built-in subjects can be renamed.")
+    choices["_custom"] = [c for c in _custom(choices) if c != name]
+    choices.get("_groups", {}).pop(name, None)
+    moved = [k for k in choices if k not in RESERVED and choices[k] == name]
+    for k in moved:
+        del choices[k]
+    _save_choices(choices)
+    return len(moved)
 
 
 def category_rank(name: str) -> int:
@@ -455,27 +568,25 @@ def guess_category_from_content(matrix: np.ndarray) -> str | None:
 
 
 def set_category(file: str, category: str) -> None:
-    category = re.sub(r"\s+", " ", (category or "")).strip()[:40]
-    if not category:
+    category = _clean_name(category)
+    if not category or category.startswith("_") or file in RESERVED:
         raise ValueError("The subject name is empty")
     choices = _category_choices()
-    if category not in BASE_CATEGORIES:
-        custom = choices.get("_custom", [])
-        if category not in custom:
-            choices["_custom"] = custom + [category]      # a new subject of your own
+    category = _canonical(category, choices)          # a renamed built-in subject is stored by its original name
+    if category not in BASE_CATEGORIES and category not in _custom(choices):
+        choices["_custom"] = _custom(choices) + [category]      # a new subject of your own
     choices[file] = category
-    write_json_atomic(CATEGORY_FILE, choices)
-    INDEX.loaded = False          # rebuild the book-to-subject map on the next search
+    _save_choices(choices)
 
 
 def category_of(file: str, title: str, auto: str | None = None) -> str:
-    """Your choice first, then the guess made from the book's content, then the title guess."""
-    choice = _category_choices().get(file)
-    if choice:
-        return choice
-    if auto:
-        return auto
-    return guess_category(title, file)
+    """Your choice first, then the guess made from the book's content, then the title guess.
+    Returned by its shown name (your new name if you renamed it)."""
+    choices = _category_choices()
+    choice = choices.get(file) if file not in RESERVED else None
+    if isinstance(choice, str) and choice and (choice in BASE_CATEGORIES or choice in _custom(choices)):
+        return display_name(choice, choices)
+    return display_name(auto or guess_category(title, file), choices)
 
 
 # --------------------------------------------------------------------------- adding books

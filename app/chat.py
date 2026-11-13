@@ -263,7 +263,8 @@ def reply(conv_id: str | None, mode: str, style: str, message: str,
     if conv.get("docs"):
         fixed = _tokens(messages[0]["content"]) + _tokens(messages[-1]["content"])
         room = window - max_tokens - fixed - 64
-        block, used = docs.context_block(conv, _search_query(typed or message, history), max(0, min(1500, int(room * 0.75))))
+        block, used = docs.context_block(conv, _search_query(typed or message, history), max(0, min(1500, int(room * 0.75))),
+                                         story=(mode == "create"))
         if block:
             middle = messages[1:-1]
             messages = ([{"role": "system", "content": messages[0]["content"] + "\n\n" + block}]

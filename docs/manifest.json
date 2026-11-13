@@ -65,9 +65,9 @@
     },
     {
       "path": "app/library.py",
-      "lines": 889,
-      "bytes": 46173,
-      "sha256": "68029a484628f91227687f706eb875ddceb776599719e65ee3a5ca6a4351f9bf",
+      "lines": 1000,
+      "bytes": 51041,
+      "sha256": "cbcf9245e86cf7033acddc078c6e8bd02843b0a432658a6fe03f0e5173cdd2f9",
       "purpose": "The book library: reads books and notes, cuts them into passages, builds vectors, sorts books into subjects, and searches.",
       "needs": [
         "app/settings.py",
@@ -115,9 +115,9 @@
     },
     {
       "path": "app/docs.py",
-      "lines": 429,
-      "bytes": 17637,
-      "sha256": "eaa6d0f8da0f8cf26dcb660e0f2fdd5f1522e7f1c63bf10922ed2a92bbd9b251",
+      "lines": 444,
+      "bytes": 18714,
+      "sha256": "a5d05b23ea2ebd58667ee45a7249cc40328283e27115179a42fa22993fd66999",
       "purpose": "Documents attached to one chat: read once, saved beside the chat, and their most relevant parts sent with each question in that chat.",
       "needs": [
         "app/settings.py"
@@ -154,9 +154,9 @@
     },
     {
       "path": "app/chat.py",
-      "lines": 323,
-      "bytes": 16255,
-      "sha256": "59ef15226f21ac45b1ce9fc2ca0c9850a0ac27c48634b81940f8610624a63c79",
+      "lines": 324,
+      "bytes": 16322,
+      "sha256": "e63c739d0918fbc74148d213894b27b3591ef3b30f352aaef053fb947ec491a2",
       "purpose": "Builds every reply: loads the chat, gathers memories, book passages, web extracts or attached documents, fits everything into the context window, streams, saves.",
       "needs": [
         "app/docs.py",
@@ -171,9 +171,9 @@
     },
     {
       "path": "app/server.py",
-      "lines": 390,
-      "bytes": 17331,
-      "sha256": "f9b7a1bf3b2adda1d3a5defa0781142c322213d736e78b1e43d44fbd2c70f2d5",
+      "lines": 409,
+      "bytes": 18514,
+      "sha256": "8b795108cb97982bf727c45fc36dbf3922e8091996829b24c27222eacebe933d",
       "purpose": "The local web server: serves the page and the JSON API, starts the engines, opens the browser.",
       "needs": [
         "app/chat.py",
@@ -198,9 +198,9 @@
     },
     {
       "path": "ui/index.html",
-      "lines": 2344,
-      "bytes": 152369,
-      "sha256": "0a891c123ba167f90d9ed17aa9f44b950c7a047c0f042610362e9975c778311d",
+      "lines": 2431,
+      "bytes": 158409,
+      "sha256": "2d412a6abdbb78b2bd72955e763057cf1f799aeb19f43c94165d46ac079e0d50",
       "purpose": "The whole interface in one file: HTML, CSS and JavaScript, no libraries, no internet.",
       "needs": [
         "app/server.py"
@@ -272,9 +272,9 @@
     },
     {
       "path": "tests/smoke_test.py",
-      "lines": 186,
-      "bytes": 9432,
-      "sha256": "f6bcc78f430587af1c46890140021d680fc1cdc09a3b23356b6026bd2be86259",
+      "lines": 204,
+      "bytes": 10907,
+      "sha256": "5777e7fe801ea16ff8d87dd9a96234dc876130c76a80fb2a3f532a6b80fbd556",
       "purpose": "Checks the whole app in a temporary copy with the fake engine: start-up, the size limit, adding a book, study answers with sources, chat, memory, saved chats, security.",
       "needs": [
         "tests/fake_llama_server.py"
