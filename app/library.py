@@ -479,7 +479,26 @@ def category_of(file: str, title: str, auto: str | None = None) -> str:
 
 
 # --------------------------------------------------------------------------- adding books
-QUEUE: list[str] = []      # file names waiting to be added, in order
+QUEUE: list[str] = []      # file names waiting to be added, quickest first
+_queue_lock = threading.Lock()
+
+
+def _add_cost(name: str) -> float:
+    """Rough work needed to add a book: its page count (the same estimate the Library page
+    shows), or its size when the pages can't be counted. Smaller = added sooner."""
+    path = BOOKS_DIR / name
+    try:
+        pages = _page_count(path)
+        return float(pages) if pages else path.stat().st_size / 50_000   # about 50 KB per page
+    except OSError:
+        return float("inf")
+
+
+def _sort_queue() -> None:
+    """Quickest books first, so short books and notes are ready to search within minutes
+    instead of waiting behind a 900-page textbook."""
+    with _queue_lock:
+        QUEUE.sort(key=lambda n: (_add_cost(n), n.lower()))
 
 
 def _set(**kw):
@@ -520,8 +539,11 @@ def request_add(files: list[str] | None = None) -> int:
     added = 0
     for name in sorted(wanted):
         if name in names and name not in QUEUE and name != PROGRESS.get("book"):
-            QUEUE.append(name)
+            with _queue_lock:
+                QUEUE.append(name)
             added += 1
+    if added:
+        _sort_queue()
     if added and _lock.acquire(blocking=False):
         threading.Thread(target=_worker, daemon=True).start()
     return added
@@ -540,7 +562,9 @@ def _worker() -> None:
         _forget_deleted(manifest)
         n = 0
         while QUEUE:
-            name = QUEUE.pop(0)
+            _sort_queue()                      # books queued while one was being added find their place too
+            with _queue_lock:
+                name = QUEUE.pop(0)
             pdf = BOOKS_DIR / name
             _set(book=name, step="Reading pages", percent=0, total_books=n + 1 + len(QUEUE))
             if pdf.exists():

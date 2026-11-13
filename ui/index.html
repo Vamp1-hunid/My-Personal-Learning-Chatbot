@@ -362,6 +362,18 @@ canvas.qfield{position:absolute;z-index:0;left:50%;transform:translateX(-50%);to
 .runout pre{margin:0;border:0;border-radius:0;max-height:300px;overflow:auto}
 .runout .act{margin:8px 10px}
 .quizbox{display:flex;flex-direction:column;gap:12px}
+/* interactive story (Create > Adventure): choice buttons under each scene */
+.choices{display:grid;gap:8px;margin-top:14px}
+.choices .ch-h{font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--warn)}
+.choice{display:flex;gap:11px;align-items:flex-start;text-align:left;padding:11px 13px;border:1px solid var(--line);border-radius:12px;
+  background:var(--panel);color:var(--text);font:inherit;cursor:pointer;transition:border-color .15s,transform .15s,box-shadow .15s}
+.choice:hover{border-color:var(--warn);transform:translateY(-1px);box-shadow:var(--shadow)}
+.choice .n{flex:none;width:27px;height:27px;border-radius:8px;display:grid;place-items:center;font-weight:700;
+  background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.choice b{display:block;line-height:1.35}.choice small{display:block;color:var(--muted);margin-top:2px;line-height:1.45}
+.choice.own{border-style:dashed}.choice.own .n{background:transparent;border:1px dashed var(--warn)}
+.choices.used .choice{opacity:.5;cursor:default;transform:none;box-shadow:none}
+.choices.used .choice.picked{opacity:1;border-color:var(--warn)}
 .qhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.qhead b{font-size:16px}
 .qscore{margin-left:auto;font-weight:700;color:var(--accent)}
 .qq{border:1px solid var(--line);border-radius:12px;padding:12px;background:color-mix(in srgb,var(--panel) 80%,transparent)}
@@ -486,6 +498,7 @@ body.has-wall .msg.bot .body,body.has-wall .welcome p{text-shadow:0 0 12px var(-
       <div class="seg small hidden" id="createSeg" title="What to create">
         <button data-cstyle="story" class="on" title="Write a story from your prompt; say 'continue' for more">Story</button>
         <button data-cstyle="character" title="Build a full character sheet from your idea">Character</button>
+        <button data-cstyle="adventure" title="An interactive story: you choose what happens next, or write your own move">Adventure</button>
       </div>
         <label class="bookbar hidden" id="bookbar">Books
           <select id="bookCat" title="Which subject's books to search. Auto picks the best match for each question."></select></label>
@@ -700,15 +713,19 @@ function setMode(mode) {
   $("#createSeg").classList.toggle("hidden", mode !== "create");
   $("#toolrow").classList.toggle("hidden", mode === "chat");
   $("#bookbar").classList.toggle("hidden", mode !== "study");
-  const story = S.cstyle !== "character";
+  const cs = S.cstyle;
   $("#input").placeholder = mode === "study" ? "Ask a question about your books..."
     : mode === "online" ? "Ask anything - I'll search the web..."
-    : mode === "create" ? (story ? "Describe a story: genre, characters, setting, length..." : "Describe a character: who they are, their world, their role...")
+    : mode === "create" ? (cs === "character" ? "Describe a character: who they are, their world, their role..."
+       : cs === "adventure" ? "Start an adventure: a genre, a world, who you are... or press Send to be surprised"
+       : "Describe a story: genre, characters, setting, length...")
     : "Message your assistant...";
   $("#hint").textContent = mode === "study"
     ? "Offline mode answers only from your books and shows the pages it used"
     : mode === "online" ? "Online mode searches the web (your question is sent to DuckDuckGo) and links its sources"
-    : mode === "create" ? (story ? "Story: say \"continue\" for the next part, or ask for changes" : "Character: ask for changes and the full sheet is rewritten")
+    : mode === "create" ? (cs === "character" ? "Character: ask for changes and the full sheet is rewritten"
+       : cs === "adventure" ? "Adventure: pick a choice or write your own move - say \"recap\" any time"
+       : "Story: say \"continue\" for the next part, or ask for changes")
     : "Enter to send - Shift+Enter for a new line - everything stays on this laptop";
 }
 function setStyle(style) {
@@ -812,7 +829,8 @@ async function openChat(id) {
       u._payload = {message: m.content, text: shown.replace(/ \(with picture\)$/, ""), images: [],
                     mode: m.mode || "chat", style: m.style || "explain", simpler: shown === "Explain that more simply"};
     }
-    else { const b = addBot(m.mode); b._user = u; finishBot(b, m.content, m.sources || [], m.stats || {}, m.mode); }
+    else { const b = addBot(m.mode); b._user = u; finishBot(b, m.content, m.sources || [], m.stats || {}, m.mode);
+           if (m.mode === "create" && m.style === "adventure" && m === c.messages[c.messages.length - 1]) renderChoices(b, m.content); }
   }
   loadHistory(); scrollDown(true);
 }
@@ -940,6 +958,60 @@ function finishBot(b, text, sources, stats, mode) {
   addRunButtons(b);
 }
 
+/* ================================================================ interactive story */
+// The Adventure style ends each scene with "### What do you do?" and three numbered choices.
+// They become buttons; "Write my own" lets you type any move instead.
+function parseChoices(md) {
+  const at = md.search(/what do you do\??/i);
+  const tail = at >= 0 ? md.slice(at) : md.split("\n").slice(-8).join("\n");
+  const out = [];
+  for (const line of tail.split("\n")) {
+    const m = line.match(/^\s*(?:[-*]\s+)?(\*\*)?(\d)[.):]\s+(.+)$/);    // "1. **Title** - ..." or "**1. Title** - ..."
+    if (!m) continue;
+    const body = ((m[1] || "") + m[3]).trim();
+    const t = body.match(/^\*\*(.+?)\*\*\s*[-:\u2013\u2014]?\s*(.*)$/);
+    out.push({n: m[2], title: (t ? t[1] : body).replace(/\*\*/g, "").trim(), detail: t ? t[2].trim() : "", raw: body.replace(/\*\*/g, "")});
+    if (out.length === 4) break;
+  }
+  return out.length >= 2 ? out : [];
+}
+function renderChoices(b, md) {
+  const list = parseChoices(md);
+  if (!list.length) return;
+  $$(".choices").forEach(x => x.classList.add("used"));             // only the newest scene can be answered
+  const box = document.createElement("div");
+  box.className = "choices";
+  box.innerHTML = `<div class="ch-h">What do you do?</div>` +
+    list.map(c => `<button class="choice" data-n="${esc(c.n)}"><span class="n">${esc(c.n)}</span><span><b>${esc(c.title)}</b>${c.detail ? `<small>${esc(c.detail)}</small>` : ""}</span></button>`).join("") +
+    `<button class="choice own"><span class="n">&#9998;</span><span><b>Write my own</b><small>Do anything you like - the story will follow your move</small></span></button>`;
+  // the buttons replace the written list: show the scene only (Copy and Read aloud still use the full text)
+  const at = md.search(/what do you do\??/i);
+  if (at >= 0) {
+    const scene = md.slice(0, md.lastIndexOf("\n", at) + 1).trim();
+    if (scene) b.querySelector(".md").innerHTML = markdown(scene);
+  }
+  b.querySelector(".md").after(box);
+  const pick = (btn, message) => {
+    if (S.busy) return busyNote();
+    box.classList.add("used"); btn.classList.add("picked");
+    $("#input").value = message;
+    send({mode: "create", style: "adventure"});
+  };
+  $$(".choice:not(.own)", box).forEach((btn, i) => btn.onclick = () => {
+    if (box.classList.contains("used")) return;
+    const c = list[i];
+    pick(btn, `I choose ${c.n}: ${c.raw}`);
+  });
+  box.querySelector(".own").onclick = () => {
+    if (box.classList.contains("used")) return;
+    if (S.mode !== "create") setMode("create");
+    if (S.cstyle !== "adventure") setCreateStyle("adventure");
+    const input = $("#input");
+    input.placeholder = "Write what you do next - anything at all...";
+    input.focus();
+  };
+}
+
 /* ================================================================ running code */
 function addRunButtons(b) {
   const can = (S.status && S.status.run) || {python: true};
@@ -1062,7 +1134,9 @@ async function send(opts = {}) {
   const input = $("#input");
   const re = opts.resend;          // set when retrying, resending or editing an earlier question
   const simpler = re ? !!re.simpler : !!opts.simpler;
-  const message = re ? (re.message || "") : (simpler ? "" : input.value.trim());
+  let message = re ? (re.message || "") : (simpler ? "" : input.value.trim());
+  if (!re && !simpler && !message && !Pics.list.length && (opts.mode || S.mode) === "create" && (opts.style || S.cstyle) === "adventure")
+    message = "Start a brand-new original adventure. Surprise me with the genre, the world and who I am.";
   const images = re ? (re.images || []) : (simpler ? [] : Pics.list.slice());
   if (!message && !images.length && !simpler) return;
   if (Docs.busy) { toast("Still reading your document - send again in a moment"); return; }
@@ -1130,6 +1204,7 @@ async function send(opts = {}) {
       if (!finished) showResend(b, stopped ? "You stopped this answer early." : "This answer was cut off before it finished.");
       else {
         if (mode !== "chat" && style === "quiz") renderQuiz(b, text, sources);
+        if (mode === "create" && style === "adventure") renderChoices(b, text);
         if (Voice.live) Voice.attachButton(b.querySelector('[data-a="speak"]'));
       }
     }

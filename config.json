@@ -27,6 +27,6 @@
   "tts_expression": 0.5,
   "tts_rhythm": 0.4,
   "tts_pause": 0.15,
-  "max_answer_tokens": {"chat": 1000, "quick": 300, "explain": 1200, "code": 1400, "teach": 1500, "quiz": 1500, "story": 1500, "character": 1100, "voice": 220},
+  "max_answer_tokens": {"chat": 1000, "quick": 300, "explain": 1200, "code": 1400, "teach": 1500, "quiz": 1500, "story": 1500, "character": 1100, "adventure": 900, "voice": 220},
   "temperature": {"chat": 0.7, "study": 0.2, "create": 0.9}
 }

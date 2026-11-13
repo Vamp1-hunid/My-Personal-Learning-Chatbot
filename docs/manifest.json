@@ -4,8 +4,8 @@
     {
       "path": "config.json",
       "lines": 32,
-      "bytes": 968,
-      "sha256": "0eae207bcab3e6eaa199e5b140e043aed8152a6d616c5f6a4bcd90c1049f9af8",
+      "bytes": 986,
+      "sha256": "b5a981c8e3069fdb43f858d5e92bdec09ea615943c965ee9c1f22a166a9b8862",
       "purpose": "Every setting in one place: names, ports, threads, the 5 GB model limit, model file names, search, answer lengths, voice.",
       "needs": []
     },
@@ -37,9 +37,9 @@
     },
     {
       "path": "app/prompts.py",
-      "lines": 177,
-      "bytes": 9827,
-      "sha256": "b66c8f35126a10e035f9b2f45fc2abe414147c656fb6cf53ac6dbc3c4deee1f0",
+      "lines": 217,
+      "bytes": 12699,
+      "sha256": "e8b4e22f4637dc70487419f206df17df47b4d844c2ef64d716fd952583cb5c53",
       "purpose": "The written instructions the model receives before the user's message, one block per mode and style.",
       "needs": []
     },
@@ -65,9 +65,9 @@
     },
     {
       "path": "app/library.py",
-      "lines": 865,
-      "bytes": 45242,
-      "sha256": "0734f1c12a656cac7e3eaccf7bb0b5fe44d644966de6878bc756bd098313bbfd",
+      "lines": 889,
+      "bytes": 46173,
+      "sha256": "68029a484628f91227687f706eb875ddceb776599719e65ee3a5ca6a4351f9bf",
       "purpose": "The book library: reads books and notes, cuts them into passages, builds vectors, sorts books into subjects, and searches.",
       "needs": [
         "app/settings.py",
@@ -155,8 +155,8 @@
     {
       "path": "app/chat.py",
       "lines": 323,
-      "bytes": 16171,
-      "sha256": "674c4f1f84c9358115ed577d1a00d6ecdbac95276a87f88cc313bbe49447a4bc",
+      "bytes": 16255,
+      "sha256": "59ef15226f21ac45b1ce9fc2ca0c9850a0ac27c48634b81940f8610624a63c79",
       "purpose": "Builds every reply: loads the chat, gathers memories, book passages, web extracts or attached documents, fits everything into the context window, streams, saves.",
       "needs": [
         "app/docs.py",
@@ -198,9 +198,9 @@
     },
     {
       "path": "ui/index.html",
-      "lines": 2269,
-      "bytes": 147620,
-      "sha256": "103fd410c1ef3956ad86a09861f56890deab4d5794f34c1e6e1e718a2a872987",
+      "lines": 2344,
+      "bytes": 152369,
+      "sha256": "0a891c123ba167f90d9ed17aa9f44b950c7a047c0f042610362e9975c778311d",
       "purpose": "The whole interface in one file: HTML, CSS and JavaScript, no libraries, no internet.",
       "needs": [
         "app/server.py"
@@ -264,17 +264,17 @@
     },
     {
       "path": "tests/fake_llama_server.py",
-      "lines": 91,
-      "bytes": 3712,
-      "sha256": "f5057c38e36e8f5d329e871ea9a67cc4734265f0178a688de7504ad13a435d33",
+      "lines": 95,
+      "bytes": 4128,
+      "sha256": "5d491170a5b577ec96fad2d4a8b1275f336640960928f8e92664bf9e8dd7593d",
       "purpose": "A stand-in for llama-server used only by tests: answers /health, chat (streamed and not) and embeddings with predictable fake data.",
       "needs": []
     },
     {
       "path": "tests/smoke_test.py",
-      "lines": 176,
-      "bytes": 8629,
-      "sha256": "e39aa27ea24040803e649ef58d229126c348281b8fd3f754c5852af704caf690",
+      "lines": 186,
+      "bytes": 9432,
+      "sha256": "f6bcc78f430587af1c46890140021d680fc1cdc09a3b23356b6026bd2be86259",
       "purpose": "Checks the whole app in a temporary copy with the fake engine: start-up, the size limit, adding a book, study answers with sources, chat, memory, saved chats, security.",
       "needs": [
         "tests/fake_llama_server.py"

@@ -20,7 +20,7 @@ from typing import Iterator
 from . import docs, engine, library, llm, memory, ocr, web
 from .prompts import (CHAT_SYSTEM, MEMORY_BLOCK, NO_PASSAGES, SIMPLER_REQUEST,
                       STUDY_CODE, STUDY_EXPLAIN, STUDY_QUICK, STUDY_QUIZ, STUDY_TEACH, NO_WEB, TYPO_NOTE, WEB_CODE, WEB_EXPLAIN,
-                      WEB_QUICK, WEB_QUIZ, WEB_TEACH, VOICE_NOTE, STORY_RULES, CHARACTER_RULES)
+                      WEB_QUICK, WEB_QUIZ, WEB_TEACH, VOICE_NOTE, STORY_RULES, CHARACTER_RULES, ADVENTURE_RULES)
 from .settings import CHATS_DIR, CONFIG, load_state, user_name, write_json_atomic
 
 GENERATE_LOCK = threading.Lock()   # one reply at a time; others wait their turn
@@ -138,7 +138,7 @@ def reply(conv_id: str | None, mode: str, style: str, message: str,
     names = {"name": CONFIG["app_name"], "user": user_name()}   # your nickname, if you set one
     mode = mode if mode in ("study", "online", "create") else "chat"   # study = Offline (books)
     if mode == "create":
-        style = "character" if style == "character" else "story"
+        style = style if style in ("character", "adventure") else "story"
     else:
         style = style if style in ("quick", "code", "teach", "quiz") else "explain"   # detailed by default
     if simpler:
@@ -200,10 +200,10 @@ def reply(conv_id: str | None, mode: str, style: str, message: str,
             temperature = float(CONFIG["temperature"]["chat"])
         elif mode == "create":
             # story writing and character creation: no books, no web, more imagination
-            system = (CHARACTER_RULES if style == "character" else STORY_RULES).format(**names)
+            system = {"character": CHARACTER_RULES, "adventure": ADVENTURE_RULES}.get(style, STORY_RULES).format(**names)
             budget = window - max_tokens - _tokens(system) - _tokens(message) - 64
             messages = [{"role": "system", "content": system + TYPO_NOTE.format(**names)}]
-            messages += _fit_history(history, max(0, budget), max_turns=10)
+            messages += _fit_history(history, max(0, budget), max_turns=14 if style == "adventure" else 10)
             messages.append({"role": "user", "content": message})
             temperature = float(CONFIG["temperature"].get("create", 0.9))
         elif mode == "online":

@@ -30,7 +30,7 @@ def intro(d: Doc, n_files: int, n_lines: int) -> None:
         ["Chat mode", "Personal conversations that stream word by word, with long-term memory that learns facts about you"],
         ["Offline mode", "Answers only from your books and notes (PDF, EPUB, Word, PowerPoint, text), with clickable [1] sources and page numbers; 80 subjects"],
         ["Online mode", "Searches the web (DuckDuckGo), reads the top pages, answers with numbered links"],
-        ["Create mode", "Original stories and full character sheets"],
+        ["Create mode", "Original stories, full character sheets, and interactive Adventures: each scene ends with three very different choices as buttons, or Write my own"],
         ["Answer styles", "Detailed (default), Quick, Code (with a Run button), Teach (full lessons), Quiz (interactive quiz, flashcards, saved study guide)"],
         ["Extras", "Pictures (Windows text recognition), documents attached to a chat, voice typing, answers read aloud while they are written, highlight any text to hear or explain it"],
         ["Look and feel", "Light theme by default, dark theme, custom wallpaper, a nickname, and an animated mascot (the Blob) that dresses for each mode"],
@@ -418,7 +418,7 @@ def first_run(d: Doc) -> None:
         "<b>Offline:</b> back in Chat, click Offline, keep Detailed, and ask a question from one of your books. The sources bar lists the exact pages; any [1] in the answer jumps to its source.",
         "Click <b>Simpler please</b> under an answer for a beginner version from the same pages.",
         "<b>Online:</b> ask about something recent; the answer cites numbered web pages.",
-        "<b>Create:</b> choose Story or Character and give a prompt.",
+        "<b>Create:</b> choose Story or Character and give a prompt, or choose Adventure and press Send with an empty box for a surprise interactive story; click a choice or Write my own.",
         "<b>Models:</b> lists every .gguf; blocked files say why. Press Load, or use the picker at the top.",
         "<b>Personalise:</b> set a nickname (press Hear it to check how it sounds), theme and wallpaper.",
         "To quit: close the black window (the engines close with it) or double-click <b>STOP.bat</b>.",
@@ -490,6 +490,7 @@ def how_it_works(d: Doc) -> None:
     ])
     d.sub("Adding a book")
     d.ul([
+        "Books wait in a queue and are added one at a time, <b>quickest first</b> (fewest estimated pages), so short books and notes become searchable within minutes instead of waiting behind a long textbook.",
         "Text is pulled out page by page (PyMuPDF for PDF/EPUB; built-in XML readers for Word and PowerPoint).",
         "All words are cut into 180-word passages that overlap by 40, each remembering its first and last page.",
         "Passages are embedded 16 at a time; a passage the engine rejects is shortened and retried, so one odd page cannot fail the book.",
@@ -498,7 +499,9 @@ def how_it_works(d: Doc) -> None:
     d.sub("Online mode")
     d.ul(["web.gather(): DuckDuckGo HTML results, the top 3 pages fetched in parallel (8 s timeout each), the best paragraphs up to 170 words a page, numbered [1]-[3] with links."])
     d.sub("Create mode")
-    d.ul(["No books, no web. STORY_RULES (600-900 words, a bold title, continue on \"continue\") or CHARACTER_RULES (a fixed character sheet). Temperature 0.9, up to 1500 / 1100 tokens."])
+    d.ul(["No books, no web, temperature 0.9. Story: STORY_RULES (600-900 words, a bold title, \"continue\" for more), up to 1500 tokens. Character: CHARACTER_RULES (a fixed character sheet), 1100 tokens.",
+          "Adventure: ADVENTURE_RULES, 900 tokens a turn. Each turn is a status line, a 200-350 word scene in second person ending at a decision, then <code>### What do you do?</code> and three numbered choices (bold or risky, clever or careful, surprising). The page turns them into buttons; a button sends \"I choose 2: …\"; Write my own lets you type any move. Up to 14 past messages are kept so names, items and secrets stay consistent; \"recap\" summarises the story; after 8-12 turns it builds to THE END with sequel ideas.",
+          "Story and Adventure share CRAFT_NOTES: fresh names, no stock phrases, varied sentences, subtext in dialogue, and every scene changing something."])
     d.sub("Pictures and documents")
     d.ul([
         "Pictures (paste, drag or the picture button, up to 4 per message): Windows OCR reads their text, which is added to the question; a vision model also sees the image.",
@@ -603,6 +606,7 @@ def interface(d: Doc) -> None:
         ["retry(), editUser(), showResend()", "Retry, Edit and Resend using the turn tags"],
         ["Voice", "Recording (WAV), speak(), live feed() while streaming, the Stop talking pill, Esc"],
         ["SelPop", "Highlight any text: Read aloud / Explain in detail"],
+        ["parseChoices(), renderChoices()", "Adventure choices as buttons, Write my own, one active scene at a time"],
         ["Pics, Docs", "Pictures and documents attached to the message or chat"],
         ["loadBooks(), catOptions()", "Library page: grouped subject menus, Add buttons, time estimates, progress"],
         ["loadMemory(), loadModels(), loadPersonal(), applyWall()", "Memory, Models and Personalise pages, wallpaper"],

@@ -152,6 +152,16 @@ def main():
         saved = call("GET", f"/api/chats/{conv}")
         check("saved chat keeps sources", saved["messages"][1]["sources"] == sources)
 
+        ev = chat("", mode="create", style="adventure")
+        check("an empty adventure message is refused by the server", any(e["type"] == "error" for e in ev))
+        ev = chat("A detective story in Lusaka", mode="create", style="adventure")
+        story = "".join(e.get("text", "") for e in ev if e["type"] == "token")
+        check("adventure scene ends with three choices", story.count("**") >= 6 and "What do you do?" in story, story[:120])
+        adv = next(e["conv_id"] for e in ev if e["type"] == "meta")
+        ev = chat("I choose 2: Bribe the guard", mode="create", style="adventure", conv_id=adv)
+        saved = call("GET", f"/api/chats/{adv}")["messages"]
+        check("adventure continues in the same chat", len(saved) == 4 and saved[-1]["style"] == "adventure", str(len(saved)))
+
         bad = urllib.request.Request(BASE + "/api/status", headers={"Host": "evil.example:8765"})
         try:
             urllib.request.urlopen(bad, timeout=5)

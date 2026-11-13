@@ -52,12 +52,12 @@ def write(d: Doc, files: list[dict]) -> None:
         ["Portable folder", "Embeddable Python with a relative ._pth; all paths from the code's own location", "Done"],
         ["Chat with memory that learns", "memory.json with vectors; \"remember that\"; automatic extraction after each reply; editable page", "Done"],
         ["Study from books", "Offline mode: hybrid search, citations with page numbers, refusal when not found, five answer styles", "Done"],
-        ["Many books, added incrementally", "Per-book index files; only new or changed files processed; queue with progress and time estimates", "Done"],
+        ["Many books, added incrementally", "Per-book index files; only new or changed files processed; queue with progress and time estimates, quickest books first", "Done"],
         ["Manual model switching, 5 GB limit", "Models page and picker; GGUF header and size checked before loading", "Done"],
         ["Abliterated model option", "Any GGUF loads the same way; documented in the guide", "Done"],
         ["Premium look", "Single-file interface, light/dark themes, wallpaper, animated Blob mascot", "Done"],
         ["Voice", "whisper.cpp typing; Piper or Kokoro reading aloud, sentence by sentence while streaming; stoppable", "Done"],
-        ["Story and character writing", "Create mode with dedicated instructions", "Done"],
+        ["Story and character writing", "Create mode: Story, Character and an interactive Adventure with three distinct choices per scene plus write-your-own; shared craft rules", "Done"],
         ["Build guide", "BUILD_GUIDE.html generated from the real files, with a file checker", "Done"],
         ["Faster first word in Offline mode", "Prompt reading is about 22 tokens/s, so long prompts wait about 40 s", "Open (see Future work)"],
     ])
@@ -130,6 +130,13 @@ def write(d: Doc, files: list[dict]) -> None:
     d.p("Answers stream as Server-Sent Events. Closing the connection stops the engine from generating, and the partial "
         "answer is still saved. Every question and answer share a turn tag, so Retry and Edit rewind the conversation "
         "precisely. A global lock serialises generation, which suits a single local engine.")
+    d.sub("Interactive stories")
+    d.p("A 3B model writes weaker fiction than a large model, so quality comes from structure. Adventure mode fixes the "
+        "shape of every turn (status line, a short scene that stops at a decision, three numbered choices of deliberately "
+        "different kinds), keeps more history than other modes for continuity, and shares a set of craft rules with Story "
+        "mode that ban over-used names and stock phrases and ask for subtext and consequences. Because the format is "
+        "fixed, the page can turn the choices into buttons; Write my own sends any free-form move, which the rules tell "
+        "the model to accept and make work inside the story.")
     d.sub("Voice")
     d.p("The page records 16 kHz mono WAV and whisper.cpp transcribes it. For reading aloud, the page sends each finished "
         "sentence while the answer is still streaming, and plays the returned WAV clips gaplessly with the Web Audio API, "
@@ -186,7 +193,7 @@ def write(d: Doc, files: list[dict]) -> None:
         ["12 Nov 2026", "Feature growth: Online mode, Teach/Quiz/Code styles, pictures, attached documents, code runner, voice typing, Piper and Kokoro voices, BM25 hybrid search, subjects, spelling correction; review of all changes."],
         ["13 Nov 2026", "Security fix (Origin check). Nickname, faster stoppable live voice, light theme default, custom wallpaper with fade and blur, Create mode (stories and characters)."],
         ["13 Nov 2026", "Blob mascot: gold colour and masquerade mask in Create, white hacker faceplate for Code, fix for Offline styles leaking into Create, lightning bolt for Quick, monocle and mustache for Detailed."],
-        ["13 Nov 2026", "Highlight any text to read aloud or explain. Subjects expanded from 45 to 80 in 11 groups with grouped menus. Repository replaced with QuantaKai; documentation regenerated from source."],
+        ["13 Nov 2026", "Highlight any text to read aloud or explain. Subjects expanded from 45 to 80 in 11 groups with grouped menus. Repository replaced with QuantaKai; documentation regenerated from source. Book queue now adds the quickest books first. Duplicate books found in the library. Interactive Adventure mode with choice buttons and write-your-own."],
     ])
 
     # ------------------------------------------------------------------ 11

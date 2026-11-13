@@ -32,6 +32,10 @@ def answer_for(messages: list[dict]) -> str:
     last = messages[-1]["content"]
     if "Facts:" in last:
         return "- The user is studying data science at university." if "I am" in last or "I'm" in last else "- NONE"
+    if "What do you do?" in str(messages[0].get("content", "")):      # Create > Adventure
+        return ("*Chapter 1 - The night market - a stolen map*\n\nRain drums on the tin roofs.\n\n"
+                "### What do you do?\n1. **Follow the courier** - Risk being seen in the crowd.\n"
+                "2. **Bribe the guard** - Spend your last coins for a name.\n3. **Read the map** - Trust a stranger's code.")
     if "Book passages:" in last:
         return "Overfitting means a model memorises the training data instead of learning the pattern [1]. It then does badly on new data [1]."
     return "Hello! I am a test reply from the fake engine. Everything is connected."
